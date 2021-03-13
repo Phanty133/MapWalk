@@ -1,9 +1,9 @@
-function loadImagePreview(file, imgEl){
+function loadImagePreview(file: File, imgEl: HTMLImageElement){
 	if(FileReader && file){
 		const fr = new FileReader();
 
 		fr.onload = () => {
-			imgEl.src = fr.result;
+			imgEl.src = fr.result.toString();
 		};
 
 		fr.readAsDataURL(file);

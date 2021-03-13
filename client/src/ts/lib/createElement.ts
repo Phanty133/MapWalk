@@ -1,4 +1,14 @@
-function createElement(tag, options = {}){ // Just a shorthand for creating elements
+interface ElementAttributes{
+	class: string,
+	id: string,
+	parent: HTMLElement,
+	textContent: string,
+	attr: Record<string, string>,
+	events: Record<string, Function>,
+	style: Record<string, Function>
+}
+
+function createElement(tag: string, options?: ElementAttributes){ // Just a shorthand for creating elements
 	const el = document.createElement(tag);
 
 	if(options.class) el.className = options.class;
@@ -14,20 +24,25 @@ function createElement(tag, options = {}){ // Just a shorthand for creating elem
 
 	if(options.events){
 		for(const event in options.events){
-			el.addEventListener(event, options.events[event]);
+			el.addEventListener(event, (e: Event) => { options.events[event].call(e) });
 		}
 	}
 
 	if(options.style){
 		for(const style in options.style){
-			el.style[style] = options.style[style];
+			(<any>el.style)[style] = options.style[style];
 		}
 	}
 
 	return el;
 }
 
-function createSelect(parent, optionArr){ // Just a shorthand for creating select elements
+interface Option{
+	text: string;
+	value?: string;
+}
+
+function createSelect(parent: HTMLElement, optionArr: Option[]){ // Just a shorthand for creating select elements
 	let selEl;
 	
 	if(parent.tagName.toLowerCase() === "select"){

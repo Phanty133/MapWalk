@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
 	mode: "development",
-	entry: "./src/index.ts",
+	entry: path.resolve(__dirname, "src", "index.ts"),
 	output: {
 		filename: "bundle.js",
 		path: path.resolve(__dirname, "client")
@@ -30,6 +30,12 @@ module.exports = {
 		]
 	},
 	resolve: {
-		extensions: [".ts", ".tsx"]
+		extensions: [".ts", ".tsx"],
+		alias: {
+			css: path.resolve(__dirname, "src", "css"),
+			ts: path.resolve(__dirname, "src", "ts"),
+			fonts: path.resolve(__dirname, "src", "fonts"),
+			img: path.resolve(__dirname, "src", "img")
+		}
 	}
 };
