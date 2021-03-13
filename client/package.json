@@ -21,6 +21,7 @@
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
-    "leaflet": "^1.7.1"
+    "leaflet": "^1.7.1",
+    "socket.io-client": "^4.0.0"
   }
 }

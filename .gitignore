@@ -1,4 +1,5 @@
 server/node_modules
 client/node_modules
-client/client
+client/client/bundle.js
+client/client/*.png
 server/build
