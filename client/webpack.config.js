@@ -1,12 +1,22 @@
 const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+const outputPath = path.resolve(__dirname, "client");
 
 module.exports = {
 	mode: "development",
 	entry: path.resolve(__dirname, "src", "index.ts"),
 	output: {
 		filename: "bundle.js",
-		path: path.resolve(__dirname, "client")
+		path: outputPath
 	},
+	plugins: [
+		new HtmlWebpackPlugin({
+			hash: true,
+			template: path.resolve(__dirname, "src", "html", "index.ejs"),
+			filename: path.resolve(outputPath, "index.html")
+		})
+	],
 	devtool: "inline-source-map",
 	module: {
 		rules: [

@@ -1,8 +1,8 @@
-server/node_modules
 client/node_modules
-client/client/*.png
 client/client/**
+client/package-lock.json
 server/build
 server/build/**
 server/logs/**
-client/client/bundle.js
+server/node_modules
+server/package-lock.json
