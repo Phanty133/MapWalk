@@ -4,4 +4,5 @@ client/client/*.png
 client/client/**
 server/build
 server/build/**
+server/logs/**
 client/client/bundle.js
