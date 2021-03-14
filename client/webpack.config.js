@@ -8,7 +8,8 @@ module.exports = {
 	entry: path.resolve(__dirname, "src", "index.ts"),
 	output: {
 		filename: "bundle.js",
-		path: outputPath
+		path: outputPath,
+		clean: true
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
