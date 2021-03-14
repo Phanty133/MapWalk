@@ -1,32 +1,35 @@
 {
-  // See https://go.microsoft.com/fwlink/?LinkId=733558
-  // for the documentation about the tasks.json format
-  "version": "2.0.0",
-  "tasks": [
-    {
-      	"label": "Client Build",
-		"type": "shell",
-      	"command": "npm run watch",
-      	"options": {
-        	"cwd": "${workspaceFolder}/client"
-      	}
-    },
-    {
-     	"label": "Server Build",
-		"type": "shell",
-    	"command": "npm run dev",
-      	"options": {
-        	"cwd": "${workspaceFolder}/server"
-      	}
-    },
-    {
-      	"label": "Build",
-      	"group": {
-       		"kind": "build",
-        	"isDefault": true
-	  	},
-  		"dependsOrder": "parallel",
-      	"dependsOn": ["Client Build", "Server Build"]
-    }
-  ]
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Client Build",
+			"type": "shell",
+			"command": "npm run watch",
+			"options": {
+				"cwd": "${workspaceFolder}/client"
+			}
+		},
+		{
+			"label": "Server Build",
+			"type": "shell",
+			"command": "npm run dev",
+			"options": {
+				"cwd": "${workspaceFolder}/server"
+			}
+		},
+		{
+			"label": "Build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOrder": "parallel",
+			"dependsOn": [
+				"Client Build",
+				"Server Build"
+			]
+		}
+	]
 }
