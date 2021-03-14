@@ -1,6 +1,7 @@
 # MapWalk server
 # Version: 1.0.0
 
+<<<<<<< HEAD
 2021-03-14T16:31:50.425Z INFO /src/Logger.ts:21:9 DEVELOPMENT
 2021-03-14T16:31:50.544Z INFO /src/SocketServer.ts:39:10 Connected to socket!
 2021-03-14T16:31:57.064Z INFO /src/SocketServer.ts:39:10 Connected to socket!
@@ -44,3 +45,6 @@
 2021-03-14T17:04:55.101Z INFO /src/SocketServer.ts:39:10 Connected to socket!
 2021-03-14T17:06:14.936Z INFO /src/SocketServer.ts:39:10 Connected to socket!
 2021-03-14T17:06:17.136Z INFO /src/SocketServer.ts:39:10 Connected to socket!
+=======
+2021-03-13T22:21:45.003Z INFO DEVELOPMENT
+>>>>>>> 48dc0ba64c88c9dd7afd49d1c67db5781f4361aa
