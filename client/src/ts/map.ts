@@ -2,16 +2,7 @@ import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import cumfuck from "img/cumfuck.png";
 import cumfuckActive from "img/cumfuckActive.png";
-
-class MapObject {
-	latLng: L.LatLngExpression;
-	description: string;
-
-	constructor(coord: L.LatLngExpression, desc: string) {
-		this.latLng = coord;
-		this.description = desc;
-	}
-}
+import { MapObject } from "ts/mapObject";
 
 export class Map {
 	map: L.Map;
@@ -28,15 +19,15 @@ export class Map {
 	});
 
 	nonMetricDistanceTo(thisLatLng: L.LatLngExpression, otherLatLng: L.LatLngExpression) {
-		let a = otherLatLng as L.LatLng;
-		let b = otherLatLng as L.LatLng;
+		const a = otherLatLng as L.LatLng;
+		const b = otherLatLng as L.LatLng;
 		return Math.sqrt((a.lat - b.lat) ** 2 + (a.lng - b.lng) ** 2);
 	}
 
 	constructor(id: string) {
 
 		this.map = L.map(id, {
-			center: [56.50475439537235, 21.010924221837993], //Liepaaja be like: [56.50475439537235, 21.010924221837993]
+			center: [56.50475439537235, 21.010924221837993], // Liepaaja be like: [56.50475439537235, 21.010924221837993]
 			zoom: 15,
 			minZoom: 13,
 			maxBounds: L.latLngBounds(
@@ -50,16 +41,16 @@ export class Map {
 		});
 
 		this.map.addEventListener("keydown", (e) => {
-			let keyEv = e as L.LeafletKeyboardEvent;
-			if (keyEv.originalEvent.key == "shift") {
+			const keyEv = e as L.LeafletKeyboardEvent;
+			if (keyEv.originalEvent.key === "shift") {
 				this.map.removeEventListener("contextmenu");
 			}
 		});
 
 		this.map.addEventListener("keyup", (e) => {
-			let keyEv = e as L.LeafletKeyboardEvent;
-			if (keyEv.originalEvent.key == "shift") {
-				this.map.addEventListener("contextmenu", (e) => {
+			const keyEv = e as L.LeafletKeyboardEvent;
+			if (keyEv.originalEvent.key === "shift") {
+				this.map.addEventListener("contextmenu", (ee) => {
 					this.clearSelection();
 				});
 			}
@@ -72,14 +63,14 @@ export class Map {
 
 		L.control.scale().addTo(this.map);
 
-		let objects = [
+		const objects = [
 			new MapObject([56.51292213894928, 21.012326233692708], "This is a river of cum, click if you dare."),
 			new MapObject([56.51251995960712, 21.028135815168024], "The fish zone"),
 			new MapObject([56.518912681668304, 20.98500589524165], "Plce 3 with no joke!!!")
 		] // Hand defined for now
 
 		objects.forEach(element => {
-			let testMarker = L.marker(element.latLng, {
+			const testMarker = L.marker(element.latLng, {
 				icon: this.iconInactive
 			}).addTo(this.map);
 
@@ -103,7 +94,7 @@ export class Map {
 			}
 			return;
 		}
-		if (this.currentlyActive.length == 2) {
+		if (this.currentlyActive.length === 2) {
 			this.currentlyActive[0].setIcon(this.iconInactive);
 			this.currentlyActive.shift();
 		}

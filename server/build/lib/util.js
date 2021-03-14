@@ -22,9 +22,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getExtensionByFilename = exports.deleteSimilarFiles = exports.parseBool = void 0;
+exports.genHexString = exports.getExtensionByFilename = exports.deleteSimilarFiles = exports.parseBool = void 0;
 const fse = __importStar(require("fs-extra"));
 const path_1 = __importDefault(require("path"));
+const crypto_1 = __importDefault(require("crypto"));
 function parseBool(str) {
     return JSON.parse(str.toLowerCase());
 }
@@ -61,4 +62,9 @@ function getExtensionByFilename(dir, nameMatch) {
     return "";
 }
 exports.getExtensionByFilename = getExtensionByFilename;
+function genHexString(len) {
+    const buffer = crypto_1.default.randomBytes(len / 2);
+    return buffer.toString("hex");
+}
+exports.genHexString = genHexString;
 //# sourceMappingURL=util.js.map

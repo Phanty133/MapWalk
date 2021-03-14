@@ -7,6 +7,7 @@
 		"sourceMap": true,
 		"allowJs": false,
 		"moduleResolution": "node",
-		"baseUrl": "./src/"
+		"baseUrl": "./src/",
+		"skipLibCheck": true
 	}
 }
