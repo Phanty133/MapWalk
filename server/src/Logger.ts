@@ -38,7 +38,7 @@ export default class Logger{
 		fse.outputFileSync(this._logpath, `# MapWalk server\n# Version: ${process.env.VERSION}\n\n`);
 	}
 
-	private _writeToLog(msg: string): void{
+	private _writeToLog(msg: any): void{
 		if(this._logpath === null){
 			this._createLogFile();
 		}
@@ -49,11 +49,32 @@ export default class Logger{
 		fse.appendFile(this._logpath, `${logTime} ${msg}\n`);
 	}
 
-	info(msg: string): void{
+	private _getCallSignature(): string{
+		const callerLine = (new Error()).stack.split("\n")[3];
+		const clean = callerLine.split(/server/)[1];
+		return clean.substring(0, clean.length - 1);
+	}
+
+	private _parseMsg(msg: any){
+		switch(typeof msg){
+			case "string":
+				return msg;
+			case "object":
+				return JSON.stringify(msg);
+		}
+	}
+
+	info(_msg: any): void{
+		let msg = this._parseMsg(_msg);
+
+		if(process.env.LOG_TRACE === "true"){
+			msg = `${this._getCallSignature()} ${msg}`;
+		}
+
 		if(this._verbosity === 2) this._writeToLog(`INFO ${msg}`);
 	}
 
-	warn(val: string | Error): void{
+	warn(val: any | Error): void{
 		if(this._verbosity < 1) return;
 
 		if(val instanceof Error){
@@ -69,11 +90,17 @@ export default class Logger{
 			this._writeToLog(`WARNING ${errMsg}`);
 		}
 		else{
-			this._writeToLog(`WARNING ${val}`);
+			let msg = this._parseMsg(val);
+
+			if(process.env.LOG_TRACE === "true"){
+				msg = `${this._getCallSignature()} ${msg}`;
+			}
+
+			this._writeToLog(`WARNING ${msg}`);
 		}
 	}
 
-	error(val: string | Error): void{
+	error(val: any | Error): void{
 		if(val instanceof Error){
 			let errMsg:string;
 
@@ -87,7 +114,13 @@ export default class Logger{
 			this._writeToLog(`ERROR ${errMsg}`);
 		}
 		else{
-			this._writeToLog(`ERROR ${val}`);
+			let msg = this._parseMsg(val);
+
+			if(process.env.LOG_TRACE === "true"){
+				msg = `${this._getCallSignature()} ${msg}`;
+			}
+
+			this._writeToLog(`ERROR ${msg}`);
 		}
 	}
 

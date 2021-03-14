@@ -1,5 +1,6 @@
 import * as fse from "fs-extra";
 import path from "path";
+import crypto from "crypto";
 
 export function parseBool(str:string){
 	return JSON.parse(str.toLowerCase());
@@ -39,4 +40,9 @@ export function getExtensionByFilename(dir: string, nameMatch: string): string{
 	}
 
 	return "";
+}
+
+export function genHexString(len: number): string{
+	const buffer = crypto.randomBytes(len / 2);
+	return buffer.toString("hex");
 }
