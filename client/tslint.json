@@ -13,5 +13,7 @@
             "node_modules"
         ]
     },
-    "no-console": false
+    "no-console": false,
+    "no-empty-interface": false,
+    "no-empty": false
 }

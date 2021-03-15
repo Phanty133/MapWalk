@@ -13,6 +13,7 @@ export default class LobbyManager{
 	}
 
 	static joinLobby(lobbyID: string, socketID: string){
+		if(!(lobbyID in LobbyManager.lobbies)) return;
 		LobbyManager.lobbies[lobbyID].joinLobby(socketID);
 	}
 

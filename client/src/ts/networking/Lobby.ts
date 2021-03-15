@@ -1,6 +1,7 @@
 import * as Cookies from "js-cookie";
 import Socket from "./Socket";
-import P2PLobby from "./P2P";
+import P2PLobby, { MessageData } from "./P2PLobby";
+import Game from "ts/game/Game";
 
 export default class Lobby{
 	id: string;
@@ -17,6 +18,7 @@ export default class Lobby{
 			this.p2p.joinLobby();
 		};
 
+		const game = new Game(this);
 		this.socket.joinGameLobby(this.id);
 	}
 

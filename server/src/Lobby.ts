@@ -24,6 +24,10 @@ export default class Lobby{
 		}
 	}
 
+	removePeer(socketID: string){
+		this.sockets.splice(this.sockets.findIndex(s => s === socketID), 1);
+	}
+
 	joinLobby(socketID: string){
 		this.sockets.push(socketID);
 		this.socketServer.lobbies[socketID] = this;

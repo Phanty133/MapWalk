@@ -1,3 +1,6 @@
+import GameEvent, { GameEventResponse } from "ts/game/GameEvent";
+import GameManifest, { GameManifestData } from "ts/game/GameManifest";
+import { randInt } from "ts/lib/util";
 import Socket from "./Socket";
 
 export interface PeerData{
@@ -20,15 +23,64 @@ export interface IceCandidateData{
 	iceCandidate: IceCandidate;
 }
 
+interface MessageDataBase{
+	cmd: string;
+	peer: string;
+}
+
+// tslint:disable-next-line: no-namespace
+export namespace MessageData{
+	export interface Init extends MessageDataBase{
+		status: string;
+	}
+
+	export interface  Event extends MessageDataBase{
+		event: GameEvent;
+	}
+
+	export interface EventResponse extends MessageDataBase{
+		response: GameEventResponse;
+		manifestHash: string;
+		key?: JsonWebKey;
+	}
+
+	export interface  EventEffect extends MessageDataBase{
+		key: JsonWebKey;
+		event: GameEvent;
+	}
+
+	export interface  GetManifestHash extends MessageDataBase{}
+
+	export interface  SendManifestHash extends MessageDataBase{
+		manifestHash: string;
+	}
+
+	export interface  GetManifest extends MessageDataBase{}
+
+	export interface  SendManifest extends MessageDataBase{
+		manifestData: GameManifestData;
+	}
+
+	export interface  CheckManifest extends MessageDataBase{}
+}
+
+type MessageCallback = (data: MessageDataBase, channel?:RTCDataChannel) => void;
+
 export default class P2PLobby{
 	static ICE_SERVERS: any[] = [{"urls": ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"]}, {"urls": "turn:45.9.188.93:5349", "username": "guest", "credential": "somepassword"}];
 	peers: Record<string, RTCPeerConnection> = {};
 	channels: Record<string, RTCDataChannel> = {};
 	socket: Socket;
+	channelBinds: Record<string, MessageCallback[]> = {};
 	joinedLobby: boolean = false;
+	static debugHost: boolean = false;
 
 	constructor(socket: Socket){
 		this.socket = socket;
+
+		this.bindToChannel("init", (msgData: MessageData.Init, channel: RTCDataChannel) => {
+			console.log("Init ", msgData.status);
+		});
 	}
 
 	joinLobby(){
@@ -37,21 +89,22 @@ export default class P2PLobby{
 		this.socket.P2PJoinLobby();
 	}
 
-	private createDataChannel(con: RTCPeerConnection): Promise<RTCDataChannel>{
+	private createDataChannel(peer: string): Promise<RTCDataChannel>{
 		return new Promise<RTCDataChannel>((res, rej) => {
-			const channel = con.createDataChannel("data");
+			const channel = this.peers[peer].createDataChannel(`data-${randInt(0, 100)}`);
 
 			channel.onopen = () => {
 				console.log("Channel open");
-				P2PLobby.send(channel, { cmd: "init", id: this.socket.id });
+				P2PLobby.send(channel, { cmd: "init", status: "OK" });
 				res(channel);
 			};
 
 			channel.onclose = () => {
 				console.log("Channel close");
 			};
+			P2PLobby.debugHost = true;
 
-			channel.onmessage = (e: MessageEvent) => { this.messageHandler(e); };
+			channel.onmessage = (e: MessageEvent) => { this.messageHandler(peer, e); };
 		});
 	}
 
@@ -77,10 +130,32 @@ export default class P2PLobby{
 			// TODO: actually make it do something when connected
 		};
 
+		peerConnection.onconnectionstatechange = (e: Event) => {
+			const state = peerConnection.connectionState;
+
+			switch(state){
+				case "failed":
+					console.log("Peer lost connection");
+					break;
+				case "disconnected":
+					console.log("Peer disconnected");
+					this.channels[data.peer].close();
+					this.peers[data.peer].close();
+
+					delete this.peers[data.peer];
+					delete this.channels[data.peer];
+					break;
+				case "closed":
+					console.log("Peer connection closed");
+					delete this.peers[data.peer];
+					delete this.channels[data.peer];
+			}
+		};
+
 		// peerConnection.addTrack();
 
 		if(data.createOffer){
-			this.createDataChannel(peerConnection)
+			this.createDataChannel(data.peer)
 				.then((channel: RTCDataChannel) => {
 					this.channels[data.peer] = channel;
 				});
@@ -96,8 +171,11 @@ export default class P2PLobby{
 		else{
 			peerConnection.ondatachannel = (e: RTCDataChannelEvent) => {
 				console.log("Data channel received");
+				console.log(e.channel.label);
 
-				e.channel.onmessage = (e: MessageEvent) => { this.messageHandler(e); };
+				e.channel.onmessage = (msgEv: MessageEvent) => { this.messageHandler(data.peer, msgEv); };
+				this.channels[data.peer] = e.channel;
+				P2PLobby.send(e.channel, { cmd: "init", status: "OK" });
 			};
 		}
 	}
@@ -125,19 +203,30 @@ export default class P2PLobby{
 		}
 	}
 
-	private messageHandler(e: MessageEvent){
-		console.log("Received message!");
-		console.log(e);
-
+	private messageHandler(peer: string, e: MessageEvent){
 		const args = JSON.parse(e.data);
 
-		switch(args.cmd){
-			case "init":
-				this.channels[args.id] = e.target as RTCDataChannel;
+		if(args.cmd in this.channelBinds){
+			args.peer = peer;
 
-				console.log(this.channels);
-				break;
+			for(const cb of this.channelBinds[args.cmd]){
+				cb(args, e.target as RTCDataChannel);
+			}
 		}
+	}
+
+	bindToChannel(cmd: string, cb: MessageCallback){
+		if(this.channelBinds[cmd]){
+			this.channelBinds[cmd].push(cb);
+		}
+		else{
+			this.channelBinds[cmd] = [cb];
+		}
+	}
+
+	removeBindFromChannel(cmd: string, cb: MessageCallback){
+		const i = this.channelBinds[cmd].findIndex(e => e === cb)
+		this.channelBinds[cmd].splice(i, 1);
 	}
 
 	static send(channel: RTCDataChannel, data: object){
