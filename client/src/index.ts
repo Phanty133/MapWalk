@@ -20,11 +20,11 @@ document.body.onload = () => {
 		console.log(lobby.id);
 		Cookies.remove("lobby");
 	}
-	else{
+	else {
 		game = new Game();
 	}
 
-	const plyr = new Player(map.map, game);
+	const plyr = new Player(map, game);
 	const time = new Time();
 
 	game.turnMan.playerOrder = [ plyr ];

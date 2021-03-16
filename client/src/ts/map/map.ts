@@ -6,6 +6,7 @@ import playerImg from "img/player.png";
 import { MapObject } from "ts/map/mapObject";
 import Log from "ts/lib/log";
 import Player from "ts/game/Player";
+import { EventEmitter } from "events";
 
 export default class Map {
 	map: L.Map;
@@ -14,6 +15,8 @@ export default class Map {
 	player: L.Marker = null;
 	link: L.Polyline;
 	lines: L.Polyline[] = [];
+
+	events: EventEmitter = new EventEmitter();
 
 	iconInactive = new L.Icon({
 		iconUrl: cumfuck,
@@ -168,6 +171,8 @@ export default class Map {
 		this.lines.push(this.link);
 		this.link = null;
 		this.clearSelection();*/
-		Log.log("ohoto i ribalka");
+		if (!this.currentlyActive) return;
+		// Log.log("ohoto i ribalka");
+		this.events.emit("MarkerActivated", this.currentlyActive);
 	}
 }
