@@ -8,9 +8,9 @@ import Game from "./Game";
 import Time, { FrameUpdateCallback } from "./Time";
 import MathExtras from "ts/lib/MathExtras";
 
-export default class Player{
+export default class Player {
 	private router: PlayerRouter;
-	private map: L.Map;
+	private map: Map;
 	private game: Game;
 	private icon: L.Icon;
 	private initialMovePos: L.LatLng;
@@ -25,7 +25,7 @@ export default class Player{
 	pos: L.LatLng;
 	targetPos: L.LatLng;
 
-	constructor(map: L.Map, game: Game){
+	constructor(map: Map, game: Game) {
 		this.map = map;
 		this.game = game;
 		this.pos = new L.LatLng(56.509376, 21.011428);
@@ -37,9 +37,9 @@ export default class Player{
 
 		this.marker = L.marker(this.pos, {
 			icon: this.icon
-		}).addTo(this.map);
+		}).addTo(this.map.map);
 
-		this.router = new PlayerRouter(this.map, this);
+		this.router = new PlayerRouter(this.map.map, this);
 
 		this.bindOnClick();
 
@@ -48,22 +48,27 @@ export default class Player{
 		});
 	}
 
-	bindOnClick(){
-		this.map.on("click", (e: L.LeafletMouseEvent) => {
+	bindOnClick() {
+		/*this.map.on("click", (e: L.LeafletMouseEvent) => {
 			this.router.routeToPoint(e.latlng, (routeEv: L.Routing.RoutingResultEvent) => {
+				this.moveAlongRoute(routeEv.routes[0]);
+			});
+		});*/
+		this.map.events.on("MarkerActivated", (e: L.Marker) => {
+			this.router.routeToPoint(e.getLatLng(), (routeEv: L.Routing.RoutingResultEvent) => {
 				this.moveAlongRoute(routeEv.routes[0]);
 			});
 		});
 	}
 
-	moveAlongRoute(route: L.Routing.IRoute){
-		for(const p of route.coordinates){
+	moveAlongRoute(route: L.Routing.IRoute) {
+		for (const p of route.coordinates) {
 			this.moveToPoint(p);
 		}
 	}
 
-	moveToPoint(p: L.LatLng){
-		if(this.moving) {
+	moveToPoint(p: L.LatLng) {
+		if (this.moving) {
 			this.moveQueue.push(p);
 			return;
 		}
@@ -77,26 +82,26 @@ export default class Player{
 		this.moveFractionPerSecond = this.speed / this.distanceToTarget;
 	}
 
-	setPos(newPos: L.LatLng){
+	setPos(newPos: L.LatLng) {
 		this.marker.setLatLng(newPos);
-		this.map.panTo(newPos);
+		this.map.map.panTo(newPos);
 		this.pos = newPos;
 	}
 
-	private onFrame(){
-		if(this.moving){
+	private onFrame() {
+		if (this.moving) {
 			this.moveInterpolater += this.moveFractionPerSecond * (Time.deltaTime / 1000);
 
-			if(this.moveInterpolater > 1){
+			if (this.moveInterpolater > 1) {
 				this.setPos(this.targetPos);
 				this.moving = false;
 			}
-			else{
+			else {
 				this.setPos(MathExtras.lerpPoint(this.initialMovePos, this.targetPos, this.moveInterpolater));
 			}
 		}
 
-		if(this.moveQueue.length > 0 && !this.moving){
+		if (this.moveQueue.length > 0 && !this.moving) {
 			this.moveToPoint(this.moveQueue.shift());
 		}
 	}
