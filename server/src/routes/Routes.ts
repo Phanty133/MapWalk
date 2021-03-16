@@ -25,8 +25,15 @@ export default class Routes{
 	}
 
 	private join(req: Request, res: Response){
-		res.cookie("lobby", decodeURIComponent(req.query.id.toString()));
-		res.redirect("/");
+		const lobbyID = decodeURIComponent(req.query.id.toString());
+
+		if(!(lobbyID in LobbyManager.lobbies)){
+			res.sendStatus(400);
+		}
+		else{
+			res.cookie("lobby", lobbyID);
+			res.redirect("/");
+		}
 	}
 
 	private createLobby(req: Request, res: Response){

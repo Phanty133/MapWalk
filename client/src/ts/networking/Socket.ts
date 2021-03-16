@@ -1,5 +1,5 @@
 import * as socketio from "socket.io-client";
-import P2PLobby, { IceCandidate, RemoteSessionData, IceCandidateData, PeerData } from "./P2P";
+import P2PLobby, { IceCandidate, RemoteSessionData, IceCandidateData, PeerData } from "./P2PLobby";
 
 type OnGameLobbyJoined = () => void;
 
