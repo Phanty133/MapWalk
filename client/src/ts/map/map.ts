@@ -4,9 +4,10 @@ import cumfuck from "img/cumfuck.png";
 import cumfuckActive from "img/cumfuckActive.png";
 import playerImg from "img/player.png";
 import { MapObject } from "ts/map/mapObject";
-import { Log } from "ts/lib/log";
+import Log from "ts/lib/log";
+import Player from "ts/game/Player";
 
-export class Map {
+export default class Map {
 	map: L.Map;
 	markers: L.Marker[] = [];
 	currentlyActive: L.Marker = null;
@@ -27,10 +28,10 @@ export class Map {
 		iconAnchor: L.Icon.Default.prototype.options.iconAnchor
 	});
 
-	nonMetricDistanceTo(thisLatLng: L.LatLngExpression, otherLatLng: L.LatLngExpression) {
+	static nonMetricDistanceTo(thisLatLng: L.LatLngExpression, otherLatLng: L.LatLngExpression) {
 		const a = thisLatLng as L.LatLng;
 		const b = otherLatLng as L.LatLng;
-		return Math.sqrt((a.lat - b.lat) ** 2 + (a.lng - b.lng) ** 2);
+		return Math.sqrt((b.lat - a.lat) ** 2 + (b.lng - a.lng) ** 2);
 	}
 
 	constructor(id: string) {
@@ -96,10 +97,6 @@ export class Map {
 
 			this.markers.push(testMarker);
 		});
-
-		this.player = L.marker([56.509376289147944, 21.011428929964968], {
-			icon: this.iconPlayer
-		}).addTo(this.map);
 	}
 
 	/*activate(marker: L.Marker) {

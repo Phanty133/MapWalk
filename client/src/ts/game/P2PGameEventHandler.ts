@@ -1,3 +1,4 @@
+import Log from "ts/lib/log";
 import P2PLobby, { MessageData } from "ts/networking/P2PLobby";
 import Game from "./Game";
 import GameEvent, { GameEventResponse } from "./GameEvent";
@@ -7,7 +8,7 @@ type EventVerificationCallback = (event: GameEvent) => void;
 type EventCallback = (event: GameEvent) => void;
 type EventVerifier = (event: GameEvent, game?: Game) => boolean;
 
-export default class GameEventHandler{
+export default class P2PGameEventHandler{
 	private game: Game;
 	private p2p: P2PLobby;
 	private manifest: GameManifest;
@@ -31,12 +32,12 @@ export default class GameEventHandler{
 		this.manifest = this.game.manifest;
 
 		this.p2p.bindToChannel("event", async (data: MessageData.Event, channel: RTCDataChannel) => {
-			console.log("Received event: ", data);
+			Log.log("Received event: ", data);
 
 			const manifestHash: string = await this.manifest.getHash();
 
 			if(manifestHash !== data.event.manifestHash){
-				console.log("Manifests don't match");
+				Log.log("Manifests don't match");
 				P2PLobby.send(channel, { cmd: "eventResponse", response: GameEventResponse.InvalidManifest, manifestHash });
 				return;
 			}
@@ -44,7 +45,7 @@ export default class GameEventHandler{
 			let eventValid: boolean;
 
 			if(!(data.event.type in this.eventVerifiers)){
-				console.log("Unknown event!");
+				Log.log("Unknown event!");
 				eventValid = false;
 			}
 			else{
@@ -64,7 +65,7 @@ export default class GameEventHandler{
 				const textEncoder = new TextEncoder();
 
 				this.eventSignatures[data.event.id] = await crypto.subtle.sign(
-					GameEventHandler.encryptionAlgorithm,
+					P2PGameEventHandler.encryptionAlgorithm,
 					keypair.privateKey,
 					textEncoder.encode(data.event.id)
 				);
@@ -104,7 +105,7 @@ export default class GameEventHandler{
 			// Validate self hash
 
 			if(selfManifestHash !== consensusHash){
-				console.log("Own hash doesn't match the consensus hash!");
+				Log.log("Own hash doesn't match the consensus hash!");
 				this.game.checkManifest();
 				return;
 			}
@@ -115,7 +116,7 @@ export default class GameEventHandler{
 
 			for(const res of this.eventResponse){
 				if(res.manifestHash !== consensusHash){
-					console.log(`Peer's (${res.peer}) hash doesn't match the consensus hash!`);
+					Log.log(`Peer's (${res.peer}) hash doesn't match the consensus hash!`);
 					P2PLobby.send(this.p2p.channels[res.peer], { cmd: "checkManifest" });
 					continue;
 				}
@@ -124,7 +125,7 @@ export default class GameEventHandler{
 			}
 
 			if(eventOKCount >= Math.ceil(this.eventResponse.length / 2)){
-				console.log("Event was valid!");
+				Log.log("Event was valid!");
 
 				for(const res of this.eventResponse){
 					const targetChannel = this.p2p.channels[res.peer];
@@ -135,7 +136,7 @@ export default class GameEventHandler{
 				this.onEventAccepted(this.activeEvent);
 			}
 			else{
-				console.log("Event was invalid!");
+				Log.log("Event was invalid!");
 				this.onEventDeclined(this.activeEvent);
 			}
 
@@ -143,24 +144,24 @@ export default class GameEventHandler{
 		});
 
 		this.p2p.bindToChannel("eventEffect", async (data: MessageData.EventEffect) => {
-			console.log("Event effect received!");
+			Log.log("Event effect received!");
 
 			if(!data.key){
-				console.log("Authorization key missing! shitty hax0r alert");
+				Log.log("Authorization key missing! shitty hax0r alert");
 				return;
 			}
 
 			const signature = this.eventSignatures[data.event.id];
 			const dataToBeVerified = new TextEncoder().encode(data.event.id);
-			const publicKey = await crypto.subtle.importKey("jwk", data.key, GameEventHandler.encryptionAlgorithm, false, ["verify"]);
-			const result = await crypto.subtle.verify(GameEventHandler.encryptionAlgorithm, publicKey, signature, dataToBeVerified);
+			const publicKey = await crypto.subtle.importKey("jwk", data.key, P2PGameEventHandler.encryptionAlgorithm, false, ["verify"]);
+			const result = await crypto.subtle.verify(P2PGameEventHandler.encryptionAlgorithm, publicKey, signature, dataToBeVerified);
 
 			if(result){
-				console.log("Event effect authorized!");
+				Log.log("Event effect authorized!");
 				this.onEvent(data.event);
 			}
 			else{
-				console.log("Event effect unauthorized! hax0r alert");
+				Log.log("Event effect unauthorized! hax0r alert");
 			}
 
 			delete this.eventSignatures[data.event.id];
@@ -169,7 +170,7 @@ export default class GameEventHandler{
 	}
 
 	private async genEventKeypair(): Promise<CryptoKeyPair>{
-		return await crypto.subtle.generateKey(GameEventHandler.encryptionAlgorithm, true, ["sign", "verify"]);
+		return await crypto.subtle.generateKey(P2PGameEventHandler.encryptionAlgorithm, true, ["sign", "verify"]);
 	}
 
 	async dispatchEvent(event: GameEvent){
