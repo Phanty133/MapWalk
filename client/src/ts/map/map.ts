@@ -2,12 +2,17 @@ import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import cumfuck from "img/cumfuck.png";
 import cumfuckActive from "img/cumfuckActive.png";
-import { MapObject } from "ts/mapObject";
+import playerImg from "img/player.png";
+import { MapObject } from "ts/map/mapObject";
+import { Log } from "ts/lib/log";
 
 export class Map {
 	map: L.Map;
 	markers: L.Marker[] = [];
-	currentlyActive: L.Marker[] = [];
+	currentlyActive: L.Marker = null;
+	player: L.Marker = null;
+	link: L.Polyline;
+	lines: L.Polyline[] = [];
 
 	iconInactive = new L.Icon({
 		iconUrl: cumfuck,
@@ -17,9 +22,13 @@ export class Map {
 		iconUrl: cumfuckActive,
 		iconAnchor: L.Icon.Default.prototype.options.iconAnchor
 	});
+	iconPlayer = new L.Icon({
+		iconUrl: playerImg,
+		iconAnchor: L.Icon.Default.prototype.options.iconAnchor
+	});
 
 	nonMetricDistanceTo(thisLatLng: L.LatLngExpression, otherLatLng: L.LatLngExpression) {
-		const a = otherLatLng as L.LatLng;
+		const a = thisLatLng as L.LatLng;
 		const b = otherLatLng as L.LatLng;
 		return Math.sqrt((a.lat - b.lat) ** 2 + (a.lng - b.lng) ** 2);
 	}
@@ -44,6 +53,9 @@ export class Map {
 			const keyEv = e as L.LeafletKeyboardEvent;
 			if (keyEv.originalEvent.key === "shift") {
 				this.map.removeEventListener("contextmenu");
+			}
+			if (keyEv.originalEvent.key === "Enter") {
+				this.saveSelection();
 			}
 		});
 
@@ -84,15 +96,33 @@ export class Map {
 
 			this.markers.push(testMarker);
 		});
+
+		this.player = L.marker([56.509376289147944, 21.011428929964968], {
+			icon: this.iconPlayer
+		}).addTo(this.map);
 	}
 
-	activate(marker: L.Marker) {
+	/*activate(marker: L.Marker) {
 		if (this.currentlyActive.includes(marker)) {
-			if (this.currentlyActive.length > 1) {
+			if (this.currentlyActive.length > 0) {
 				this.currentlyActive[0].setIcon(this.iconInactive);
 				this.currentlyActive.shift();
 			}
 			return;
+		}
+		if (this.currentlyActive.length > 0) {
+			// Log.log(this.lines);
+			let find = false;
+			this.lines.forEach(line => {
+				const latLngs: L.LatLng[] = line.getLatLngs() as L.LatLng[];
+				// Log.log(latLngs);
+				if ((this.currentlyActive[0].getLatLng().equals(latLngs[0]) || this.currentlyActive[0].getLatLng().equals(latLngs[1]))
+					&& (marker.getLatLng().equals(latLngs[0]) || marker.getLatLng().equals(latLngs[1]))) {
+					find = true;
+				}
+			});
+			if (find)
+				return;
 		}
 		if (this.currentlyActive.length === 2) {
 			this.currentlyActive[0].setIcon(this.iconInactive);
@@ -100,12 +130,47 @@ export class Map {
 		}
 		marker.setIcon(this.iconActive);
 		this.currentlyActive.push(marker);
+		if (this.currentlyActive.length === 2) {
+			if (this.link) {
+				this.link.remove();
+			}
+			this.link = new L.Polyline([this.currentlyActive[0].getLatLng(), this.currentlyActive[1].getLatLng()], {
+				color: "red"
+			}).addTo(this.map);
+		}
+	}*/
+
+	activate(marker: L.Marker) {
+		if (this.currentlyActive != null) {
+			this.currentlyActive.setIcon(this.iconInactive);
+		}
+		this.currentlyActive = marker;
+		this.currentlyActive.setIcon(this.iconActive);
+		if (this.link) {
+			this.link.remove();
+		}
+		this.link = new L.Polyline([this.player.getLatLng(), this.currentlyActive.getLatLng()], {
+			color: "red"
+		}).addTo(this.map);
 	}
 
+
+
 	clearSelection() {
-		this.currentlyActive.forEach(marker => {
-			marker.setIcon(this.iconInactive);
-		});
-		this.currentlyActive = [];
+		this.currentlyActive.setIcon(this.iconInactive);
+		if (this.link) {
+			this.link.remove();
+		}
+		this.currentlyActive = null;
+	}
+
+	saveSelection() {
+		/*if(this.saved == null) {
+			this.saved = this.currentlyActive;
+		}
+		this.lines.push(this.link);
+		this.link = null;
+		this.clearSelection();*/
+		Log.log("ohoto i ribalka");
 	}
 }
