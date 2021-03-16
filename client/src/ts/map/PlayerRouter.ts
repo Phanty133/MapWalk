@@ -43,4 +43,8 @@ export default class PlayerRouter{
 		.on("routesfound", cb)
 		.addTo(this.map);
 	}
+
+	clearRoute(){
+		this.activeRoute.remove();
+	}
 }

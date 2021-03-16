@@ -4,8 +4,16 @@ import Lobby from "ts/networking/Lobby";
 import GameManifest from "./GameManifest";
 import P2PGameEventHandler from "./P2PGameEventHandler";
 import Log from "ts/lib/log";
+import TurnManager from "./TurnManager";
 
 type ManifestCheckCompleteCallback = () => void;
+
+export enum GameState{
+	Idle,
+	PlayerAction, // The player(s) can do something
+	Loading, // The game is waiting for something
+	Paused // The game is paused obviously
+}
 
 export default class Game{
 	lobby: Lobby;
@@ -16,6 +24,8 @@ export default class Game{
 	private receivedManifests: Record<string, string> = {}; // {PeerID:manifestHash}
 	public onManifestCheckComplete: ManifestCheckCompleteCallback = () => {};
 	isMultiplayer: boolean;
+	state: GameState = GameState.Idle;
+	turnMan: TurnManager;
 
 	constructor(lobby?: Lobby){
 		if(lobby){
@@ -78,6 +88,7 @@ export default class Game{
 			this.isMultiplayer = false;
 		}
 
+		this.turnMan = new TurnManager();
 		this.manifest = new GameManifest();
 	}
 

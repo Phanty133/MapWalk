@@ -2,7 +2,7 @@ import "css/index.css"
 import Map from "ts/map/map"
 import Lobby from "ts/networking/Lobby"
 import * as Cookies from "js-cookie"
-import Game from "ts/game/Game"
+import Game, { GameState } from "ts/game/Game"
 import Player from "ts/game/Player"
 import Time from "ts/game/Time"
 
@@ -26,4 +26,7 @@ document.body.onload = () => {
 
 	const plyr = new Player(map.map, game);
 	const time = new Time();
+
+	game.turnMan.playerOrder = [ plyr ];
+	game.state = GameState.PlayerAction;
 };

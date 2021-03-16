@@ -4,9 +4,16 @@ import PlayerRouter from "ts/map/PlayerRouter";
 import playerImg from "img/player.png";
 import "leaflet-routing-machine";
 import Map from "ts/map/map";
-import Game from "./Game";
-import Time, { FrameUpdateCallback } from "./Time";
+import Game, { GameState } from "./Game";
+import Time from "./Time";
 import MathExtras from "ts/lib/MathExtras";
+
+export interface PlayerStats{
+	energy: number;
+	score: number;
+	visibility: number;
+	walkedDistance: number;
+}
 
 export default class Player{
 	private router: PlayerRouter;
@@ -20,15 +27,24 @@ export default class Player{
 	private moveQueue: L.LatLng[] = [];
 
 	speed = 0.005; // Units/sec
+	metersPerEnergyUnit = 10;
 	moving = false;
 	marker: L.Marker;
 	pos: L.LatLng;
 	targetPos: L.LatLng;
+	active = false; // Whether the player can perform an action
+	stats: PlayerStats;
 
 	constructor(map: L.Map, game: Game){
 		this.map = map;
 		this.game = game;
 		this.pos = new L.LatLng(56.509376, 21.011428);
+		this.stats = {
+			energy: 100,
+			score: 0,
+			visibility: 0.01, // The radius of visible area in coord units
+			walkedDistance: 0
+		};
 
 		this.icon = new L.Icon({
 			iconUrl: playerImg,
@@ -50,9 +66,28 @@ export default class Player{
 
 	bindOnClick(){
 		this.map.on("click", (e: L.LeafletMouseEvent) => {
-			this.router.routeToPoint(e.latlng, (routeEv: L.Routing.RoutingResultEvent) => {
-				this.moveAlongRoute(routeEv.routes[0]);
-			});
+			this.moveToTarget(e.latlng);
+		});
+	}
+
+	moveToTarget(target: L.LatLng){
+		if(this.moveQueue.length > 0) return;
+		if(this.game.state !== GameState.PlayerAction) return;
+		if(this.game.turnMan.activePlayer !== this) return;
+		if(Map.nonMetricDistanceTo(this.pos, target) > this.stats.visibility) return;
+
+		this.router.routeToPoint(target, (routeEv: L.Routing.RoutingResultEvent) => {
+			const distance = routeEv.routes[0].summary.totalDistance;
+
+			if(distance > this.stats.energy * this.metersPerEnergyUnit) {
+				this.router.clearRoute();
+				return;
+			}
+
+			this.stats.walkedDistance += distance;
+			this.drainEnergy(distance / this.metersPerEnergyUnit);
+			Log.log("Energy: ", this.stats.energy);
+			this.moveAlongRoute(routeEv.routes[0]);
 		});
 	}
 
@@ -83,6 +118,16 @@ export default class Player{
 		this.pos = newPos;
 	}
 
+	cancelMove(){
+		this.moveQueue = [];
+		this.moving = false;
+		this.router.clearRoute();
+	}
+
+	drainEnergy(amount: number){
+		this.stats.energy -= amount;
+	}
+
 	private onFrame(){
 		if(this.moving){
 			this.moveInterpolater += this.moveFractionPerSecond * (Time.deltaTime / 1000);
@@ -90,6 +135,10 @@ export default class Player{
 			if(this.moveInterpolater > 1){
 				this.setPos(this.targetPos);
 				this.moving = false;
+
+				if(this.moveQueue.length === 0){
+					this.router.clearRoute();
+				}
 			}
 			else{
 				this.setPos(MathExtras.lerpPoint(this.initialMovePos, this.targetPos, this.moveInterpolater));
