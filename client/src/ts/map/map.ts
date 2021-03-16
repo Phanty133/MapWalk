@@ -144,11 +144,14 @@ export default class Map {
 		if (this.currentlyActive != null) {
 			this.currentlyActive.setIcon(this.iconInactive);
 		}
+
 		this.currentlyActive = marker;
 		this.currentlyActive.setIcon(this.iconActive);
+
 		if (this.link) {
 			this.link.remove();
 		}
+
 		this.link = new L.Polyline([this.player.getLatLng(), this.currentlyActive.getLatLng()], {
 			color: "red"
 		}).addTo(this.map);

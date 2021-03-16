@@ -55,6 +55,7 @@ export default class Player{
 			icon: this.icon
 		}).addTo(this.map.map);
 
+		this.map.player = this.marker;
 		this.router = new PlayerRouter(this.map.map, this);
 
 		this.bindOnClick();
@@ -65,7 +66,7 @@ export default class Player{
 	}
 
 	bindOnClick(){
-		this.map.on("click", (e: L.LeafletMouseEvent) => {
+		this.map.map.on("click", (e: L.LeafletMouseEvent) => {
 			this.moveToTarget(e.latlng);
 		});
 
