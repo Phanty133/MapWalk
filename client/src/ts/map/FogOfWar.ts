@@ -4,27 +4,9 @@ import * as L from "leaflet";
 import Log from "ts/lib/log";
 import "leaflet-customlayer";
 
-interface FogOfWarPrecalc{
-	visibilityTrigFunc: L.Point[];
-	angleBetweenPoints: number;
-	minDistanceBetweenPoints: number;
-}
-
 export default class FogOfWar{
 	player: Player;
 	map: Map;
-	private svgContainer: SVGElement;
-	private svgOverlay: L.SVGOverlay;
-	private visibilityMask: SVGCircleElement;
-	private svgBounds: L.LatLngBounds;
-	private svgTopLeft: L.Point;
-	private svgBottomRight: L.Point;
-	private discoveryVertices = 8; // How many points on the visibility mask should the discovery method check
-	private visibilityRadius: number;
-	private discoveryPath: SVGGeometryElement;
-	private visibilityPos: L.Point;
-	private precalc: FogOfWarPrecalc;
-	private discoveryData: SVGPoint[] = [];
 	private ctx: CanvasRenderingContext2D;
 	private canvasSize: L.Point;
 	private canvasOffset: L.Point;
@@ -84,7 +66,7 @@ export default class FogOfWar{
 			if(initial){
 				initial = false;
 
-				this.ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
+				this.ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
 				this.ctx.fillRect(0, 0, canvas.width, canvas.height);
 			}
 		});

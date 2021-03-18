@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>M4pW4lk | Mode select</title>
+</head>
+<body>
+	<h1 id="gameTitle">M4pW4lk</h1>
+
+	<div id="mainSuperContainer">
+		<div id="mainContainer">
+			<div id="modeSelectContainer" data-menu="modeSelect" class="preSelectionContainer">
+				<button id="btnSP" class="button">Singleplayer</button>
+				<button id="btnMP" class="button" data-goto="mpUsername">Multiplayer</button>
+			</div>
+
+			<div id="mpUsernameContainer" data-menu="mpUsername" class="inputMenuContainer preSelectionContainer">
+				<input type="text" placeholder="Username" id="mpUsernameInput"/>
+				<button class="button" data-goto="modeSelect">Back</button>
+				<button class="button" data-goto="mpActionSelect">Ok</button>
+			</div>
+
+			<div id="mpModeSelectContainer" data-menu="mpActionSelect" class="preSelectionContainer">
+				<button class="button" id="btnCreateLobby">Create lobby</button>
+				<button class="button" data-goto="mpJoinLobby">Join lobby</button>
+				<button class="button" data-goto="mpUsername">Back</button>
+			</div>
+
+			<div id="mpJoinLobbyContainer" data-menu="mpJoinLobby" class="inputMenuContainer preSelectionContainer">
+				<input type="text" placeholder="Lobby ID" id="mpLobbyInput">
+				<button class="button" data-goto="mpActionSelect">Back</button>
+				<button class="button" id="mpJoinLobbyOK">Ok</button>
+			</div>
+		</div>
+	</div>
+
+	<div id="mapBG">
+		<div id="map"></div>
+	</div>
+</body>
+</html>

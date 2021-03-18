@@ -40,7 +40,7 @@ export default class Map {
 	constructor(id: string) {
 
 		this.map = L.map(id, {
-			center: [56.50475439537235, 21.010924221837993], // Liepaaja be like: [56.50475439537235, 21.010924221837993]
+			center: [56.504754, 21.010924], // Liepaaja be like: [56.50475439537235, 21.010924221837993]
 			zoom: 16,
 			zoomControl: false,
 			scrollWheelZoom: false,

@@ -13,6 +13,7 @@ export default class Routes{
 		this.baseDir = path.join(__dirname, "..", "client");
 
 		this.router.get("/", (req, res) => { this.index(req, res); });
+		this.router.get("/game", (req, res) => { this.game(req, res); })
 		this.router.get("/join", (req, res) => { this.join(req, res); });
 		this.router.get("/createLobby", (req, res) => { this.createLobby(req, res); });
 
@@ -24,6 +25,10 @@ export default class Routes{
 		res.sendFile(path.join(this.baseDir, "index.html"));
 	}
 
+	private game(req: Request, res: Response){
+		res.sendFile(path.join(this.baseDir, "game.html"));
+	}
+
 	private join(req: Request, res: Response){
 		const lobbyID = decodeURIComponent(req.query.id.toString());
 
@@ -32,13 +37,13 @@ export default class Routes{
 		}
 		else{
 			res.cookie("lobby", lobbyID);
-			res.redirect("/");
+			res.redirect("/game");
 		}
 	}
 
 	private createLobby(req: Request, res: Response){
 		const newLobby: Lobby = LobbyManager.createLobby();
 		res.cookie("lobby", newLobby.id);
-		res.redirect("/");
+		res.redirect("/game");
 	}
 }

@@ -15,6 +15,12 @@ export enum GameState{
 	Paused // The game is paused obviously
 }
 
+export enum GameMode{
+	TimeAttack,
+	HundredPercent,
+	HundredPercentClock
+}
+
 export default class Game{
 	lobby: Lobby;
 	p2p: P2PLobby;
@@ -26,6 +32,7 @@ export default class Game{
 	isMultiplayer: boolean;
 	state: GameState = GameState.Idle;
 	turnMan: TurnManager;
+	gamemode: GameMode;
 
 	constructor(lobby?: Lobby){
 		if(lobby){
