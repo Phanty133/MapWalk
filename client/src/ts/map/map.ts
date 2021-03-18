@@ -3,6 +3,7 @@ import "leaflet/dist/leaflet.css";
 import cumfuck from "img/cumfuck.png";
 import cumfuckActive from "img/cumfuckActive.png";
 import playerImg from "img/player.png";
+import posMarkImg from "img/hue-zero-marker.png";
 import { MapObject } from "ts/map/mapObject";
 import Log from "ts/lib/log";
 import Player from "ts/game/Player";
@@ -12,7 +13,8 @@ export default class Map {
 	map: L.Map;
 	markers: L.Marker[] = [];
 	currentlyActive: L.Marker = null;
-	player: L.Marker = null;
+	posMarker: L.Marker = null;
+	player: Player = null;
 	link: L.Polyline;
 	lines: L.Polyline[] = [];
 
@@ -52,6 +54,10 @@ export default class Map {
 		this.map.addEventListener("contextmenu", (e) => {
 			this.clearSelection();
 		});
+
+		this.map.addEventListener("dbclick", (e) => {
+			this.click(e as L.LeafletMouseEvent);
+		})
 
 		this.map.addEventListener("keydown", (e) => {
 			const keyEv = e as L.LeafletKeyboardEvent;
@@ -144,6 +150,10 @@ export default class Map {
 		if (this.currentlyActive != null) {
 			this.currentlyActive.setIcon(this.iconInactive);
 		}
+		if (this.posMarker) {
+			this.posMarker.remove();
+			this.posMarker = null;
+		}
 
 		this.currentlyActive = marker;
 		this.currentlyActive.setIcon(this.iconActive);
@@ -152,19 +162,59 @@ export default class Map {
 			this.link.remove();
 		}
 
-		this.link = new L.Polyline([this.player.getLatLng(), this.currentlyActive.getLatLng()], {
-			color: "red"
+		this.player.traceRoute(marker.getLatLng(), (route: L.Routing.IRoute) => {
+			/*this.link = new L.Polyline(route.coordinates, {
+				color: "red"
+			}).addTo(this.map);*/
+		});
+	}
+
+	click(ev: L.LeafletMouseEvent) {
+		if (ev.originalEvent.button !== 0) return;
+		if (this.currentlyActive != null) {
+			this.currentlyActive.setIcon(this.iconInactive);
+			this.currentlyActive = null;
+		}
+		if (this.posMarker) {
+			this.posMarker.remove();
+			this.posMarker = null;
+		}
+
+		const tempIco = new L.Icon({
+			iconUrl: posMarkImg,
+			iconAnchor: L.Icon.Default.prototype.options.iconAnchor
+		});
+
+		this.posMarker = L.marker(ev.latlng, {
+			icon: tempIco
 		}).addTo(this.map);
+
+		if (this.link) {
+			this.link.remove();
+		}
+
+		this.player.traceRoute(ev.latlng, (route: L.Routing.IRoute) => {
+			// Log.log(route);
+			/*this.link = new L.Polyline(route.coordinates, {
+				color: "red"
+			}).addTo(this.map);*/
+		});
 	}
 
 
 
 	clearSelection() {
-		this.currentlyActive.setIcon(this.iconInactive);
+		if (this.posMarker) {
+			this.posMarker.remove();
+			this.posMarker = null;
+		}
 		if (this.link) {
 			this.link.remove();
 		}
-		this.currentlyActive = null;
+		if (this.currentlyActive) {
+			this.currentlyActive.setIcon(this.iconInactive);
+			this.currentlyActive = null;
+		}
 	}
 
 	saveSelection() {
@@ -174,6 +224,11 @@ export default class Map {
 		this.lines.push(this.link);
 		this.link = null;
 		this.clearSelection();*/
+		if (this.posMarker) {
+			this.events.emit("MarkerActivated", this.posMarker);
+			this.posMarker.remove();
+			this.posMarker = null;
+		}
 		if (!this.currentlyActive) return;
 		// Log.log("ohoto i ribalka");
 		this.events.emit("MarkerActivated", this.currentlyActive);

@@ -8,14 +8,16 @@ import Game, { GameState } from "./Game";
 import Time from "./Time";
 import MathExtras from "ts/lib/MathExtras";
 
-export interface PlayerStats{
+type TracingCallback = (route: L.Routing.IRoute) => void;
+
+export interface PlayerStats {
 	energy: number;
 	score: number;
 	visibility: number;
 	walkedDistance: number;
 }
 
-export default class Player{
+export default class Player {
 	private router: PlayerRouter;
 	private map: Map;
 	private game: Game;
@@ -55,7 +57,7 @@ export default class Player{
 			icon: this.icon
 		}).addTo(this.map.map);
 
-		this.map.player = this.marker;
+		this.map.player = this;
 		this.router = new PlayerRouter(this.map.map, this);
 
 		this.bindOnClick();
@@ -65,10 +67,10 @@ export default class Player{
 		});
 	}
 
-	bindOnClick(){
-		this.map.map.on("click", (e: L.LeafletMouseEvent) => {
+	bindOnClick() {
+		/*this.map.map.on("click", (e: L.LeafletMouseEvent) => {
 			this.moveToTarget(e.latlng);
-		});
+		});*/
 
 		this.map.events.on("MarkerActivated", (e: L.Marker) => {
 			this.router.routeToPoint(e.getLatLng(), (routeEv: L.Routing.RoutingResultEvent) => {
@@ -77,16 +79,16 @@ export default class Player{
 		});
 	}
 
-	moveToTarget(target: L.LatLng){
-		if(this.moveQueue.length > 0) return;
-		if(this.game.state !== GameState.PlayerAction) return;
-		if(this.game.turnMan.activePlayer !== this) return;
-		if(Map.nonMetricDistanceTo(this.pos, target) > this.stats.visibility) return;
+	moveToTarget(target: L.LatLng) {
+		if (this.moveQueue.length > 0) return;
+		if (this.game.state !== GameState.PlayerAction) return;
+		if (this.game.turnMan.activePlayer !== this) return;
+		if (Map.nonMetricDistanceTo(this.pos, target) > this.stats.visibility) return;
 
 		this.router.routeToPoint(target, (routeEv: L.Routing.RoutingResultEvent) => {
 			const distance = routeEv.routes[0].summary.totalDistance;
 
-			if(distance > this.stats.energy * this.metersPerEnergyUnit) {
+			if (distance > this.stats.energy * this.metersPerEnergyUnit) {
 				this.router.clearRoute();
 				return;
 			}
@@ -125,25 +127,35 @@ export default class Player{
 		this.pos = newPos;
 	}
 
-	cancelMove(){
+	cancelMove() {
 		this.moveQueue = [];
 		this.moving = false;
 		this.router.clearRoute();
 	}
 
-	drainEnergy(amount: number){
+	drainEnergy(amount: number) {
 		this.stats.energy -= amount;
 	}
 
-	private onFrame(){
-		if(this.moving){
+	traceRoute(targetPos: L.LatLng, cb: TracingCallback = () => { }) {
+		// let route = null;
+		this.router.routeToPoint(targetPos, (routeEv: L.Routing.RoutingResultEvent) => {
+			// route = routeEv.routes[0];
+			if (routeEv.routes.length < 1) return;
+			cb.call(null, routeEv.routes[0]);
+		})
+		// return route;
+	}
+
+	private onFrame() {
+		if (this.moving) {
 			this.moveInterpolater += this.moveFractionPerSecond * (Time.deltaTime / 1000);
 
 			if (this.moveInterpolater > 1) {
 				this.setPos(this.targetPos);
 				this.moving = false;
 
-				if(this.moveQueue.length === 0){
+				if (this.moveQueue.length === 0) {
 					this.router.clearRoute();
 				}
 			}
