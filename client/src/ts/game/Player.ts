@@ -7,6 +7,7 @@ import Map from "ts/map/map";
 import Game, { GameState } from "./Game";
 import Time from "./Time";
 import MathExtras from "ts/lib/MathExtras";
+import FogOfWar from "ts/map/FogOfWar";
 
 type TracingCallback = (route: L.Routing.IRoute) => void;
 
@@ -36,17 +37,21 @@ export default class Player {
 	targetPos: L.LatLng;
 	active = false; // Whether the player can perform an action
 	stats: PlayerStats;
+	fow: FogOfWar;
 
 	constructor(map: Map, game: Game) {
 		this.map = map;
 		this.game = game;
 		this.pos = new L.LatLng(56.509376, 21.011428);
 		this.stats = {
-			energy: 100,
+			energy: 10100000,
 			score: 0,
-			visibility: 0.01, // The radius of visible area in coord units
+			visibility: 0.0025, // The radius of visible area in coord units
 			walkedDistance: 0
 		};
+		this.fow = new FogOfWar(this.map, this);
+		this.fow.setVisibilityRadius(this.stats.visibility);
+		this.fow.setVisibilityPos(this.pos);
 
 		this.icon = new L.Icon({
 			iconUrl: playerImg,
@@ -70,7 +75,8 @@ export default class Player {
 	bindOnClick() {
 		/*this.map.map.on("click", (e: L.LeafletMouseEvent) => {
 			this.moveToTarget(e.latlng);
-		});*/
+			Log.log(e);
+		}); */
 
 		this.map.events.on("MarkerActivated", (e: L.Marker) => {
 			this.router.routeToPoint(e.getLatLng(), (routeEv: L.Routing.RoutingResultEvent) => {
@@ -95,7 +101,7 @@ export default class Player {
 
 			this.stats.walkedDistance += distance;
 			this.drainEnergy(distance / this.metersPerEnergyUnit);
-			Log.log("Energy: ", this.stats.energy);
+			Log.log("Energy: " + this.stats.energy);
 			this.moveAlongRoute(routeEv.routes[0]);
 		});
 	}
@@ -125,6 +131,7 @@ export default class Player {
 		this.marker.setLatLng(newPos);
 		this.map.map.panTo(newPos);
 		this.pos = newPos;
+		this.fow.setVisibilityPos(newPos);
 	}
 
 	cancelMove() {

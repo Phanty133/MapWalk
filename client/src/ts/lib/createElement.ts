@@ -1,64 +1,45 @@
 interface ElementAttributes{
-	class: string,
-	id: string,
-	parent: HTMLElement,
-	textContent: string,
-	attr: Record<string, string>,
-	events: Record<string, Function>,
-	style: Record<string, Function>
+	class?: string,
+	id?: string,
+	name?: string,
+	value?: string,
+	parent?: HTMLElement,
+	textContent?: string,
+	attr?: Record<string, string>,
+	events?: Record<string, (e: Event) => void>,
+	style?: Record<string, string>
 }
 
-function createElement(tag: string, options?: ElementAttributes){ // Just a shorthand for creating elements
+export default function createElement(tag: string, options?: ElementAttributes): HTMLElement{ // Just a shorthand for creating elements
 	const el = document.createElement(tag);
 
 	if(options.class) el.className = options.class;
 	if(options.id) el.id = options.id;
 	if(options.parent) options.parent.appendChild(el);
 	if(options.textContent) el.textContent = options.textContent;
+	if(options.name) el.setAttribute("name", options.name);
+	if(options.value) (el as HTMLInputElement).value = options.value;
 
 	if(options.attr) {
+		// tslint:disable-next-line: forin
 		for(const attr in options.attr){
 			el.setAttribute(attr, options.attr[attr]);
 		}
 	}
 
 	if(options.events){
+		// tslint:disable-next-line: forin
 		for(const event in options.events){
-			el.addEventListener(event, (e: Event) => { options.events[event].call(e) });
+			el.addEventListener(event, (e: Event) => { options.events[event](e); });
 		}
 	}
 
 	if(options.style){
+		// tslint:disable-next-line: forin
 		for(const style in options.style){
-			(<any>el.style)[style] = options.style[style];
+			(el.style as any)[style] = options.style[style];
 		}
 	}
 
 	return el;
-}
-
-interface Option{
-	text: string;
-	value?: string;
-}
-
-function createSelect(parent: HTMLElement, optionArr: Option[]){ // Just a shorthand for creating select elements
-	let selEl;
-	
-	if(parent.tagName.toLowerCase() === "select"){
-		selEl = parent;
-	}
-	else{
-		selEl = document.createElement("select");
-		parent.appendChild(selEl);
-	}
-
-	for(const opt of optionArr){
-		const optEl = document.createElement("option");
-		optEl.textContent = opt.text;
-		optEl.value = opt.value ? opt.value : opt.text;
-		selEl.appendChild(optEl);
-	}
-
-	return selEl;
 }

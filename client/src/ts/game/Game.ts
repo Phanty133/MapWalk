@@ -15,6 +15,12 @@ export enum GameState{
 	Paused // The game is paused obviously
 }
 
+export enum GameMode{
+	TimeAttack,
+	HundredPercent,
+	HundredPercentClock
+}
+
 export default class Game{
 	lobby: Lobby;
 	p2p: P2PLobby;
@@ -26,6 +32,7 @@ export default class Game{
 	isMultiplayer: boolean;
 	state: GameState = GameState.Idle;
 	turnMan: TurnManager;
+	gamemode: GameMode;
 
 	constructor(lobby?: Lobby){
 		if(lobby){
@@ -35,7 +42,7 @@ export default class Game{
 			this.eventHandler = new P2PGameEventHandler(this);
 
 			this.eventHandler.onEvent = (e: GameEvent) => {
-				Log.log("Game event received: ", e.type);
+				Log.log("Game event received: " + e.type);
 
 				if(this.manifestCheckActive){
 					// Put the event in a queue

@@ -1,6 +1,14 @@
+:root{
+	--titleColor: #1976d2;
+	--secondaryColor: #0097a7;
+	--tertiaryColor: #FFF;
+	--backgroundColor: #FFF;
+}
+
 body{
 	margin: 0;
 	padding: 0;
+	font-family: sans-serif;
 }
 
 #map{
@@ -10,4 +18,274 @@ body{
 
 .leaflet-routing-container{
 	display: none;
+}
+
+#gameTitle{
+	text-align: center;
+	font-size: 5vw;
+	color: var(--titleColor);
+	margin-bottom: 0.25em;
+}
+
+#mainSuperContainer{
+	width: 100vw;
+	display: flex;
+	justify-content: center;
+}
+
+#mainContainer{
+	max-width: 75vw;
+	width: fit-content;
+	padding: 1vw;
+	-webkit-box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.5);
+	-moz-box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.5);
+	box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.5);
+	background-color: var(--backgroundColor);
+}
+
+.preSelectionContainer{
+	display: none;
+	grid-auto-flow: row;
+	min-width: 15vw;
+	row-gap: 5px;
+}
+
+.preSelectionContainer button{
+	border: none;
+	border-radius: 3px;
+	font-size: 16pt;
+	padding: 0.5em;
+	width: 100%;
+	cursor: pointer;
+	background-color: var(--secondaryColor);
+	color: white;
+	height: 1.75em;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	transition: filter 0.3s;
+}
+
+#modeSelectContainer button:hover{
+	filter: brightness(85%);
+}
+
+.inputMenuContainer{
+	grid-template-areas: "input input" "back ok";
+	column-gap: 5px;
+}
+
+.inputMenuContainer > input{
+	grid-area: input;
+	border: 1px solid grey;
+	font-size: 2em;
+	margin-bottom: 2vh;
+}
+
+#mapBG{
+	position: absolute;
+	top: 0;
+	z-index: -1;
+}
+
+#game{
+	display: none;
+}
+
+.settingsSelection{
+	display: grid;
+	grid-auto-flow: row;
+	text-align: center;
+	font-size: 14pt;
+}
+
+.settingsSelection > h2{
+	font-weight: normal;
+	font-size: 2em;
+	margin-bottom: 0.5em;
+}
+
+#settingsSelection > [data-startgame]{
+	margin-top: 1em;
+	color: white;
+	background-color: var(--titleColor);
+	font-size: 1.5em;
+}
+
+.selectionContainer{
+	display: grid;
+	grid-auto-flow: row;
+	width: calc(100% - 10px);
+	padding: 5px;
+	row-gap: 5px;
+
+	margin-bottom: 1em;
+}
+
+.selectionContainer > button{
+	border-radius: 3px;
+	text-align: center;
+	padding: 5px;
+	background-color: var(--secondaryColor);
+	color: white;
+	font-size: 1em;
+}
+
+.selectionContainer > button[data-selected]{
+	background-color: #388e3c;
+	cursor: initial;
+}
+
+.selectionContainer > button[data-selected]:hover{
+	filter: none !important;
+}
+
+.button{
+	border-radius: 3px;
+	cursor: pointer;
+	border: none;
+	transition: filter 0.3s;
+}
+
+.button:hover{
+	filter: brightness(85%);
+}
+
+.objectSelection{
+	display: grid;
+	grid-auto-flow: row;
+}
+
+.settingsSubtitle{
+	font-size: 1.5em;
+	margin-bottom: 0.25em;
+}
+
+#p2pLobby{
+	display: none;
+	grid-template-areas: "header header" "settings users" "chat users" "chat buttons";
+	grid-template-columns: 25vw 50vw;
+	grid-template-rows: auto 32.5vh 27.5vh auto;
+	gap: 5px;
+
+	width: 75vw;
+}
+
+#p2pLobby > div{
+	border: 1px solid grey;
+	padding: 10px;
+}
+
+#p2pLobby [data-sectionTitle]{
+	font-size: 18pt;
+	margin-bottom: 0.5em;
+	border-bottom: 1px solid lightgrey;
+}
+
+#p2pHeader{
+	grid-area: header;
+	text-align: center;
+	font-size: 24pt;
+}
+
+#p2pSettings{
+	grid-area: settings;
+	display: grid;
+	grid-auto-flow: row;
+	grid-auto-rows: auto 1fr;
+	row-gap: 0.75em;
+	overflow: hidden;
+}
+
+#lobbySettingsSelection{
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+#p2pChat{
+	grid-area: chat;
+	display: grid;
+	grid-auto-flow: row;
+	overflow-y: auto;
+
+	grid-template-rows: auto 1fr auto;
+}
+
+#p2pUsers{
+	grid-area: users;
+	display: grid;
+	grid-auto-flow: row;
+	grid-auto-rows: min-content;
+	row-gap: 0.5em;
+}
+
+.p2pUserEntry{
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-areas: "username host spacing1 color spacing2 hostBtn kick";
+	column-gap: 1em;
+	grid-template-columns: 4fr 1fr 6fr 2fr 2fr 2fr 1fr;
+
+	border-bottom: 1px solid lightgrey;
+	padding-bottom: 0.5em;
+}
+
+.p2pUserEntry:last-child{
+	border: none;
+}
+
+.p2pUserEntry button{
+	width: fit-content;
+}
+
+.p2pUserEntry [data-username]{
+	grid-area: username;
+}
+
+.p2pUserEntry [data-host]{
+	grid-area: host;
+	color: var(--titleColor);
+}
+
+.p2pUserEntry [data-color]{
+	grid-area: color;
+}
+
+.p2pUserEntry [data-kick]{
+	grid-area: kick;
+	background-color: #d32f2f;
+	color: white;
+}
+
+.p2pUserEntry [data-hostbtn]{
+	grid-area: hostBtn;
+	background-color: #0097a7;
+	color: white;
+}
+
+.colorSelect{
+	letter-spacing: -0.175em;
+}
+
+.colorSelect:disabled{
+	color: initial;
+}
+
+.colorSelect option:disabled{
+	background-color: grey;
+}
+
+#p2pButtons{
+	grid-area: buttons;
+	grid-auto-columns: min-content;
+	column-gap: 10px;
+}
+
+#p2pButtons button{
+	width: 15vw;
+	font-size: 18pt;
+	color: white;
+	background-color: var(--titleColor);
+	height: 100%;
 }

@@ -32,7 +32,7 @@ export default class P2PGameEventHandler{
 		this.manifest = this.game.manifest;
 
 		this.p2p.bindToChannel("event", async (data: MessageData.Event, channel: RTCDataChannel) => {
-			Log.log("Received event: ", data);
+			Log.log("Received event: " + data);
 
 			const manifestHash: string = await this.manifest.getHash();
 

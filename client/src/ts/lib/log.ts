@@ -1,8 +1,8 @@
 export default class Log {
-	static log(...msg: any[]) {
+	static log(msg: any) {
 		// \/ when tslint is dumb as fuck
 		// tslint:disable-next-line: no-console
-		console.table(msg.join(""));
+		console.table(msg);
 	}
 
 	static error(...msg: any[]){

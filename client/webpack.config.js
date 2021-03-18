@@ -5,17 +5,34 @@ const outputPath = path.resolve(__dirname, "client");
 
 module.exports = {
 	mode: "development",
-	entry: path.resolve(__dirname, "src", "index.ts"),
+	entry: {
+		modeSelect: {
+			import: path.resolve(__dirname, "src", "modeSelectEntry.ts"),
+			dependOn: "shared"
+		},
+		game: {
+			import: path.resolve(__dirname, "src", "index.ts"),
+			dependOn: "shared"
+		},
+		shared: ["leaflet", "js-cookie"]
+	},
 	output: {
-		filename: "bundle.js",
+		filename: "[name].bundle.js",
 		path: outputPath,
 		clean: true
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
 			hash: true,
-			template: path.resolve(__dirname, "src", "html", "index.ejs"),
-			filename: path.resolve(outputPath, "index.html")
+			template: path.resolve(__dirname, "src", "html", "game.ejs"),
+			filename: path.resolve(outputPath, "game.html"),
+			chunks: ["game", "shared"]
+		}),
+		new HtmlWebpackPlugin({
+			hash: true,
+			template: path.resolve(__dirname, "src", "html", "modeSelect.ejs"),
+			filename: path.resolve(outputPath, "index.html"),
+			chunks: ["modeSelect", "shared"]
 		})
 	],
 	devtool: "inline-source-map",
@@ -46,7 +63,8 @@ module.exports = {
 			css: path.resolve(__dirname, "src", "css"),
 			ts: path.resolve(__dirname, "src", "ts"),
 			fonts: path.resolve(__dirname, "src", "fonts"),
-			img: path.resolve(__dirname, "src", "img")
+			img: path.resolve(__dirname, "src", "img"),
+			js: path.resolve(__dirname, "src", "js")
 		}
 	}
 };
