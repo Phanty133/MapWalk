@@ -46,7 +46,8 @@ module.exports = {
 			css: path.resolve(__dirname, "src", "css"),
 			ts: path.resolve(__dirname, "src", "ts"),
 			fonts: path.resolve(__dirname, "src", "fonts"),
-			img: path.resolve(__dirname, "src", "img")
+			img: path.resolve(__dirname, "src", "img"),
+			js: path.resolve(__dirname, "src", "js")
 		}
 	}
 };

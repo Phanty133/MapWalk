@@ -35,7 +35,7 @@ export default class Game{
 			this.eventHandler = new P2PGameEventHandler(this);
 
 			this.eventHandler.onEvent = (e: GameEvent) => {
-				Log.log("Game event received: ", e.type);
+				Log.log("Game event received: " + e.type);
 
 				if(this.manifestCheckActive){
 					// Put the event in a queue

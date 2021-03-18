@@ -41,11 +41,13 @@ export default class Map {
 
 		this.map = L.map(id, {
 			center: [56.50475439537235, 21.010924221837993], // Liepaaja be like: [56.50475439537235, 21.010924221837993]
-			zoom: 15,
-			minZoom: 13,
+			zoom: 16,
+			zoomControl: false,
+			scrollWheelZoom: false,
+			// minZoom: 13,
 			maxBounds: L.latLngBounds(
-				L.latLng(56.46671450384127, 20.942759323837972),
-				L.latLng(56.56357049044075, 21.106128222201132)
+				L.latLng(56.47, 20.95),
+				L.latLng(56.56, 21.1)
 			)
 		});
 
@@ -80,9 +82,9 @@ export default class Map {
 		L.control.scale().addTo(this.map);
 
 		const objects = [
-			new MapObject([56.51292213894928, 21.012326233692708], "This is a river of cum, click if you dare."),
-			new MapObject([56.51251995960712, 21.028135815168024], "The fish zone"),
-			new MapObject([56.518912681668304, 20.98500589524165], "Plce 3 with no joke!!!")
+			new MapObject([56.512922, 21.012326], "This is a river of cum, click if you dare."),
+			new MapObject([56.512519, 21.028135], "The fish zone"),
+			new MapObject([56.5189124, 20.98500], "Plce 3 with no joke!!!")
 		] // Hand defined for now
 
 		objects.forEach(element => {
