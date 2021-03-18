@@ -46,6 +46,7 @@ export default class Map {
 			zoom: 16,
 			zoomControl: false,
 			scrollWheelZoom: false,
+			doubleClickZoom: false,
 			// minZoom: 13,
 			maxBounds: L.latLngBounds(
 				L.latLng(56.47, 20.95),
@@ -57,7 +58,7 @@ export default class Map {
 			this.clearSelection();
 		});
 
-		this.map.addEventListener("dbclick", (e) => {
+		this.map.addEventListener("dblclick", (e) => {
 			this.click(e as L.LeafletMouseEvent);
 		})
 
@@ -226,6 +227,7 @@ export default class Map {
 		this.lines.push(this.link);
 		this.link = null;
 		this.clearSelection();*/
+		if (this.player.moving) return;
 		if (this.posMarker) {
 			this.events.emit("MarkerActivated", this.posMarker);
 			this.posMarker.remove();
