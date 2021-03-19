@@ -73,10 +73,11 @@ export default class Player {
 	}
 
 	bindOnClick() {
-		this.map.map.on("click", (e: L.LeafletMouseEvent) => {
+		// Reminder, you can always double click.
+		/* this.map.map.on("click", (e: L.LeafletMouseEvent) => {
 			this.moveToTarget(e.latlng);
 			Log.log(e);
-		});
+		}); */
 
 		this.map.events.on("MarkerActivated", (e: L.Marker) => {
 			this.router.routeToPoint(e.getLatLng(), (routeEv: L.Routing.RoutingResultEvent) => {
@@ -152,6 +153,10 @@ export default class Player {
 			cb.call(null, routeEv.routes[0]);
 		})
 		// return route;
+	}
+
+	killRoute() {
+		this.router.clearRoute();
 	}
 
 	private onFrame() {
