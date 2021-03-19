@@ -73,10 +73,10 @@ export default class Player {
 	}
 
 	bindOnClick() {
-		/*this.map.map.on("click", (e: L.LeafletMouseEvent) => {
+		this.map.map.on("click", (e: L.LeafletMouseEvent) => {
 			this.moveToTarget(e.latlng);
 			Log.log(e);
-		}); */
+		});
 
 		this.map.events.on("MarkerActivated", (e: L.Marker) => {
 			this.router.routeToPoint(e.getLatLng(), (routeEv: L.Routing.RoutingResultEvent) => {
@@ -89,7 +89,7 @@ export default class Player {
 		if (this.moveQueue.length > 0) return;
 		if (this.game.state !== GameState.PlayerAction) return;
 		if (this.game.turnMan.activePlayer !== this) return;
-		if (Map.nonMetricDistanceTo(this.pos, target) > this.stats.visibility) return;
+		// if (Map.nonMetricDistanceTo(this.pos, target) > this.stats.visibility) return;
 
 		this.router.routeToPoint(target, (routeEv: L.Routing.RoutingResultEvent) => {
 			const distance = routeEv.routes[0].summary.totalDistance;

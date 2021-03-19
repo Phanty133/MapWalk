@@ -1,3 +1,5 @@
+import Log from "ts/lib/log";
+
 export type FrameUpdateCallback = () => void;
 
 export default class Time{
@@ -9,12 +11,12 @@ export default class Time{
 	private prevFrameTime: number = 0;
 
 	constructor(){
-		this.prevFrameTime = new Date().getTime();
+		this.prevFrameTime = performance.now();
 		this.onFrame();
 	}
 
 	private onFrame(){
-		const curTime: number = new Date().getTime();
+		const curTime: number = performance.now();
 		Time.deltaTime = curTime - this.prevFrameTime;
 
 		for(const cb of Time.frameCallbacks){

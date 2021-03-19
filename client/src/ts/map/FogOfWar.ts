@@ -3,6 +3,8 @@ import Map from "ts/map/map";
 import * as L from "leaflet";
 import Log from "ts/lib/log";
 import "leaflet-customlayer";
+import MultiCanvas from "./MultiCanvas";
+import Vector2 from "ts/lib/Vector2";
 
 export default class FogOfWar{
 	player: Player;
@@ -13,6 +15,7 @@ export default class FogOfWar{
 	private panOffset: L.Point;
 	private canvasRadius: number = 50;
 	private prevCanvasPos: L.Point;
+	private multiCanvas: MultiCanvas;
 
 	constructor(map: Map, player: Player){
 		this.player = player;
@@ -25,23 +28,31 @@ export default class FogOfWar{
 		// Absolut Jank TM
 
 		const screenCoefX = 8;
-		const screenCoefY = 10.5;
+		const screenCoefY = 10;
 
 		const div = document.createElement("div");
 		const canvasContainer = document.createElement("div");
-		const canvas = document.createElement("canvas");
 
-		canvasContainer.appendChild(canvas);
 		div.appendChild(canvasContainer);
 
 		this.canvasSize = new L.Point(window.innerWidth * screenCoefX, window.innerHeight * screenCoefY);
 		this.canvasOffset = new L.Point(this.canvasSize.x / 2, this.canvasSize.y / 2);
 
-		canvas.width = this.canvasSize.x;
-		canvas.height = this.canvasSize.y;
-		this.ctx = canvas.getContext("2d");
+		const canvasGrid = [
+			[false, false, false, false, false, false, false, false],
+			[false, false, false, false, false, false, false, false],
+			[false, false, false, true, true, true, false, false],
+			[false, false, false, true, true, true, false, false],
+			[false, false, false, true, true, true, false, false],
+			[false, false, false, true, true, true, false, false],
+			[false, false, false, true, true, true, false, false],
+			[false, false, false, true, true, true, false, false],
+			[false, false, false, false, false, false, false, false],
+			[false, false, false, false, false, false, false, false],
+		];
 
-		canvas.style.transform = `translate3d(${-this.canvasOffset.x}px, ${-this.canvasOffset.y}px, 0px)`;
+		this.multiCanvas = new MultiCanvas(new Vector2(window.innerWidth, window.innerHeight), canvasGrid, canvasContainer);
+		this.multiCanvas.container.style.transform = `translate3d(${-this.canvasOffset.x}px, ${-this.canvasOffset.y}px, 0px)`;
 
 		// @ts-ignore
 		const customLayer = new L.customLayer({
@@ -66,8 +77,7 @@ export default class FogOfWar{
 			if(initial){
 				initial = false;
 
-				this.ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
-				this.ctx.fillRect(0, 0, canvas.width, canvas.height);
+				this.multiCanvas.fillRect(0, 0, this.canvasSize.x, this.canvasSize.y, "rgba(0, 0, 0, 0.95)");
 			}
 		});
 
@@ -86,31 +96,17 @@ export default class FogOfWar{
 	}
 
 	setVisibilityPos(worldPoint: L.LatLng){
-		const p = this.latLngToCanvasPoint(worldPoint);
+		window.requestAnimationFrame(() => {
+			const p = this.latLngToCanvasPoint(worldPoint);
+			
+			if(this.prevCanvasPos){
+				this.multiCanvas.fillCircle(this.prevCanvasPos.x, this.prevCanvasPos.y, this.canvasRadius, "rgba(0, 0, 0, 0.3)");
+			}
 
-		if(this.prevCanvasPos){
-			this.ctx.beginPath();
+			this.multiCanvas.clearCircle(p.x, p.y, this.canvasRadius);
 
-			this.ctx.arc(this.prevCanvasPos.x, this.prevCanvasPos.y, this.canvasRadius, 0, 2 * Math.PI);
-			this.ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-			this.ctx.fill();
-
-			this.ctx.closePath();
-		}
-
-		// Clear the visibility radius
-
-		this.ctx.save();
-		this.ctx.beginPath();
-
-		this.ctx.arc(p.x, p.y, this.canvasRadius, 0, 2 * Math.PI);
-		this.ctx.clip();
-		this.ctx.clearRect(0, 0, this.canvasSize.x, this.canvasSize.y);
-
-		this.ctx.closePath();
-		this.ctx.restore();
-
-		this.prevCanvasPos = p;
+			this.prevCanvasPos = p;
+		});
 	}
 
 	setVisibilityRadius(geoRadius: number){

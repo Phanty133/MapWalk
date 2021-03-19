@@ -289,3 +289,7 @@ body{
 	background-color: var(--titleColor);
 	height: 100%;
 }
+
+.MultiCanvasEmptyCell{
+	background-color: rgba(0, 0, 0, 0.95);
+}

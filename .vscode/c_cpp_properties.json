@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/phanty/emsdk/upstream/emscripten/system/include/compat",
+                "/home/phanty/emsdk/upstream/emscripten/system/include",
+                "/home/phanty/emsdk/upstream/emscripten/system/include/libc",
+                "/home/phanty/emsdk/upstream/emscripten/system/lib/libc/musl/arch/emscripten",
+                "/home/phanty/emsdk/upstream/emscripten/system/local/include",
+                "/home/phanty/emsdk/upstream/emscripten/system/include/SSE",
+                "/home/phanty/emsdk/upstream/emscripten/system/include/neon",
+                "/home/phanty/emsdk/upstream/emscripten/system/lib/compiler-rt/include",
+                "/home/phanty/emsdk/upstream/emscripten/system/lib/libunwind/include",
+                "/home/phanty/emsdk/upstream/emscripten/system/include/SDL"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

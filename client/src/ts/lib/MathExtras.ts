@@ -1,4 +1,5 @@
 import * as L from "leaflet";
+import Log from "./log";
 
 export default class MathExtras{
 	static lerpNumber(n0: number, n1: number, t: number){
@@ -19,5 +20,11 @@ export default class MathExtras{
 			MathExtras.lerpNumber(p0.lat, p1.lat, t),
 			MathExtras.lerpNumber(p0.lng, p1.lng, t)
 		);
+	}
+
+	static clamp(x: number, min: number, max: number){
+		if(x < min) return min;
+		if(x > max) return max;
+		return x;
 	}
 }

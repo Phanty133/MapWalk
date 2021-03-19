@@ -36,6 +36,9 @@ module.exports = {
 		})
 	],
 	devtool: "inline-source-map",
+	experiments: {
+		asyncWebAssembly: true
+	},
 	module: {
 		rules: [
 			{
@@ -54,17 +57,28 @@ module.exports = {
 				test: /\.tsx?$/,
 				use: "ts-loader",
 				exclude: /node-modules/
+			},
+			{
+				test: /\.(c|cpp)$/,
+				use: {
+					loader: "cpp-wasm-loader",
+					options: {
+						// emccFlags: (existingFlags) => existingFlags.concat(["-sERROR_ON_UNDEFINED_SYMBOLS=0"])
+					}
+				}
 			}
 		]
 	},
 	resolve: {
-		extensions: [".ts", ".tsx", ".js"],
+		extensions: [".ts", ".tsx", ".js", ".cpp", ".c"],
 		alias: {
 			css: path.resolve(__dirname, "src", "css"),
 			ts: path.resolve(__dirname, "src", "ts"),
 			fonts: path.resolve(__dirname, "src", "fonts"),
 			img: path.resolve(__dirname, "src", "img"),
-			js: path.resolve(__dirname, "src", "js")
+			js: path.resolve(__dirname, "src", "js"),
+			cpp: path.resolve(__dirname, "src", "cpp"),
+			c: path.resolve(__dirname, "src", "c")
 		}
 	}
 };
