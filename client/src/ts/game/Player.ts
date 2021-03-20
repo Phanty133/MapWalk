@@ -73,10 +73,10 @@ export default class Player {
 	}
 
 	bindOnClick() {
-		this.map.map.on("click", (e: L.LeafletMouseEvent) => {
+		/* this.map.map.on("click", (e: L.LeafletMouseEvent) => {
 			this.moveToTarget(e.latlng);
 			Log.log(e);
-		});
+		}); */
 
 		this.map.events.on("MarkerActivated", (e: L.Marker) => {
 			this.router.routeToPoint(e.getLatLng(), (routeEv: L.Routing.RoutingResultEvent) => {
