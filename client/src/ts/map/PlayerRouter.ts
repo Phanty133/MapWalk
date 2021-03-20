@@ -16,7 +16,7 @@ export default class PlayerRouter{
 		this.map = leafletMap;
 
 		this.routingSettings = {
-			router: L.routing.mapbox(PlayerRouter.routingToken, {}),
+			router: L.routing.mapbox(PlayerRouter.routingToken, { profile: "mapbox/walking" }),
 			routeWhileDragging: false,
 			waypointMode: "snap",
 			show: true,
