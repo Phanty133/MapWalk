@@ -21,14 +21,15 @@ objectData.forEach((obj: ObjectData, i: number) => {
 		return;
 	}
 
-	objectData[i].description = mapInfoEntry[1];
+	obj.description = mapInfoEntry[1];
 
 	const imgURL = mapInfoEntry[2];
-	const imgType = imgURL.split(".").pop();
-	const imgName = `img-${name.replace(/ /g, "")}.${imgType}`;
+	obj.image = imgURL;
+	// const imgType = imgURL.split(".").pop();
+	// const imgName = `img-${name.replace(/ /g, "")}.${imgType}`;
 
-	objectData[i].image = `/data/img/${imgName}`;
-	downloadImg(imgURL, path.join(imgPath, imgName));
+	// objectData[i].image = `/data/img/${imgName}`;
+	// downloadImg(imgURL, path.join(imgPath, imgName));
 });
 
 fse.writeJSONSync(path.join(dataPath, "objects-full.json"), objectData);
