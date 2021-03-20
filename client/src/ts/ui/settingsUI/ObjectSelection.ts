@@ -6,7 +6,7 @@ export default class ObjectSelection extends DynamicElement{
 	private defaults = {
 		value: 15,
 		min: 5,
-		max: 50
+		max: 45
 	};
 
 	public get value(): number{

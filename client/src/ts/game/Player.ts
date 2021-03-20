@@ -61,6 +61,7 @@ export default class Player {
 			visibility: 0.005, // The radius of visible area in coord units
 			walkedDistance: 0
 		};
+
 		this.fow = new FogOfWar(this.map, this);
 		this.fow.setVisibilityRadius(this.stats.visibility);
 		this.fow.setVisibilityPos(this.pos);
