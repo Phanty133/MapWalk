@@ -25,6 +25,11 @@ export default class Map {
 	link: L.Polyline;
 	lines: L.Polyline[] = [];
 
+	selectBounds: L.LatLngBounds = L.latLngBounds(
+		L.latLng(56.47, 20.95),
+		L.latLng(56.56, 21.1)
+	);
+
 	events: EventEmitter = new EventEmitter();
 
 	iconInactive = new L.Icon({
@@ -187,6 +192,7 @@ export default class Map {
 	}
 
 	click(ev: L.LeafletMouseEvent) {
+		if (!this.selectBounds.contains(ev.latlng)) return;
 		if (ev.originalEvent.button !== 0) return;
 		if (this.currentlyActive != null) {
 			this.currentlyActive.setIcon(this.iconInactive);
