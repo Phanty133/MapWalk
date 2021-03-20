@@ -319,6 +319,7 @@ body{
 	border-right: 0;
 	top: 0%;
 	color: black;
+	overflow: scroll;
 }
 
 #makeMove {

@@ -8,6 +8,7 @@ import { MapObject } from "ts/map/mapObject";
 import Log from "ts/lib/log";
 import Player from "ts/game/Player";
 import { EventEmitter } from "events";
+import createElement from "ts/lib/createElement";
 
 export interface ObjectData {
 	name: string;
@@ -17,8 +18,11 @@ export interface ObjectData {
 };
 
 export default class Map {
+	EPSILON = 0.001;
+
 	map: L.Map;
 	markers: L.Marker[] = [];
+	placesOnMap: Record<string, MapObject> = {};
 	currentlyActive: L.Marker = null;
 	posMarker: L.Marker = null;
 	player: Player = null;
@@ -66,6 +70,46 @@ export default class Map {
 			)
 		});
 
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			maxZoom: 19,
+			attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+		}).addTo(this.map);
+
+		L.control.scale().addTo(this.map);
+
+		let _objects: MapObject[];
+
+		if (objects) {
+			_objects = objects.map(obj => new MapObject([obj.location.lat, obj.location.lng], obj.name, obj.description, obj.image));
+		}
+		else {
+			_objects = [
+				new MapObject([56.512922, 21.012326], null, "This is a river of cum, click if you dare.", null),
+				new MapObject([56.512519, 21.028135], null, "The fish zone", null),
+				new MapObject([56.5189124, 20.98500], null, "Plce 3 with no joke!!!", null)
+			] // Hand defined for now
+		}
+
+		_objects.forEach(element => {
+			const testMarker = L.marker(element.latLng, {
+				icon: this.iconInactive
+			}).addTo(this.map);
+
+			testMarker.bindTooltip(element.name, {
+				offset: new L.Point(0, -30)
+			});
+
+			testMarker.addEventListener("click", (e) => {
+				this.activate(testMarker);
+			});
+
+			this.markers.push(testMarker);
+
+			this.placesOnMap[element.name] = element;
+		});
+	}
+
+	bind() {
 		this.map.addEventListener("contextmenu", (e) => {
 			this.clearSelection();
 		});
@@ -93,44 +137,12 @@ export default class Map {
 			}
 		});
 
-		document.getElementById("makeMove")!.addEventListener("click", () => {
-			this.saveSelection();
+		this.player.events.on("MoveDone", () => {
+			this.moveDone();
 		});
 
-		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			maxZoom: 19,
-			attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-		}).addTo(this.map);
-
-		L.control.scale().addTo(this.map);
-
-		let _objects: MapObject[];
-
-		if (objects) {
-			_objects = objects.map(obj => new MapObject([obj.location.lat, obj.location.lng], obj.name));
-		}
-		else {
-			_objects = [
-				new MapObject([56.512922, 21.012326], "This is a river of cum, click if you dare."),
-				new MapObject([56.512519, 21.028135], "The fish zone"),
-				new MapObject([56.5189124, 20.98500], "Plce 3 with no joke!!!")
-			] // Hand defined for now
-		}
-
-		_objects.forEach(element => {
-			const testMarker = L.marker(element.latLng, {
-				icon: this.iconInactive
-			}).addTo(this.map);
-
-			testMarker.bindTooltip(element.description, {
-				offset: new L.Point(0, -30)
-			});
-
-			testMarker.addEventListener("click", (e) => {
-				this.activate(testMarker);
-			});
-
-			this.markers.push(testMarker);
+		document.getElementById("makeMove")!.addEventListener("click", () => {
+			this.saveSelection();
 		});
 	}
 
@@ -173,7 +185,7 @@ export default class Map {
 	}*/
 
 	activate(marker: L.Marker) {
-		if (this.currentlyActive != null) {
+		if (this.currentlyActive) {
 			this.currentlyActive.setIcon(this.iconInactive);
 		}
 		if (this.posMarker) {
@@ -193,6 +205,10 @@ export default class Map {
 				color: "red"
 			}).addTo(this.map);*/
 		});
+
+		if (Map.nonMetricDistanceTo(this.currentlyActive.getLatLng(), this.player.marker.getLatLng()) < this.EPSILON) {
+			this.popOpenQuestion();
+		}
 	}
 
 	click(ev: L.LeafletMouseEvent) {
@@ -206,6 +222,7 @@ export default class Map {
 			this.posMarker.remove();
 			this.posMarker = null;
 		}
+		this.popClosedQuestion();
 
 		const tempIco = new L.Icon({
 			iconUrl: posMarkImg,
@@ -241,6 +258,7 @@ export default class Map {
 			this.currentlyActive = null;
 		}
 		this.player.killRoute();
+		this.popClosedQuestion();
 	}
 
 	saveSelection() {
@@ -255,9 +273,36 @@ export default class Map {
 			this.events.emit("MarkerActivated", this.posMarker);
 			this.posMarker.remove();
 			this.posMarker = null;
+			this.popClosedQuestion();
 		}
 		if (!this.currentlyActive) return;
 		// Log.log("ohoto i ribalka");
 		this.events.emit("MarkerActivated", this.currentlyActive);
+		this.popClosedQuestion();
+	}
+
+	moveDone() {
+		if (!this.currentlyActive) return;
+
+		if (Map.nonMetricDistanceTo(this.currentlyActive.getLatLng(), this.player.marker.getLatLng()) < this.EPSILON) {
+			this.popOpenQuestion();
+		}
+	}
+
+	popOpenQuestion() {
+		if (!this.player.hasTurn()) return;
+		document.getElementById("qotd")!.innerHTML = ""; // fuck children
+		document.getElementById("qotd")!.hidden = false;
+		const bruh = createElement("p", {
+			class: "thatThingInsideTheQuestionBoxShouldBeLeftIgnoredTbh"
+		}) as HTMLElement;
+		const place = this.placesOnMap[this.currentlyActive.getTooltip().getContent().toString()];
+		// Log.log(place);
+		bruh.innerHTML = "<b>" + place.name + "</b><br/>" + place.description + "<br/><div id=\"questionImageContainer\"><img src=\"" + place.image + "\" alt=\"fuck you\"/></div>"; // + this;
+		document.getElementById("qotd")!.append(bruh);
+	}
+
+	popClosedQuestion() {
+		document.getElementById("qotd")!.hidden = true;
 	}
 }

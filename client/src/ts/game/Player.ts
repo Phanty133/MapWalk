@@ -8,6 +8,7 @@ import Game, { GameState } from "./Game";
 import Time from "./Time";
 import MathExtras from "ts/lib/MathExtras";
 import FogOfWar from "ts/map/FogOfWar";
+import { EventEmitter } from "events";
 
 type TracingCallback = (route: L.Routing.IRoute) => void;
 
@@ -39,14 +40,16 @@ export default class Player {
 	stats: PlayerStats;
 	fow: FogOfWar;
 
+	events: EventEmitter = new EventEmitter();
+
 	constructor(map: Map, game: Game, startingPos?: L.LatLng) {
 		this.map = map;
 		this.game = game;
 
-		if(startingPos){
+		if (startingPos) {
 			this.pos = startingPos;
 		}
-		else{
+		else {
 			this.pos = new L.LatLng(56.509376, 21.011428);
 		}
 
@@ -72,6 +75,7 @@ export default class Player {
 		}).addTo(this.map.map);
 
 		this.map.player = this;
+		this.map.bind();
 		this.router = new PlayerRouter(this.map.map, this);
 
 		this.bindOnClick();
@@ -158,6 +162,10 @@ export default class Player {
 	}
 
 	traceRoute(targetPos: L.LatLng, cb: TracingCallback = () => { }) {
+		if (this.game.state !== GameState.PlayerAction) return;
+		if (this.game.turnMan.activePlayer !== this) return;
+		if (Map.nonMetricDistanceTo(this.pos, targetPos) > this.stats.visibility) return;
+
 		// let route = null;
 		this.router.routeToPoint(targetPos, (routeEv: L.Routing.RoutingResultEvent) => {
 			// route = routeEv.routes[0];
@@ -171,6 +179,12 @@ export default class Player {
 		this.router.clearRoute();
 	}
 
+	hasTurn(): boolean {
+		if (this.game.state !== GameState.PlayerAction) return false;
+		if (this.game.turnMan.activePlayer !== this) return false;
+		return true;
+	}
+
 	private onFrame() {
 		if (this.moving) {
 			this.moveInterpolater += this.moveFractionPerSecond * (Time.deltaTime / 1000);
@@ -182,6 +196,7 @@ export default class Player {
 				if (this.moveQueue.length === 0) {
 					this.router.clearRoute();
 					this.map.map.dragging.enable();
+					this.events.emit("MoveDone");
 				}
 			}
 			else {
