@@ -1,0 +1,317 @@
+[
+	{
+		"name": "Spīķeris",
+		"location": {"lat": 56.5143772, "lng": 21.0011018},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Raiņa parks",
+		"location": {"lat": 56.5200006, "lng": 21.0179698},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Alpīnisma siena LOC Manēžā",
+		"location": {"lat": 56.5212572, "lng": 21.0170365},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "LOC Ledus  halle",
+		"location": {"lat": 56.5144018, "lng": 21.01367},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Latvijas lielākās bungas",
+		"location": {"lat": 56.506324, "lng": 20.9971804},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Stadions \"Olimpija\"",
+		"location": {"lat": 56.5133619, "lng": 20.9937543},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Liepājas bāka",
+		"location": {"lat": 56.5168079, "lng": 20.9900818},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Jūrmalas parka skeitparks",
+		"location": {"lat": 56.5012106, "lng": 20.9939034},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Nosaukums \"Liepāja\" pludmalē",
+		"location": {"lat": 56.5039285, "lng": 20.9895002},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Jaunākais viedais luksofors",
+		"location": {"lat": 56.5129841, "lng": 21.0132228},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Viedais luksofors",
+		"location": {"lat": 56.498194, "lng": 21.004015},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Stadions \"Daugava\"",
+		"location": {"lat": 56.5029277, "lng": 20.9932493},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Liepājas Lutera baznīca",
+		"location": {"lat": 56.5200128, "lng": 21.0164081},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Piemiņas zīme vācu filosofam Imanuelam Kantam",
+		"location": {"lat": 56.507931, "lng": 21.016287},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Dienvidu mols",
+		"location": {"lat": 56.5182368, "lng": 20.9736255},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Karostas cietums",
+		"location": {"lat": 56.5492379, "lng": 21.0293614},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "O.Kalpaka tilts",
+		"location": {"lat": 56.5492379, "lng": 21.0293614},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Dzintara pulkstenis",
+		"location": {"lat": 56.512753, "lng": 21.010741},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Skultpūra \"Dzintara latvieši\"",
+		"location": {"lat": 56.5103241, "lng": 20.9987758},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Liepājas Universitāte",
+		"location": {"lat": 56.5090424, "lng": 21.0095526},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Iekštelpu ekstrēmā sporta trase",
+		"location": {"lat": 56.5129865, "lng": 21.0050379},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Zirgu salas dabas taka",
+		"location": {"lat": 56.516574, "lng": 21.0298062},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Skulptūra \"Laivinieks\"",
+		"location": {"lat": 56.5115345, "lng": 21.0035124},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "LOC Baseins SPA",
+		"location": {"lat": 56.5185753, "lng": 21.0151352},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "LOC Tenisa halle",
+		"location": {"lat": 56.4908668, "lng": 20.9983831},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Bērnu rotaļu laukums Jūrmalas parkā",
+		"location": {"lat": 56.5014963, "lng": 20.9946036},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Zinātnes un izglītības inovāciju centrs \"ZIIC\"",
+		"location": {"lat": 56.517921, "lng": 21.0218626},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Liepājas Latviešu biedrības nams",
+		"location": {"lat": 56.5076513, "lng": 21.0103846},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Kultūras nams \"Wiktorija\"",
+		"location": {"lat": 56.5098775, "lng": 21.0038407},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Liepājas leļļu teātris",
+		"location": {"lat": 56.5076064, "lng": 21.0099339},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Liepājas muzejs",
+		"location": {"lat": 56.5105679, "lng": 20.9994573},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Liepājas teātris",
+		"location": {"lat": 56.5099076, "lng": 21.0126954},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Vecās ostmalas promenāde",
+		"location": {"lat": 56.5120493, "lng": 21.0121193},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Vēja māte",
+		"location": {"lat": 56.509713, "lng": 20.991171},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Jāņa Čakstes laukums",
+		"location": {"lat": 56.5035561, "lng": 21.0034455},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Rožu laukums",
+		"location": {"lat": 56.5080953, "lng": 21.0094295},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Juliannas pagalms",
+		"location": {"lat": 56.512763, "lng": 21.0054797},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Mūziķu slavas aleja",
+		"location": {"lat": 56.5068903, "lng": 21.0098666},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Dabas māja",
+		"location": {"lat": 56.5161081, "lng": 21.0351338},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Spoku koks",
+		"location": {"lat": 56.5063955, "lng": 20.9933806},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Pētertirgus",
+		"location": {"lat": 56.5049459, "lng": 21.006356},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Kristapa Porziņģa basketbola laukums",
+		"location": {"lat": 56.50127, "lng": 20.9910144},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Svētā Jāzepa katedrāle",
+		"location": {"lat": 56.504949, "lng": 21.0053643},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Svētā Trīsvienības katedrāle",
+		"location": {"lat": 56.5081783, "lng": 21.010043},
+		"description": "",
+		"image": "",
+		"questions": []
+	},
+	{
+		"name": "Romas dārzs",
+		"location": {"lat": 56.5074119, "lng": 21.009936},
+		"description": "",
+		"image": "",
+		"questions": []
+	}
+]

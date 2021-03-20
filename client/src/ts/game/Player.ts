@@ -39,14 +39,23 @@ export default class Player {
 	stats: PlayerStats;
 	fow: FogOfWar;
 
-	constructor(map: Map, game: Game) {
+	constructor(map: Map, game: Game, startingPos?: L.LatLng) {
 		this.map = map;
 		this.game = game;
-		this.pos = new L.LatLng(56.509376, 21.011428);
+
+		if(startingPos){
+			this.pos = startingPos;
+		}
+		else{
+			this.pos = new L.LatLng(56.509376, 21.011428);
+		}
+
+		this.map.map.panTo(this.pos);
+
 		this.stats = {
 			energy: 10100000,
 			score: 0,
-			visibility: 0.0025, // The radius of visible area in coord units
+			visibility: 0.005, // The radius of visible area in coord units
 			walkedDistance: 0
 		};
 		this.fow = new FogOfWar(this.map, this);
@@ -90,7 +99,7 @@ export default class Player {
 		if (this.moveQueue.length > 0) return;
 		if (this.game.state !== GameState.PlayerAction) return;
 		if (this.game.turnMan.activePlayer !== this) return;
-		// if (Map.nonMetricDistanceTo(this.pos, target) > this.stats.visibility) return;
+		if (Map.nonMetricDistanceTo(this.pos, target) > this.stats.visibility) return;
 
 		this.router.routeToPoint(target, (routeEv: L.Routing.RoutingResultEvent) => {
 			const distance = routeEv.routes[0].summary.totalDistance;
@@ -111,6 +120,8 @@ export default class Player {
 		for (const p of route.coordinates) {
 			this.moveToPoint(p);
 		}
+
+		this.map.map.dragging.disable();
 	}
 
 	moveToPoint(p: L.LatLng) {
@@ -139,6 +150,7 @@ export default class Player {
 		this.moveQueue = [];
 		this.moving = false;
 		this.router.clearRoute();
+		this.map.map.dragging.enable();
 	}
 
 	drainEnergy(amount: number) {
@@ -169,6 +181,7 @@ export default class Player {
 
 				if (this.moveQueue.length === 0) {
 					this.router.clearRoute();
+					this.map.map.dragging.enable();
 				}
 			}
 			else {

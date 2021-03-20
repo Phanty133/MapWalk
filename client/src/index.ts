@@ -1,5 +1,5 @@
 import "css/index.css"
-import Map from "ts/map/map"
+import Map, { ObjectData } from "ts/map/map"
 import Lobby from "ts/networking/Lobby"
 import * as Cookies from "js-cookie"
 import Game, { GameState } from "ts/game/Game"
@@ -21,13 +21,19 @@ document.body.onload = () => {
 			document.getElementById("game'ntContainer").style.display = "none";
 			document.getElementById("game").style.display = "block";
 
-			loadGame();
+			loadGame(settings);
 		};
 	}
 };
 
-function loadGame(){
-	const map = new Map("map");
+async function loadObjects(count: number): Promise<ObjectData[]>{
+	const req = await fetch(`/objects?count=${count}`);
+	return await req.json();
+}
+
+async function loadGame(settings: GameSettings){
+	const objects = await loadObjects(settings.objectCount);
+	const map = new Map("map", objects);
 	let lobby: Lobby;
 	let game: Game;
 
@@ -44,7 +50,7 @@ function loadGame(){
 		game = new Game();
 	}
 
-	const plyr = new Player(map, game);
+	const plyr = new Player(map, game, settings.location.pos);
 	const time = new Time();
 
 	game.turnMan.playerOrder = [ plyr ];

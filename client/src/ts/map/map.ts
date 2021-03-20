@@ -9,6 +9,13 @@ import Log from "ts/lib/log";
 import Player from "ts/game/Player";
 import { EventEmitter } from "events";
 
+export interface ObjectData{
+	name: string;
+	description: string;
+	image: string;
+	location: {lat: number, lng: number};
+};
+
 export default class Map {
 	map: L.Map;
 	markers: L.Marker[] = [];
@@ -44,7 +51,7 @@ export default class Map {
 		return Math.sqrt((b.lat - a.lat) ** 2 + (b.lng - a.lng) ** 2);
 	}
 
-	constructor(id: string) {
+	constructor(id: string, objects?: ObjectData[]) {
 
 		this.map = L.map(id, {
 			center: [56.504754, 21.010924], // Liepaaja be like: [56.50475439537235, 21.010924221837993]
@@ -93,13 +100,20 @@ export default class Map {
 
 		L.control.scale().addTo(this.map);
 
-		const objects = [
-			new MapObject([56.512922, 21.012326], "This is a river of cum, click if you dare."),
-			new MapObject([56.512519, 21.028135], "The fish zone"),
-			new MapObject([56.5189124, 20.98500], "Plce 3 with no joke!!!")
-		] // Hand defined for now
+		let _objects: MapObject[];
 
-		objects.forEach(element => {
+		if(objects){
+			_objects = objects.map(obj => new MapObject([obj.location.lat, obj.location.lng], obj.name));
+		}
+		else{
+			_objects = [
+				new MapObject([56.512922, 21.012326], "This is a river of cum, click if you dare."),
+				new MapObject([56.512519, 21.028135], "The fish zone"),
+				new MapObject([56.5189124, 20.98500], "Plce 3 with no joke!!!")
+			] // Hand defined for now
+		}
+
+		_objects.forEach(element => {
 			const testMarker = L.marker(element.latLng, {
 				icon: this.iconInactive
 			}).addTo(this.map);
@@ -209,8 +223,6 @@ export default class Map {
 			}).addTo(this.map);*/
 		});
 	}
-
-
 
 	clearSelection() {
 		if (this.posMarker) {
