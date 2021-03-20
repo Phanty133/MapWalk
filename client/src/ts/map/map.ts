@@ -210,6 +210,7 @@ export default class Map {
 		if (this.posMarker) {
 			this.posMarker.remove();
 			this.posMarker = null;
+			this.player.killRoute();
 		}
 		if (this.link) {
 			this.link.remove();
