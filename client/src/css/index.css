@@ -9,6 +9,8 @@ body{
 	margin: 0;
 	padding: 0;
 	font-family: sans-serif;
+	height: 100vh;
+	width: 100vw;
 }
 
 #map{
@@ -292,4 +294,43 @@ body{
 
 .MultiCanvasEmptyCell{
 	background-color: rgba(0, 0, 0, 0.95);
+}
+
+#ui {
+	z-index: 666; /* funny metal */
+	position: absolute;
+	top: 0%;
+	left: 0%;
+	color: white;
+	height: 100vh;
+	width: 100vw;
+	pointer-events: none;
+}
+
+#qotd {
+	position: absolute;
+	left: 79%;
+	width: 20%;
+	height: 30%;
+	background-color: #FFFFFF66;
+	border: 0.5vw solid gainsboro;
+	pointer-events: all;
+	border-top: 0;
+	border-right: 0;
+	top: 0%;
+	color: black;
+}
+
+#makeMove {
+	position: absolute;
+	pointer-events: all;
+	width: 20%;
+	left: 40%;
+	height: 5%;
+	top: 90%;
+	background-color: green;
+	border-style: solid;
+	border-color: limegreen;
+	color: white;
+	border-radius: 25px;
 }

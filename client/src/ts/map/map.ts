@@ -9,11 +9,11 @@ import Log from "ts/lib/log";
 import Player from "ts/game/Player";
 import { EventEmitter } from "events";
 
-export interface ObjectData{
+export interface ObjectData {
 	name: string;
 	description: string;
 	image: string;
-	location: {lat: number, lng: number};
+	location: { lat: number, lng: number };
 };
 
 export default class Map {
@@ -79,9 +79,9 @@ export default class Map {
 			if (keyEv.originalEvent.key === "shift") {
 				this.map.removeEventListener("contextmenu");
 			}
-			if (keyEv.originalEvent.key === "Enter") {
+			/*if (keyEv.originalEvent.key === "Enter") {
 				this.saveSelection();
-			}
+			}*/
 		});
 
 		this.map.addEventListener("keyup", (e) => {
@@ -93,6 +93,10 @@ export default class Map {
 			}
 		});
 
+		document.getElementById("makeMove")!.addEventListener("click", () => {
+			this.saveSelection();
+		});
+
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 			attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
@@ -102,10 +106,10 @@ export default class Map {
 
 		let _objects: MapObject[];
 
-		if(objects){
+		if (objects) {
 			_objects = objects.map(obj => new MapObject([obj.location.lat, obj.location.lng], obj.name));
 		}
-		else{
+		else {
 			_objects = [
 				new MapObject([56.512922, 21.012326], "This is a river of cum, click if you dare."),
 				new MapObject([56.512519, 21.028135], "The fish zone"),
@@ -228,7 +232,6 @@ export default class Map {
 		if (this.posMarker) {
 			this.posMarker.remove();
 			this.posMarker = null;
-			this.player.killRoute();
 		}
 		if (this.link) {
 			this.link.remove();
@@ -237,6 +240,7 @@ export default class Map {
 			this.currentlyActive.setIcon(this.iconInactive);
 			this.currentlyActive = null;
 		}
+		this.player.killRoute();
 	}
 
 	saveSelection() {
