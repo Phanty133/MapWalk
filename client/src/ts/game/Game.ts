@@ -35,6 +35,7 @@ export default class Game{
 	private receivedManifests: Record<string, string> = {}; // {PeerID:manifestHash}
 	public onManifestCheckComplete: ManifestCheckCompleteCallback = () => {};
 	private settings: GameSettings;
+	private mapObjectData: MapObjectData[];
 	isMultiplayer: boolean;
 	state: GameState = GameState.Idle;
 	turnMan: TurnManager;
@@ -113,7 +114,7 @@ export default class Game{
 
 	createMap(objects?: MapObjectData[]){
 		this.map = new Map("map", this);
-		this.map.createObjects(objects);
+		this.mapObjectData = objects;
 	}
 
 	createPlayer(){
@@ -126,6 +127,8 @@ export default class Game{
 		if(!this.isMultiplayer){
 			this.turnMan.playerOrder = [ this.localPlayer ];
 		}
+
+		this.map.createObjects(this.mapObjectData);
 	}
 
 	checkManifest(){
