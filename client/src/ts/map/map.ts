@@ -294,7 +294,14 @@ export default class Map {
 		}) as HTMLElement;
 		const place = this.placesOnMap[this.currentlyActive.getTooltip().getContent().toString()];
 		// Log.log(place);
-		bruh.innerHTML = "<b>" + place.name + "</b><br/>" + place.description + "<br/><div id=\"questionImageContainer\"><img src=\"" + place.image + "\" alt=\"fuck you\"/></div>"; // + this;
+		bruh.innerHTML = `
+		<b>${place.name}</b>
+		<br/>
+		${place.description}
+		<br/>
+		<div id="questionImageContainer">
+			<img src="${place.image}" alt="fuck you"/>
+		</div>`; // + this;
 		document.getElementById("qotd")!.append(bruh);
 	}
 
