@@ -1,6 +1,7 @@
 import Time from "ts/game/Time";
 import Log from "ts/lib/log";
 import ChatMessage, { MessageData } from "./ChatMessage";
+import * as L from "leaflet";
 
 export default class Chat{
 	static inputStateCooldown: number = 100;
@@ -16,31 +17,27 @@ export default class Chat{
 
 		this.bindEvents();
 		Time.bindToFrame(() => { this.onFrame(); });
+
+		L.DomEvent.disableClickPropagation(this.chatInput);
 	}
 
 	private bindEvents(){
 		document.addEventListener("keydown", (e: KeyboardEvent) => {
-			if(e.key === "Enter"){
-				if(this.inputVisible || this.inputStateCooldown) return;
-
-				this.openInput();
-				this.inputStateCooldown = true;
-
-				setTimeout(() => { this.inputStateCooldown = false; }, Chat.inputStateCooldown);
-			}
-		});
-
-		this.chatInput.addEventListener("keydown", (e: KeyboardEvent) => {
 			if(e.key !== "Enter") return;
-			if(!this.inputVisible || this.inputStateCooldown) return;
+			if(this.inputStateCooldown) return;
 
-			if(this.chatInput.value !== ""){
-				this.sendMessage(this.chatInput.value);
+			if(this.inputVisible){
+				if(this.chatInput.value !== ""){
+					this.sendMessage(this.chatInput.value);
+				}
+
+				this.closeInput();
+			}
+			else{
+				this.openInput();
 			}
 
-			this.closeInput();
 			this.inputStateCooldown = true;
-
 			setTimeout(() => { this.inputStateCooldown = false; }, Chat.inputStateCooldown);
 		});
 	}
