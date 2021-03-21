@@ -64,10 +64,10 @@ export default class Map {
 			scrollWheelZoom: false,
 			doubleClickZoom: false,
 			// minZoom: 13,
-			/*maxBounds: L.latLngBounds(
+			maxBounds: L.latLngBounds(
 				L.latLng(56.47, 20.95),
 				L.latLng(56.56, 21.1)
-			)*/
+			)
 		});
 
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
