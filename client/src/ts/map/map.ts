@@ -242,9 +242,32 @@ export default class Map {
 			<div id="questionImageContainer">
 				<img src="${this.activeObject.data.image}" alt="fuck you"/>
 			</div>
+			<div id="objAnswerBtnContainer"></div>
 		`; // + this;
 
 		document.getElementById("qotd")!.append(bruh);
+
+		const btnContainer = document.getElementById("objAnswerBtnContainer");
+
+		createElement("button", {
+			textContent: "Answer question correctly",
+			parent: btnContainer,
+			events: {
+				click: () => {
+					this.activeObject.onCorrectAnswer();
+				}
+			}
+		});
+
+		createElement("button", {
+			textContent: "Answer question incorrectly like a dipshit",
+			parent: btnContainer,
+			events: {
+				click: () => {
+					this.activeObject.onIncorrectAnswer();
+				}
+			}
+		});
 	}
 
 	popClosedQuestion() {

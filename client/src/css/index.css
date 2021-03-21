@@ -311,7 +311,8 @@ body{
 	position: absolute;
 	left: 79%;
 	width: 20%;
-	height: 30%;
+	height: fit-content;
+	height: -moz-fit-content;
 	background-color: #FFFFFF66;
 	border: 0.5vw solid gainsboro;
 	pointer-events: all;
@@ -319,7 +320,7 @@ body{
 	border-right: 0;
 	top: 0%;
 	color: black;
-	overflow: scroll;
+	overflow: auto;
 }
 
 #mapButtons{
@@ -377,25 +378,38 @@ body{
 	border-color: #ffbf4a;
 }
 
-#gameTimeContainer{
-	position: absolute;
-	left: 5%;
-	font-size: 3vw;
-	background-color: grey;
-	border: 5px solid #333;
-	padding: 0.25em 0.5em 0.25em 0.5em;
-	bottom: 17.5%;
+#gameEnergyContainer{
+	color: orange;
 }
 
-#gameEnergyContainer{
+#questionImageContainer{
+	max-width: 100%;
+	max-height: 100%;
+}
+
+#questionImageContainer img{
+	width: 100%;
+	height: auto;
+}
+
+#gameStatsUI{
 	position: absolute;
-	left: 5%;
+	display: grid;
+	grid-auto-flow: row;
 	bottom: 5%;
+	left: 2.5%;
+	row-gap: 10px;
+}
+
+#gameStatsUI > div{
+	background-color: grey;
+	border: 5px solid black;
 	font-size: 3vw;
 	padding: 0.25em 0.5em 0.25em 0.5em;
-	background-color: grey;
-	border: 5px solid #333;
-	color: orange;
+}
+
+#gameScoreContainer{
+	color: green;
 }
 
 .serverMsg {

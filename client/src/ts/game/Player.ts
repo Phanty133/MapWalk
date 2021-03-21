@@ -11,6 +11,7 @@ import FogOfWar from "ts/map/FogOfWar";
 import { EventEmitter } from "events";
 import EnergyDisplay from "ts/ui/gameui/EnergyDisplay";
 import MapObject from "ts/map/MapObject";
+import ScoreDisplay from "ts/ui/gameui/ScoreDisplay";
 
 type TracingCallback = (route: L.Routing.IRoute) => void;
 
@@ -35,6 +36,7 @@ export default class Player {
 	private moveInterpolater: number;
 	private moveQueue: L.LatLng[] = [];
 	private energyDisplay: EnergyDisplay;
+	private scoreDisplay: ScoreDisplay;
 	private metersToVisibilityEnd: number;
 
 	speed = 0.005; // Units/sec
@@ -91,6 +93,7 @@ export default class Player {
 		this.bindMovementEvents();
 
 		this.energyDisplay = new EnergyDisplay(document.getElementById("gameEnergy"), this);
+		this.scoreDisplay = new ScoreDisplay(document.getElementById("gameScore"), this);
 		this.metersToVisibilityEnd = this.pos.distanceTo(new L.LatLng(this.pos.lat + this.stats.visibility, this.pos.lng));
 
 		Time.bindToFrame(() => {
@@ -221,6 +224,11 @@ export default class Player {
 	rest(){
 		this.game.clock.addTime(this.stats.restTime);
 		this.drainEnergy(-(this.metersToVisibilityEnd / this.metersPerEnergyUnit));
+	}
+
+	incrementScore(){
+		this.stats.score++;
+		this.scoreDisplay.update();
 	}
 
 	private onFrame() {
