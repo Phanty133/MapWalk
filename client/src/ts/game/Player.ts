@@ -9,14 +9,19 @@ import Time from "./Time";
 import MathExtras from "ts/lib/MathExtras";
 import FogOfWar from "ts/map/FogOfWar";
 import { EventEmitter } from "events";
+import EnergyDisplay from "ts/ui/gameui/EnergyDisplay";
+import MapObject from "ts/map/MapObject";
 
 type TracingCallback = (route: L.Routing.IRoute) => void;
 
 export interface PlayerStats {
 	energy: number;
+	maxEnergy: number;
 	score: number;
 	visibility: number;
 	walkedDistance: number;
+	timeToVisibilityEnd: number;
+	restTime: number;
 }
 
 export default class Player {
@@ -29,6 +34,8 @@ export default class Player {
 	private moveFractionPerSecond: number;
 	private moveInterpolater: number;
 	private moveQueue: L.LatLng[] = [];
+	private energyDisplay: EnergyDisplay;
+	private metersToVisibilityEnd: number;
 
 	speed = 0.005; // Units/sec
 	metersPerEnergyUnit = 10;
@@ -57,9 +64,12 @@ export default class Player {
 
 		this.stats = {
 			energy: 10100000,
+			maxEnergy: 10100000,
 			score: 0,
 			visibility: 0.005, // The radius of visible area in coord units
-			walkedDistance: 0
+			walkedDistance: 0,
+			timeToVisibilityEnd: 10, // Time to reach the end of the visibility radius in minutes
+			restTime: 10
 		};
 
 		this.fow = new FogOfWar(this.map, this);
@@ -75,36 +85,47 @@ export default class Player {
 			icon: this.icon
 		}).addTo(this.map.map);
 
-		this.map.player = this;
-		this.map.bind();
 		this.router = new PlayerRouter(this.map.map, this);
 
-		this.bindOnClick();
+		this.map.bindMapEvents();
+		this.bindMovementEvents();
+
+		this.energyDisplay = new EnergyDisplay(document.getElementById("gameEnergy"), this);
+		this.metersToVisibilityEnd = this.pos.distanceTo(new L.LatLng(this.pos.lat + this.stats.visibility, this.pos.lng));
 
 		Time.bindToFrame(() => {
 			this.onFrame();
 		});
 	}
 
-	bindOnClick() {
+	private isMoveOrderValid(target?: L.LatLng): boolean{
+		if(this.moveQueue.length > 0) return false;
+		if(!this.hasTurn()) return false;
+
+		if(target){
+			const distToTarget = Map.nonMetricDistanceTo(this.pos, target);
+
+			if (distToTarget > this.stats.visibility) return false;
+			if (distToTarget > this.stats.energy * this.metersPerEnergyUnit) return false;
+		}
+
+		return true;
+	}
+
+	bindMovementEvents() {
 		// Reminder, you can always double click.
 		/* this.map.map.on("click", (e: L.LeafletMouseEvent) => {
 			this.moveToTarget(e.latlng);
 			Log.log(e);
 		}); */
 
-		this.map.events.on("MarkerActivated", (e: L.Marker) => {
-			this.router.routeToPoint(e.getLatLng(), (routeEv: L.Routing.RoutingResultEvent) => {
-				this.moveAlongRoute(routeEv.routes[0]);
-			});
+		this.map.events.on("MarkerActivated", (targetPos: L.LatLng) => {
+			this.moveToTarget(targetPos);
 		});
 	}
 
 	moveToTarget(target: L.LatLng) {
-		if (this.moveQueue.length > 0) return;
-		if (this.game.state !== GameState.PlayerAction) return;
-		if (this.game.turnMan.activePlayer !== this) return;
-		if (Map.nonMetricDistanceTo(this.pos, target) > this.stats.visibility) return;
+		if(!this.isMoveOrderValid(target)) return;
 
 		this.router.routeToPoint(target, (routeEv: L.Routing.RoutingResultEvent) => {
 			const distance = routeEv.routes[0].summary.totalDistance;
@@ -117,7 +138,15 @@ export default class Player {
 			this.stats.walkedDistance += distance;
 			this.drainEnergy(distance / this.metersPerEnergyUnit);
 			Log.log("Energy: " + this.stats.energy);
+
 			this.moveAlongRoute(routeEv.routes[0]);
+
+			// If the game isn't multiplayer, update the time
+
+			if(!this.game.isMultiplayer){
+				const visibilityFraction = Map.nonMetricDistanceTo(this.pos, target) / this.stats.visibility;
+				this.game.clock.addTime(visibilityFraction * this.stats.timeToVisibilityEnd);
+			}
 		});
 	}
 
@@ -159,7 +188,8 @@ export default class Player {
 	}
 
 	drainEnergy(amount: number) {
-		this.stats.energy -= amount;
+		this.stats.energy = MathExtras.clamp(this.stats.energy - Math.round(amount), 0, this.stats.maxEnergy);
+		this.energyDisplay.updateEnergy();
 	}
 
 	traceRoute(targetPos: L.LatLng, cb: TracingCallback = () => { }) {
@@ -170,9 +200,10 @@ export default class Player {
 		// let route = null;
 		this.router.routeToPoint(targetPos, (routeEv: L.Routing.RoutingResultEvent) => {
 			// route = routeEv.routes[0];
-			if (routeEv.routes.length < 1) return;
-			cb.call(null, routeEv.routes[0]);
-		})
+			if (routeEv.routes.length === 0) return;
+			cb(routeEv.routes[0]);
+		});
+
 		// return route;
 	}
 
@@ -183,7 +214,13 @@ export default class Player {
 	hasTurn(): boolean {
 		if (this.game.state !== GameState.PlayerAction) return false;
 		if (this.game.turnMan.activePlayer !== this) return false;
+
 		return true;
+	}
+
+	rest(){
+		this.game.clock.addTime(this.stats.restTime);
+		this.drainEnergy(-(this.metersToVisibilityEnd / this.metersPerEnergyUnit));
 	}
 
 	private onFrame() {

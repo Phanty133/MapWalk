@@ -1,14 +1,28 @@
 import "css/index.css"
-import Map, { ObjectData } from "ts/map/map"
+import Map from "ts/map/map"
+import { MapObjectData } from "ts/map/MapObject"
 import Lobby from "ts/networking/Lobby"
 import * as Cookies from "js-cookie"
 import Game, { GameState } from "ts/game/Game"
-import Player from "ts/game/Player"
 import Time from "ts/game/Time"
 import SettingsSelection, { GameSettings } from "ts/ui/settingsUI/SettingsSelection"
 import LobbyUI from "ts/ui/lobby/LobbyUI"
+import randomizeActionButtons from "ts/ui/forthememe"
+import { randInt } from "ts/lib/util"
+import { bindGameUI } from "ts/ui/gameui/BindGameUI"
 
 document.body.onload = () => {
+	loadPreGame();
+
+	const cb = () => {
+		randomizeActionButtons();
+		setTimeout(cb, randInt(5000, 10000));
+	};
+
+	cb();
+};
+
+function loadPreGame(){
 	if(new URLSearchParams(window.location.search).get("mode") === "mp"){
 		const lobbyUI = new LobbyUI();
 	}
@@ -24,16 +38,14 @@ document.body.onload = () => {
 			loadGame(settings);
 		};
 	}
-};
+}
 
-async function loadObjects(count: number): Promise<ObjectData[]>{
+async function loadObjects(count: number): Promise<MapObjectData[]>{
 	const req = await fetch(`/objects?count=${count}`);
 	return await req.json();
 }
 
 async function loadGame(settings: GameSettings){
-	const objects = await loadObjects(settings.objectCount);
-	const map = new Map("map", objects);
 	let lobby: Lobby;
 	let game: Game;
 
@@ -41,18 +53,20 @@ async function loadGame(settings: GameSettings){
 
 	if (lobbyCookie) {
 		lobby = new Lobby(lobbyCookie);
-		game = new Game(lobby);
+		game = new Game(settings, lobby);
 		// tslint:disable-next-line: no-console
 		console.log(lobby.id);
 		Cookies.remove("lobby");
 	}
 	else {
-		game = new Game();
+		game = new Game(settings);
 	}
 
-	const plyr = new Player(map, game, settings.location.pos);
-	const time = new Time();
+	const objects = await loadObjects(settings.objectCount);
+	game.createMap(objects);
+	game.createPlayer();
 
-	game.turnMan.playerOrder = [ plyr ];
+	const time = new Time();
 	game.state = GameState.PlayerAction;
+	bindGameUI(game);
 }

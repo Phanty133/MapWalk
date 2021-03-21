@@ -1,7 +1,7 @@
 import Player from "./Player";
 
+// Used only in MP
 export default class TurnManager{
-	// Used only in MP
 	activeIndex: number;
 	playerOrder: Player[];
 

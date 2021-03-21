@@ -5,6 +5,11 @@ import GameManifest from "./GameManifest";
 import P2PGameEventHandler from "./P2PGameEventHandler";
 import Log from "ts/lib/log";
 import TurnManager from "./TurnManager";
+import Player from "./Player";
+import Map from "ts/map/map";
+import { GameSettings } from "ts/ui/settingsUI/SettingsSelection";
+import Clock from "./Clock";
+import { MapObjectData } from "ts/map/MapObject";
 
 type ManifestCheckCompleteCallback = () => void;
 
@@ -29,12 +34,22 @@ export default class Game{
 	manifestCheckActive: boolean = false;
 	private receivedManifests: Record<string, string> = {}; // {PeerID:manifestHash}
 	public onManifestCheckComplete: ManifestCheckCompleteCallback = () => {};
+	private settings: GameSettings;
 	isMultiplayer: boolean;
 	state: GameState = GameState.Idle;
 	turnMan: TurnManager;
 	gamemode: GameMode;
+	localPlayer: Player;
+	map: Map;
+	clock: Clock;
 
-	constructor(lobby?: Lobby){
+	constructor(settings: GameSettings, lobby?: Lobby){
+		this.settings = settings;
+
+		this.clock = new Clock();
+		this.turnMan = new TurnManager();
+		this.manifest = new GameManifest();
+
 		if(lobby){
 			this.isMultiplayer = true;
 			this.lobby = lobby;
@@ -94,9 +109,23 @@ export default class Game{
 		else{
 			this.isMultiplayer = false;
 		}
+	}
 
-		this.turnMan = new TurnManager();
-		this.manifest = new GameManifest();
+	createMap(objects?: MapObjectData[]){
+		this.map = new Map("map", this);
+		this.map.createObjects(objects);
+	}
+
+	createPlayer(){
+		this.localPlayer = new Player(this.map, this, this.settings.location.pos);
+
+		this.localPlayer.events.on("MoveDone", () => {
+			this.map.moveDone();
+		});
+
+		if(!this.isMultiplayer){
+			this.turnMan.playerOrder = [ this.localPlayer ];
+		}
 	}
 
 	checkManifest(){

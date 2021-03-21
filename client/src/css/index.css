@@ -322,16 +322,22 @@ body{
 	overflow: scroll;
 }
 
-#makeMove {
+#mapButtons{
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 10px;
+	
 	position: absolute;
 	pointer-events: all;
 	width: 20%;
 	left: 40%;
 	height: 5%;
 	top: 90%;
-	background-color: green;
+}
+
+#mapButtons button{
 	border-style: solid;
-	border-color: limegreen;
+	border-radius: 10px;
 	color: white;
 	border-radius: 25px;
 }
@@ -357,4 +363,35 @@ body{
 	height: 5%;
 	position: absolute;
 	top: 93%;
+}
+
+#playerMove {
+	border-color: limegreen;
+	background-color: green;
+}
+
+#playerRest{
+	background-color: orange;
+	border-color: #ffbf4a;
+}
+
+#gameTimeContainer{
+	position: absolute;
+	left: 5%;
+	font-size: 3vw;
+	background-color: grey;
+	border: 5px solid #333;
+	padding: 0.25em 0.5em 0.25em 0.5em;
+	bottom: 17.5%;
+}
+
+#gameEnergyContainer{
+	position: absolute;
+	left: 5%;
+	bottom: 5%;
+	font-size: 3vw;
+	padding: 0.25em 0.5em 0.25em 0.5em;
+	background-color: grey;
+	border: 5px solid #333;
+	color: orange;
 }

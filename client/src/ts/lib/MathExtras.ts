@@ -2,6 +2,8 @@ import * as L from "leaflet";
 import Log from "./log";
 
 export default class MathExtras{
+	static EPSILON: number = 0.001;
+
 	static lerpNumber(n0: number, n1: number, t: number){
 		let clampedT: number = t;
 
