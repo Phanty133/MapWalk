@@ -7,6 +7,10 @@ import Player from "ts/game/Player"
 import Time from "ts/game/Time"
 import SettingsSelection, { GameSettings } from "ts/ui/settingsUI/SettingsSelection"
 import LobbyUI from "ts/ui/lobby/LobbyUI"
+import randomizeActionButtons from "ts/ui/forthememe"
+import { randInt } from "ts/lib/util"
+import Clock from "ts/game/Clock";
+import { bindGameUI } from "ts/ui/gameui/BindGameUI"
 
 document.body.onload = () => {
 	if(new URLSearchParams(window.location.search).get("mode") === "mp"){
@@ -24,6 +28,13 @@ document.body.onload = () => {
 			loadGame(settings);
 		};
 	}
+
+	const cb = () => {
+		randomizeActionButtons();
+		setTimeout(cb, randInt(5000, 10000));
+	};
+
+	cb();
 };
 
 async function loadObjects(count: number): Promise<ObjectData[]>{
@@ -41,18 +52,17 @@ async function loadGame(settings: GameSettings){
 
 	if (lobbyCookie) {
 		lobby = new Lobby(lobbyCookie);
-		game = new Game(lobby);
+		game = new Game(map, settings, lobby);
 		// tslint:disable-next-line: no-console
 		console.log(lobby.id);
 		Cookies.remove("lobby");
 	}
 	else {
-		game = new Game();
+		game = new Game(map, settings);
 	}
 
-	const plyr = new Player(map, game, settings.location.pos);
 	const time = new Time();
 
-	game.turnMan.playerOrder = [ plyr ];
 	game.state = GameState.PlayerAction;
+	bindGameUI(game);
 }

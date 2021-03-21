@@ -5,6 +5,10 @@ import GameManifest from "./GameManifest";
 import P2PGameEventHandler from "./P2PGameEventHandler";
 import Log from "ts/lib/log";
 import TurnManager from "./TurnManager";
+import Player from "./Player";
+import Map from "ts/map/map";
+import { GameSettings } from "ts/ui/settingsUI/SettingsSelection";
+import Clock from "./Clock";
 
 type ManifestCheckCompleteCallback = () => void;
 
@@ -33,8 +37,17 @@ export default class Game{
 	state: GameState = GameState.Idle;
 	turnMan: TurnManager;
 	gamemode: GameMode;
+	localPlayer: Player;
+	map: Map;
+	clock: Clock;
 
-	constructor(lobby?: Lobby){
+	constructor(map: Map, settings: GameSettings, lobby?: Lobby){
+		this.map = map;
+		this.clock = new Clock();
+		this.turnMan = new TurnManager();
+		this.manifest = new GameManifest();
+		this.localPlayer = new Player(this.map, this, settings.location.pos);
+
 		if(lobby){
 			this.isMultiplayer = true;
 			this.lobby = lobby;
@@ -93,10 +106,8 @@ export default class Game{
 		}
 		else{
 			this.isMultiplayer = false;
+			this.turnMan.playerOrder = [ this.localPlayer ];
 		}
-
-		this.turnMan = new TurnManager();
-		this.manifest = new GameManifest();
 	}
 
 	checkManifest(){

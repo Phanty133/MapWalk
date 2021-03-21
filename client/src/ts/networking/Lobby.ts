@@ -18,7 +18,7 @@ export default class Lobby{
 			this.p2p.joinLobby();
 		};
 
-		const game = new Game(this);
+		// const game = new Game(this);
 		this.socket.joinGameLobby(this.id);
 	}
 
