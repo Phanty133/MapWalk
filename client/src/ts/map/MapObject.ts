@@ -68,7 +68,7 @@ export default class MapObject {
 		this.marker.setIcon(this.iconActive);
 
 		if(Map.nonMetricDistanceTo(this.marker.getLatLng(), this.game.localPlayer.pos) < MathExtras.EPSILON){
-			Log.log("popper open");
+			this.map.popOpenQuestion();
 		}
 	}
 }
