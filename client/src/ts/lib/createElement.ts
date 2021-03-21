@@ -13,6 +13,8 @@ interface ElementAttributes{
 export default function createElement(tag: string, options?: ElementAttributes): HTMLElement{ // Just a shorthand for creating elements
 	const el = document.createElement(tag);
 
+	if(!options) return el;
+
 	if(options.class) el.className = options.class;
 	if(options.id) el.id = options.id;
 	if(options.parent) options.parent.appendChild(el);
