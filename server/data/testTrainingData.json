@@ -1,0 +1,24 @@
+{
+	"self": {
+		"questions": [
+			"introduce yourself",
+			"sup",
+			"hi",
+			"hello"
+		],
+		"answer": "hello"
+	},
+	"world": {
+		"questions": [
+			"what is the world",
+			"answer to the universe and everything"
+		],
+		"answer": "answer-to-world"
+	},
+	"starwars": {
+		"questions": [
+			"general kenobi"
+		],
+		"answer": "bold-one"
+	}
+}

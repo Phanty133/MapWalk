@@ -6,3 +6,4 @@ server/build/**
 server/logs/**
 server/node_modules
 server/package-lock.json
+server/data/classifier.json

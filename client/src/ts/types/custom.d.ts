@@ -5,27 +5,32 @@ declare module "*.svg"{
 }
 */
 
-declare module "*.css"{
+declare module "*.css" {
 	const content: any;
 	export default content;
 }
 
-declare module "*.png"{
+declare module "*.png" {
 	const content: any;
 	export default content;
 }
 
-declare module "*.jpg"{
+declare module "*.jpg" {
 	const content: any;
 	export default content;
 }
 
-declare module "*.otf"{
+declare module "*.otf" {
 	const content: any;
 	export default content;
 }
 
-declare module "*.html"{
+declare module "*.html" {
+	const content: any;
+	export default content;
+}
+
+declare module "*.json" {
 	const content: any;
 	export default content;
 }
