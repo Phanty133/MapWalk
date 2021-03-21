@@ -357,7 +357,9 @@ body{
 	width: 100%;
 	height: 93%;
 	display: flex;
-	align-items: flex-end;
+	align-items: flex-start;
+	flex-direction: column-reverse;
+	overflow: hidden;
 }
 #speech {
 	height: 5%;
@@ -394,4 +396,16 @@ body{
 	background-color: grey;
 	border: 5px solid #333;
 	color: orange;
+}
+
+.serverMsg {
+	color: yellow;
+}
+
+.playerMsg {
+	color: greenyellow;
+}
+
+.botMsg {
+	color: paleturquoise; /* mmmmmm posh colour :) */
 }
