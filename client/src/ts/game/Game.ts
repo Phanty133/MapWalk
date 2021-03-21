@@ -9,6 +9,7 @@ import Player from "./Player";
 import Map from "ts/map/map";
 import { GameSettings } from "ts/ui/settingsUI/SettingsSelection";
 import Clock from "./Clock";
+import { MapObjectData } from "ts/map/MapObject";
 
 type ManifestCheckCompleteCallback = () => void;
 
@@ -33,6 +34,7 @@ export default class Game{
 	manifestCheckActive: boolean = false;
 	private receivedManifests: Record<string, string> = {}; // {PeerID:manifestHash}
 	public onManifestCheckComplete: ManifestCheckCompleteCallback = () => {};
+	private settings: GameSettings;
 	isMultiplayer: boolean;
 	state: GameState = GameState.Idle;
 	turnMan: TurnManager;
@@ -41,12 +43,12 @@ export default class Game{
 	map: Map;
 	clock: Clock;
 
-	constructor(map: Map, settings: GameSettings, lobby?: Lobby){
-		this.map = map;
+	constructor(settings: GameSettings, lobby?: Lobby){
+		this.settings = settings;
+
 		this.clock = new Clock();
 		this.turnMan = new TurnManager();
 		this.manifest = new GameManifest();
-		this.localPlayer = new Player(this.map, this, settings.location.pos);
 
 		if(lobby){
 			this.isMultiplayer = true;
@@ -106,6 +108,22 @@ export default class Game{
 		}
 		else{
 			this.isMultiplayer = false;
+		}
+	}
+
+	createMap(objects?: MapObjectData[]){
+		this.map = new Map("map", this);
+		this.map.createObjects(objects);
+	}
+
+	createPlayer(){
+		this.localPlayer = new Player(this.map, this, this.settings.location.pos);
+
+		this.localPlayer.events.on("MoveDone", () => {
+			this.map.moveDone();
+		});
+
+		if(!this.isMultiplayer){
 			this.turnMan.playerOrder = [ this.localPlayer ];
 		}
 	}

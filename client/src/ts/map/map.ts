@@ -1,33 +1,21 @@
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import cumfuck from "img/cumfuck.png";
-import cumfuckActive from "img/cumfuckActive.png";
-import playerImg from "img/player.png";
 import posMarkImg from "img/hue-zero-marker.png";
-import { MapObject } from "ts/map/mapObject";
-import Log from "ts/lib/log";
-import Player from "ts/game/Player";
+import MapObject, { MapObjectData } from "ts/map/MapObject";
 import { EventEmitter } from "events";
 import createElement from "ts/lib/createElement";
-
-export interface ObjectData {
-	name: string;
-	description: string;
-	image: string;
-	location: { lat: number, lng: number };
-};
+import Game from "ts/game/Game";
 
 export default class Map {
 	EPSILON = 0.001;
 
 	map: L.Map;
-	markers: L.Marker[] = [];
-	placesOnMap: Record<string, MapObject> = {};
+	game: Game;
 	currentlyActive: L.Marker = null;
 	posMarker: L.Marker = null;
-	player: Player = null;
 	link: L.Polyline;
-	lines: L.Polyline[] = [];
+
+	activeObject: MapObject = null;
 
 	selectBounds: L.LatLngBounds = L.latLngBounds(
 		L.latLng(56.47, 20.95),
@@ -36,26 +24,14 @@ export default class Map {
 
 	events: EventEmitter = new EventEmitter();
 
-	iconInactive = new L.Icon({
-		iconUrl: cumfuck,
-		iconAnchor: L.Icon.Default.prototype.options.iconAnchor
-	});
-	iconActive = new L.Icon({
-		iconUrl: cumfuckActive,
-		iconAnchor: L.Icon.Default.prototype.options.iconAnchor
-	});
-	iconPlayer = new L.Icon({
-		iconUrl: playerImg,
-		iconAnchor: L.Icon.Default.prototype.options.iconAnchor
-	});
-
 	static nonMetricDistanceTo(thisLatLng: L.LatLngExpression, otherLatLng: L.LatLngExpression) {
 		const a = thisLatLng as L.LatLng;
 		const b = otherLatLng as L.LatLng;
 		return Math.sqrt((b.lat - a.lat) ** 2 + (b.lng - a.lng) ** 2);
 	}
 
-	constructor(id: string, objects?: ObjectData[]) {
+	constructor(id: string, game: Game) {
+		this.game = game;
 
 		this.map = L.map(id, {
 			center: [56.504754, 21.010924], // Liepaaja be like: [56.50475439537235, 21.010924221837993]
@@ -76,46 +52,43 @@ export default class Map {
 		}).addTo(this.map);
 
 		L.control.scale().addTo(this.map);
-
-		let _objects: MapObject[];
-
-		if (objects) {
-			_objects = objects.map(obj => new MapObject([obj.location.lat, obj.location.lng], obj.name, obj.description, obj.image));
-		}
-		else {
-			_objects = [
-				new MapObject([56.512922, 21.012326], null, "This is a river of cum, click if you dare.", null),
-				new MapObject([56.512519, 21.028135], null, "The fish zone", null),
-				new MapObject([56.5189124, 20.98500], null, "Plce 3 with no joke!!!", null)
-			] // Hand defined for now
-		}
-
-		_objects.forEach(element => {
-			const testMarker = L.marker(element.latLng, {
-				icon: this.iconInactive
-			}).addTo(this.map);
-
-			testMarker.bindTooltip(element.name, {
-				offset: new L.Point(0, -30)
-			});
-
-			testMarker.addEventListener("click", (e) => {
-				this.activate(testMarker);
-			});
-
-			this.markers.push(testMarker);
-
-			this.placesOnMap[element.name] = element;
-		});
 	}
 
-	bind() {
+	createObjects(_objects?: MapObjectData[]){
+		let objects = _objects;
+
+		if(!_objects){
+			objects = [{
+					name: "This is a river of cum, click if you dare.",
+					location: new L.LatLng(56.512922, 21.012326),
+					image: null,
+					description: null
+				},
+				{
+					name: "The fish zone",
+					location: new L.LatLng(56.512519, 21.028135),
+					image: null,
+					description: null
+				},
+				{
+					name: "Plce 3 with no joke!!!",
+					location: new L.LatLng(56.5189124, 20.98500),
+					image: null,
+					description: null
+				}
+			]
+		}
+
+		objects.map(obj => new MapObject(this.game, obj));
+	}
+
+	bindMapEvents() {
 		this.map.addEventListener("contextmenu", (e) => {
 			this.clearSelection();
 		});
 
 		this.map.addEventListener("dblclick", (e) => {
-			this.click(e as L.LeafletMouseEvent);
+			this.onDoubleClick(e as L.LeafletMouseEvent);
 		})
 
 		this.map.addEventListener("keydown", (e) => {
@@ -135,10 +108,6 @@ export default class Map {
 					this.clearSelection();
 				});
 			}
-		});
-
-		this.player.events.on("MoveDone", () => {
-			this.moveDone();
 		});
 	}
 
@@ -180,128 +149,101 @@ export default class Map {
 		}
 	}*/
 
-	activate(marker: L.Marker) {
-		if (this.currentlyActive) {
-			this.currentlyActive.setIcon(this.iconInactive);
+	onMarkerActivate(){
+		this.game.localPlayer.traceRoute(this.activeObject.pos);
+	}
+
+	cancelCurrentOrder(clearMarker = true){
+		if(this.activeObject && clearMarker){
+			this.activeObject.toggleState(true);
 		}
+
 		if (this.posMarker) {
 			this.posMarker.remove();
 			this.posMarker = null;
 		}
-
-		this.currentlyActive = marker;
-		this.currentlyActive.setIcon(this.iconActive);
 
 		if (this.link) {
 			this.link.remove();
-		}
-
-		this.player.traceRoute(marker.getLatLng(), (route: L.Routing.IRoute) => {
-			/*this.link = new L.Polyline(route.coordinates, {
-				color: "red"
-			}).addTo(this.map);*/
-		});
-
-		if (Map.nonMetricDistanceTo(this.currentlyActive.getLatLng(), this.player.marker.getLatLng()) < this.EPSILON) {
-			this.popOpenQuestion();
+			this.link = null;
 		}
 	}
 
-	click(ev: L.LeafletMouseEvent) {
+	onDoubleClick(ev: L.LeafletMouseEvent) {
 		if (!this.selectBounds.contains(ev.latlng)) return;
 		if (ev.originalEvent.button !== 0) return;
-		if (this.currentlyActive != null) {
-			this.currentlyActive.setIcon(this.iconInactive);
-			this.currentlyActive = null;
-		}
-		if (this.posMarker) {
-			this.posMarker.remove();
-			this.posMarker = null;
-		}
+
+		this.cancelCurrentOrder();
+
 		this.popClosedQuestion();
 
-		const tempIco = new L.Icon({
+		const tempIcon = new L.Icon({
 			iconUrl: posMarkImg,
 			iconAnchor: L.Icon.Default.prototype.options.iconAnchor
 		});
 
 		this.posMarker = L.marker(ev.latlng, {
-			icon: tempIco
+			icon: tempIcon
 		}).addTo(this.map);
 
-		if (this.link) {
-			this.link.remove();
-		}
-
-		this.player.traceRoute(ev.latlng, (route: L.Routing.IRoute) => {
-			// Log.log(route);
-			/*this.link = new L.Polyline(route.coordinates, {
-				color: "red"
-			}).addTo(this.map);*/
-		});
+		this.game.localPlayer.traceRoute(ev.latlng);
 	}
 
 	clearSelection() {
-		if (this.posMarker) {
-			this.posMarker.remove();
-			this.posMarker = null;
-		}
-		if (this.link) {
-			this.link.remove();
-		}
-		if (this.currentlyActive) {
-			this.currentlyActive.setIcon(this.iconInactive);
-			this.currentlyActive = null;
-		}
-		this.player.killRoute();
+		this.cancelCurrentOrder(true);
+		this.game.localPlayer.killRoute();
 		this.popClosedQuestion();
 	}
 
 	saveSelection() {
-		/*if(this.saved == null) {
-			this.saved = this.currentlyActive;
-		}
-		this.lines.push(this.link);
-		this.link = null;
-		this.clearSelection();*/
-		if (this.player.moving) return;
+		if (this.game.localPlayer.moving) return;
+
 		if (this.posMarker) {
-			this.events.emit("MarkerActivated", this.posMarker);
+			this.events.emit("MarkerActivated", this.posMarker.getLatLng());
+
 			this.posMarker.remove();
 			this.posMarker = null;
+
 			this.popClosedQuestion();
+
+			return;
 		}
-		if (!this.currentlyActive) return;
-		// Log.log("ohoto i ribalka");
-		this.events.emit("MarkerActivated", this.currentlyActive);
+
+		if (!this.activeObject) return;
+
+		this.events.emit("MarkerActivated", this.activeObject.pos);
 		this.popClosedQuestion();
 	}
 
 	moveDone() {
-		if (!this.currentlyActive) return;
+		if (!this.activeObject) return;
 
-		if (Map.nonMetricDistanceTo(this.currentlyActive.getLatLng(), this.player.marker.getLatLng()) < this.EPSILON) {
+		if (Map.nonMetricDistanceTo(this.activeObject.pos, this.game.localPlayer.marker.getLatLng()) < this.EPSILON) {
 			this.popOpenQuestion();
 		}
 	}
 
 	popOpenQuestion() {
-		if (!this.player.hasTurn()) return;
+		if (!this.game.localPlayer.hasTurn()) return;
+
 		document.getElementById("qotd")!.innerHTML = ""; // fuck children
 		document.getElementById("qotd")!.hidden = false;
+
 		const bruh = createElement("p", {
 			class: "thatThingInsideTheQuestionBoxShouldBeLeftIgnoredTbh"
 		}) as HTMLElement;
-		const place = this.placesOnMap[this.currentlyActive.getTooltip().getContent().toString()];
+
 		// Log.log(place);
 		bruh.innerHTML = `
-		<b>${place.name}</b>
-		<br/>
-		${place.description}
-		<br/>
-		<div id="questionImageContainer">
-			<img src="${place.image}" alt="fuck you"/>
-		</div>`; // + this;
+			<b>${this.activeObject.data.name}</b>
+			<br/>
+			${this.activeObject.data.description}
+			<br/>
+			<div id="questionImageContainer">
+				<img src="${this.activeObject.data.image}" alt="fuck you"/>
+			</div>
+		`; // + this;
+
 		document.getElementById("qotd")!.append(bruh);
 	}
 
