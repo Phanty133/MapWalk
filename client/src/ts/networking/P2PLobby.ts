@@ -2,6 +2,7 @@ import GameEvent, { GameEventResponse } from "ts/game/GameEvent";
 import GameManifest, { GameManifestData } from "ts/game/GameManifest";
 import { randInt } from "ts/lib/util";
 import Socket from "./Socket";
+import Log from "ts/lib/log";
 
 export interface PeerData{
 	peer: string;
@@ -79,7 +80,7 @@ export default class P2PLobby{
 		this.socket = socket;
 
 		this.bindToChannel("init", (msgData: MessageData.Init, channel: RTCDataChannel) => {
-			console.log("Init ", msgData.status);
+			Log.log("Init " + msgData.status);
 		});
 	}
 
@@ -94,13 +95,13 @@ export default class P2PLobby{
 			const channel = this.peers[peer].createDataChannel(`data-${randInt(0, 100)}`);
 
 			channel.onopen = () => {
-				console.log("Channel open");
+				Log.log("Channel open");
 				P2PLobby.send(channel, { cmd: "init", status: "OK" });
 				res(channel);
 			};
 
 			channel.onclose = () => {
-				console.log("Channel close");
+				Log.log("Channel close");
 			};
 			P2PLobby.debugHost = true;
 
@@ -126,7 +127,7 @@ export default class P2PLobby{
 
 		peerConnection.ontrack = (e) => {
 			// tslint:disable-next-line: no-console
-			console.log("Connected track ", e);
+			Log.log("Connected track " + e);
 			// TODO: actually make it do something when connected
 		};
 
@@ -135,10 +136,10 @@ export default class P2PLobby{
 
 			switch(state){
 				case "failed":
-					console.log("Peer lost connection");
+					Log.log("Peer lost connection");
 					break;
 				case "disconnected":
-					console.log("Peer disconnected");
+					Log.log("Peer disconnected");
 					this.channels[data.peer].close();
 					this.peers[data.peer].close();
 
@@ -146,7 +147,7 @@ export default class P2PLobby{
 					delete this.channels[data.peer];
 					break;
 				case "closed":
-					console.log("Peer connection closed");
+					Log.log("Peer connection closed");
 					delete this.peers[data.peer];
 					delete this.channels[data.peer];
 			}
@@ -161,7 +162,7 @@ export default class P2PLobby{
 				});
 
 			// tslint:disable-next-line: no-console
-			console.log("Creating an RTC offer to ", data.peer);
+			Log.log("Creating an RTC offer to " + data.peer);
 
 			const localDesc = await peerConnection.createOffer();
 
@@ -170,8 +171,8 @@ export default class P2PLobby{
 		}
 		else{
 			peerConnection.ondatachannel = (e: RTCDataChannelEvent) => {
-				console.log("Data channel received");
-				console.log(e.channel.label);
+				Log.log("Data channel received");
+				Log.log(e.channel.label);
 
 				e.channel.onmessage = (msgEv: MessageEvent) => { this.messageHandler(data.peer, msgEv); };
 				this.channels[data.peer] = e.channel;
@@ -186,14 +187,14 @@ export default class P2PLobby{
 
 	async remoteSessionDesc(data: RemoteSessionData){
 		// tslint:disable-next-line: no-console
-		console.log("Remote desc received!");
+		Log.log("Remote desc received!");
 		const desc = new RTCSessionDescription(data.sessionDesc);
 		const peer = this.peers[data.peer];
 
 		await peer.setRemoteDescription(desc);
 
 		// tslint:disable-next-line: no-console
-		console.log("setRemoteDescription OK");
+		Log.log("setRemoteDescription OK");
 
 		if(data.sessionDesc.type === "offer"){
 			const localDesc = await peer.createAnswer();

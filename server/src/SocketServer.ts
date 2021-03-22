@@ -1,6 +1,6 @@
 import { Server } from "http";
 import socketio from "socket.io";
-import { logger } from "./index";
+import { logger, chatBoot } from "./index";
 import LobbyManager from "./LobbyManager";
 import Lobby from "./Lobby";
 
@@ -23,6 +23,10 @@ export interface P2PRelaySessionDescData{
 	sessionDesc: RTCSessionDescriptionInit;
 }
 
+export interface ChatbotVerifyAnswerData{
+	msg: string;
+}
+
 export default class SocketServer{
 	io: socketio.Server;
 	sockets: Record<string, socketio.Socket> = {}; // {socketID: socket}
@@ -43,6 +47,7 @@ export default class SocketServer{
 		socket.on("P2PRelayIceCandidate", (data: P2PRelayIceCandidateData) => { this.onP2PRelayIceCandidate(socket, data); });
 		socket.on("P2PRelaySessionDesc", (data: P2PRelaySessionDescData) => { this.onP2PRelaySessionDesc(socket, data); });
 		socket.on("P2PJoinLobby", () => { this.onP2PJoinLobby(socket); });
+		socket.on("ChatbotVerifyAnswer", (data: ChatbotVerifyAnswerData) => { this.onChatbotVerifyAnswer(socket, data); })
 	}
 
 	emit(id: string, event: string, msg?: object){
@@ -76,5 +81,11 @@ export default class SocketServer{
 		if(!this.lobbies[socket.id]) return;
 
 		this.lobbies[socket.id].P2PRelaySessionDesc(socket.id, msg);
+	}
+
+	private onChatbotVerifyAnswer(socket: socketio.Socket, msg: ChatbotVerifyAnswerData){
+		const chatbotAns = chatBoot.processMessage(msg.msg);
+
+		socket.emit("ChatbotVerifyAnswerResponse", { response: chatbotAns });
 	}
 }
