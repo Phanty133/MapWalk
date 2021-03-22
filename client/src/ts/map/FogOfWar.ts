@@ -130,6 +130,10 @@ export default class FogOfWar{
 		this.canvasRadius = avgRatio * geoRadius / 2;
 	}
 
+	revealAll(){
+		this.multiCanvas.clearRect(0, 0, this.canvasSize.x, this.canvasSize.y);
+	}
+
 	/*
 
 	RIP

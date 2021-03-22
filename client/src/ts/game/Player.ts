@@ -229,6 +229,7 @@ export default class Player {
 	incrementScore(){
 		this.stats.score++;
 		this.scoreDisplay.update();
+		this.game.checkGameEndCondition();
 	}
 
 	private onFrame() {

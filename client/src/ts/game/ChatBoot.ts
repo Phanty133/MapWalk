@@ -6,7 +6,8 @@ export default class ChatBoot {
 		"hello": "Hello there.",
 		"no-no": "I haven't the slightest what you just said.",
 		"answer-to-world": "yo're mum",
-		"bold-one": "You're a bold one"
+		"bold-one": "You're a bold one",
+		"chem": "Mazais jānītis pievienoja 100g trinitrotoluola osmija tetroksīdam. Kuras pakāpes apdegumus guva Mazais Jānītis?"
 	}
 
 	async processMessage(msg: string) {

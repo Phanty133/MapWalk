@@ -1,5 +1,6 @@
 import Game from "ts/game/Game";
 import Chat from "./Chat";
+import GameEndUI from "./GameEndUI";
 
 export function bindGameUI(game: Game){
 	document.getElementById("playerRest").addEventListener("click", () => {
@@ -11,4 +12,5 @@ export function bindGameUI(game: Game){
 	});
 
 	new Chat();
+	game.gameEndUI = new GameEndUI(game);
 }

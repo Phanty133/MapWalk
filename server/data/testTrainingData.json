@@ -20,5 +20,11 @@
 			"general kenobi"
 		],
 		"answer": "bold-one"
+	},
+	"chem": {
+		"questions": [
+			"Ko izdarija mazais janitis?"
+		],
+		"answer": "chem"
 	}
 }

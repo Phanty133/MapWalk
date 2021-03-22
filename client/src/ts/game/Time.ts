@@ -7,6 +7,7 @@ export default class Time{
 	static timeScale: number = 1;
 	static frameCap: number = 90;
 	static fixedFrameTime: number = 1000 / Time.frameCap;
+	static paused: boolean = false;
 	private static frameCallbacks: FrameUpdateCallback[] = [];
 	private prevFrameTime: number = 0;
 
@@ -16,6 +17,8 @@ export default class Time{
 	}
 
 	private onFrame(){
+		if(Time.paused) return;
+
 		const curTime: number = performance.now();
 		Time.deltaTime = curTime - this.prevFrameTime;
 

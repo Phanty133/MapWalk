@@ -10,6 +10,8 @@ import Map from "ts/map/map";
 import { GameSettings } from "ts/ui/settingsUI/SettingsSelection";
 import Clock from "./Clock";
 import { MapObjectData } from "ts/map/MapObject";
+import GameEndUI from "ts/ui/gameui/GameEndUI";
+import Time from "./Time";
 
 type ManifestCheckCompleteCallback = () => void;
 
@@ -36,13 +38,14 @@ export default class Game{
 	public onManifestCheckComplete: ManifestCheckCompleteCallback = () => {};
 	private settings: GameSettings;
 	private mapObjectData: MapObjectData[];
+	gameEndUI: GameEndUI;
 	isMultiplayer: boolean;
 	state: GameState = GameState.Idle;
 	turnMan: TurnManager;
-	gamemode: GameMode;
 	localPlayer: Player;
 	map: Map;
 	clock: Clock;
+	gameEnd: boolean = false;
 
 	constructor(settings: GameSettings, lobby?: Lobby){
 		this.settings = settings;
@@ -231,5 +234,32 @@ export default class Game{
 
 			this.onManifestCheckComplete();
 		});
+	}
+
+	checkGameEndCondition(){
+		switch(this.settings.gamemode){
+			case GameMode.TimeAttack:
+				if(this.clock.curTime >= this.settings.timeLimit) {
+					this.onGameEnd();
+					return;
+				}
+				break;
+			case GameMode.HundredPercent:
+				if(this.localPlayer.stats.score === 1){ // this.mapObjectData.length
+					this.onGameEnd();
+					return;
+				}
+
+				break;
+			case GameMode.HundredPercentClock:
+				// this is something
+				break;
+		}
+	}
+
+	onGameEnd(){
+		this.gameEnd = true;
+		Time.paused = true;
+		this.gameEndUI.show();
 	}
 }

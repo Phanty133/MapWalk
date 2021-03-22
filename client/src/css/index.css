@@ -348,8 +348,9 @@ body{
 	height: 30%;
 	background-color: #FFFFFF66;
 	border: 0.5vw solid gainsboro;
+	border-left: none;
 	pointer-events: all;
-	border-left: 0;
+	padding: 10px;
 	top: 10%;
 	color: black;
 	overflow: ignore;
@@ -365,7 +366,7 @@ body{
 #speech {
 	height: 5%;
 	position: absolute;
-	top: 93%;
+	top: 90%;
 }
 
 #playerMove {
@@ -442,6 +443,7 @@ body{
 	color: white;
 	border-radius: 5px;
 	display: none;
+	pointer-events: auto;
 
 	position: absolute;
 }
@@ -463,4 +465,53 @@ body{
 
 .botMsg {
 	color: paleturquoise; /* mmmmmm posh colour :) */
+}
+
+#gameEndContainer{
+	position: absolute;
+	width: 15vw;
+	left: 42.5vw;
+	height: -moz-fit-content;
+	height: fit-content;
+	top: 30vh;
+	background-color: white;
+	border: 3px solid grey;
+	color: black;
+	padding: 0.5em;
+	pointer-events: auto;
+	text-align: center;
+	display: none;
+}
+
+#gameEndMessage{
+	font-size: 18pt;
+	margin-bottom: 1em;
+	display: block;
+}
+
+#gameEndStats{
+	display: grid;
+	grid-auto-flow: row;
+	margin-bottom: 3em;
+}
+
+#gameEndStats > span{
+	font-size: 12pt
+}
+
+#gameEndStats > span > span{
+	font-size: 16pt;
+}
+
+#gameEndControls{
+	position: absolute;
+	bottom: 0.5em;
+	display: grid;
+	text-align: center;
+	width: calc(100% - 1em); /* account for padding */
+}
+
+#gameEndControls button{
+	background:red;
+	color: white;
 }

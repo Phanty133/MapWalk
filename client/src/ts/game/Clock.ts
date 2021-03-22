@@ -1,21 +1,35 @@
 export default class Clock{
 	private static startTime: number = 480; // How many minutes to append to the curTime
 
-	private curTime: number = 0; // Cur game time in minutes
+	curTime: number = 0; // Cur game time in minutes
 	private timeEl: HTMLSpanElement;
 
 	public get timeString(): string{
 		const offsetTime = this.curTime + Clock.startTime;
 		const dayTime = offsetTime % 1440;
-		const hours: string = (Math.floor(dayTime / 60)).toString();
-		const min: string = (dayTime % 60).toString();
+		const hours = Math.floor(dayTime / 60);
+		const min = dayTime % 60;
 
-		return `${hours.length === 1 ? `0${hours}` : hours}:${min.length === 1 ? `0${min}` : min}`;
+		return this.timeStringFromTime(hours, min);
+	}
+
+	public get timeStringSinceStart(): string{
+		const hours = Math.floor(this.curTime / 60);
+		const min = this.curTime % 60;
+
+		return this.timeStringFromTime(hours, min);
 	}
 
 	constructor(){
 		this.timeEl = document.getElementById("gameTime");
 		this.updateTimeEl();
+	}
+
+	private timeStringFromTime(hrs: number, min: number){
+		const hrsStr = hrs.toString();
+		const minStr = min.toString();
+
+		return `${hrsStr.length === 1 ? `0${hrsStr}` : hrsStr}:${minStr.length === 1 ? `0${minStr}` : minStr}`;
 	}
 
 	addTime(n: number){ // Add minutes

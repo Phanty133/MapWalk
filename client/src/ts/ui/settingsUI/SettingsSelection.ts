@@ -9,6 +9,7 @@ export interface GameSettings{
 	gamemode: GameMode;
 	location: Location;
 	objectCount: number;
+	timeLimit?: number;
 }
 
 type StartGameCallback = (settings: GameSettings) => void;
