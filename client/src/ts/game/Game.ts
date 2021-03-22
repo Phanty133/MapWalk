@@ -13,30 +13,31 @@ import { MapObjectData } from "ts/map/MapObject";
 import GameEndUI from "ts/ui/gameui/GameEndUI";
 import Time from "./Time";
 import Socket from "ts/networking/Socket";
+import ChatBoot from "./ChatBoot";
 
 type ManifestCheckCompleteCallback = () => void;
 
-export enum GameState{
+export enum GameState {
 	Idle,
 	PlayerAction, // The player(s) can do something
 	Loading, // The game is waiting for something
 	Paused // The game is paused obviously
 }
 
-export enum GameMode{
+export enum GameMode {
 	TimeAttack,
 	HundredPercent,
 	HundredPercentClock
 }
 
-export default class Game{
+export default class Game {
 	lobby: Lobby;
 	p2p: P2PLobby;
 	manifest: GameManifest;
 	eventHandler: P2PGameEventHandler;
 	manifestCheckActive: boolean = false;
 	private receivedManifests: Record<string, string> = {}; // {PeerID:manifestHash}
-	public onManifestCheckComplete: ManifestCheckCompleteCallback = () => {};
+	public onManifestCheckComplete: ManifestCheckCompleteCallback = () => { };
 	private settings: GameSettings;
 	private mapObjectData: MapObjectData[];
 	gameEndUI: GameEndUI;
@@ -48,8 +49,9 @@ export default class Game{
 	clock: Clock;
 	gameEnd: boolean = false;
 	socket: Socket;
+	chatBot: ChatBoot;
 
-	constructor(settings: GameSettings, socket: Socket, lobby?: Lobby){
+	constructor(settings: GameSettings, socket: Socket, lobby?: Lobby) {
 		this.settings = settings;
 		this.socket = socket;
 
@@ -57,7 +59,7 @@ export default class Game{
 		this.turnMan = new TurnManager();
 		this.manifest = new GameManifest();
 
-		if(lobby){
+		if (lobby) {
 			this.isMultiplayer = true;
 			this.lobby = lobby;
 			this.p2p = this.lobby.p2p;
@@ -66,11 +68,11 @@ export default class Game{
 			this.eventHandler.onEvent = (e: GameEvent) => {
 				Log.log("Game event received: " + e.type);
 
-				if(this.manifestCheckActive){
+				if (this.manifestCheckActive) {
 					// Put the event in a queue
 					this.manifest.eventQueue.push(e);
 				}
-				else{
+				else {
 					// Apply the event
 					this.manifest.events.push(e);
 					// TODO: do something else
@@ -80,11 +82,11 @@ export default class Game{
 			this.eventHandler.onEventAccepted = (e: GameEvent) => {
 				Log.log("Game event accepted!");
 
-				if(this.manifestCheckActive){
+				if (this.manifestCheckActive) {
 					// Put the event in a queue
 					this.manifest.eventQueue.push(e);
 				}
-				else{
+				else {
 					// Apply the event
 					this.manifest.events.push(e);
 					// TODO: do something else
@@ -101,7 +103,7 @@ export default class Game{
 
 			this.bindEvents();
 
-			if(!P2PLobby.debugHost){
+			if (!P2PLobby.debugHost) {
 				setTimeout(() => {
 					const ev: GameEvent = new GameEvent("test", "Hello world!");
 					this.eventHandler.dispatchEvent(ev);
@@ -113,32 +115,32 @@ export default class Game{
 				this.eventHandler.dispatchEvent(new GameEvent("test", "Hello world!"));
 			};
 		}
-		else{
+		else {
 			this.isMultiplayer = false;
 		}
 	}
 
-	createMap(objects?: MapObjectData[]){
+	createMap(objects?: MapObjectData[]) {
 		this.map = new Map("map", this);
 		this.mapObjectData = objects;
 	}
 
-	createPlayer(){
+	createPlayer() {
 		this.localPlayer = new Player(this.map, this, this.settings.location.pos);
 
 		this.localPlayer.events.on("MoveDone", () => {
 			this.map.moveDone();
 		});
 
-		if(!this.isMultiplayer){
-			this.turnMan.playerOrder = [ this.localPlayer ];
+		if (!this.isMultiplayer) {
+			this.turnMan.playerOrder = [this.localPlayer];
 		}
 
 		this.map.createObjects(this.mapObjectData);
 	}
 
-	checkManifest(){
-		if(this.manifestCheckActive) return;
+	checkManifest() {
+		if (this.manifestCheckActive) return;
 
 		this.manifestCheckActive = true;
 		Log.log("Syncing game manifest");
@@ -146,7 +148,7 @@ export default class Game{
 		this.p2p.broadcast({ cmd: "getManifestHash" });
 	}
 
-	private bindEvents(){
+	private bindEvents() {
 		this.p2p.bindToChannel("checkManifest", (data: MessageData.CheckManifest) => {
 			this.checkManifest();
 		});
@@ -159,12 +161,12 @@ export default class Game{
 		});
 
 		this.p2p.bindToChannel("sendManifestHash", async (data: MessageData.SendManifestHash) => {
-			if(!this.manifestCheckActive) return;
+			if (!this.manifestCheckActive) return;
 
 			this.receivedManifests[data.peer] = data.manifestHash;
 
 			// Continue only after all manifests have been received
-			if(Object.keys(this.receivedManifests).length !== Object.keys(this.p2p.peers).length) return;
+			if (Object.keys(this.receivedManifests).length !== Object.keys(this.p2p.peers).length) return;
 
 			const hashCount: Record<string, number> = {};
 			const selfManifestHash: string = await this.manifest.getHash();
@@ -173,19 +175,19 @@ export default class Game{
 
 			hashCount[selfManifestHash] = 1; // Also account for own hash
 
-			for(const hash of Object.values(this.receivedManifests)){
-				if(hash in hashCount){
-					if(++hashCount[hash] > maxHashCount){
+			for (const hash of Object.values(this.receivedManifests)) {
+				if (hash in hashCount) {
+					if (++hashCount[hash] > maxHashCount) {
 						consensusHash = hash;
 						maxHashCount = hashCount[hash];
 					}
 				}
-				else{
+				else {
 					hashCount[hash] = 1;
 				}
 			}
 
-			if(selfManifestHash === consensusHash){
+			if (selfManifestHash === consensusHash) {
 				this.manifestCheckActive = false;
 				this.receivedManifests = {};
 				return;
@@ -200,11 +202,11 @@ export default class Game{
 		});
 
 		this.p2p.bindToChannel("getManifestData", (data: MessageData.GetManifest, channel: RTCDataChannel) => {
-			P2PLobby.send(channel, {cmd: "sendManifestData", manifestData: this.manifest.data});
+			P2PLobby.send(channel, { cmd: "sendManifestData", manifestData: this.manifest.data });
 		});
 
 		this.p2p.bindToChannel("sendManifestData", async (data: MessageData.SendManifest) => {
-			if(!this.manifestCheckActive) return;
+			if (!this.manifestCheckActive) return;
 			this.manifestCheckActive = false;
 
 			// Apply the new manifest
@@ -216,10 +218,10 @@ export default class Game{
 
 			let curManifestHash: string = await this.manifest.getHash();
 
-			while(this.manifest.eventQueue.length > 0){
+			while (this.manifest.eventQueue.length > 0) {
 				const nextEventIndex = this.manifest.eventQueue.findIndex(e => e.manifestHash === curManifestHash);
 
-				if(nextEventIndex === null){
+				if (nextEventIndex === null) {
 					Log.error("uh oh - unable to find an event with given manifest hash - desync error!");
 				}
 
@@ -229,7 +231,7 @@ export default class Game{
 
 				delete this.manifest.eventQueue[nextEventIndex];
 
-				if(this.manifest.eventQueue.length > 0){
+				if (this.manifest.eventQueue.length > 0) {
 					// Recalculate hash if there are events in queue
 					curManifestHash = await this.manifest.getHash();
 				}
@@ -239,16 +241,16 @@ export default class Game{
 		});
 	}
 
-	checkGameEndCondition(){
-		switch(this.settings.gamemode){
+	checkGameEndCondition() {
+		switch (this.settings.gamemode) {
 			case GameMode.TimeAttack:
-				if(this.clock.curTime >= this.settings.timeLimit) {
+				if (this.clock.curTime >= this.settings.timeLimit) {
 					this.onGameEnd();
 					return;
 				}
 				break;
 			case GameMode.HundredPercent:
-				if(this.localPlayer.stats.score === this.mapObjectData.length){
+				if (this.localPlayer.stats.score === this.mapObjectData.length) {
 					this.onGameEnd();
 					return;
 				}
@@ -259,7 +261,7 @@ export default class Game{
 		}
 	}
 
-	onGameEnd(){
+	onGameEnd() {
 		this.gameEnd = true;
 		Time.paused = true;
 		this.gameEndUI.show();

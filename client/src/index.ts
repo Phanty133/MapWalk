@@ -74,6 +74,7 @@ async function loadGame(settings: GameSettings) {
 	game.state = GameState.PlayerAction;
 
 	const chatBoot = new ChatBoot(game);
+	game.chatBot = chatBoot;
 
 	bindChatBoot(chatBoot);
 	bindGameUI(game);
