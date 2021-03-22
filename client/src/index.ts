@@ -12,6 +12,7 @@ import { randInt } from "ts/lib/util"
 import { bindGameUI } from "ts/ui/gameui/BindGameUI"
 import ChatBoot from "ts/game/ChatBoot"
 import { bindChatBoot } from "ts/ui/gameui/ChatbotUI"
+import Socket from "ts/networking/Socket"
 
 document.body.onload = () => {
 	loadPreGame();
@@ -50,18 +51,19 @@ async function loadObjects(count: number): Promise<MapObjectData[]> {
 async function loadGame(settings: GameSettings) {
 	let lobby: Lobby;
 	let game: Game;
+	const socket = new Socket();
 
 	const lobbyCookie = Cookies.get("lobby");
 
 	if (lobbyCookie) {
-		lobby = new Lobby(lobbyCookie);
-		game = new Game(settings, lobby);
+		lobby = new Lobby(lobbyCookie, socket);
+		game = new Game(settings, socket, lobby);
 		// tslint:disable-next-line: no-console
 		console.log(lobby.id);
 		Cookies.remove("lobby");
 	}
 	else {
-		game = new Game(settings);
+		game = new Game(settings, socket);
 	}
 
 	const objects = await loadObjects(settings.objectCount);
@@ -71,7 +73,7 @@ async function loadGame(settings: GameSettings) {
 	const time = new Time();
 	game.state = GameState.PlayerAction;
 
-	const chatBoot = new ChatBoot();
+	const chatBoot = new ChatBoot(game);
 
 	bindChatBoot(chatBoot);
 	bindGameUI(game);

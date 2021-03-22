@@ -1,4 +1,5 @@
 import Log from "ts/lib/log";
+import Game from "./Game";
 
 export default class ChatBoot {
 	// nvm still need this
@@ -10,10 +11,28 @@ export default class ChatBoot {
 		"chem": "Mazais jānītis pievienoja 100g trinitrotoluola osmija tetroksīdam. Kuras pakāpes apdegumus guva Mazais Jānītis?"
 	}
 
-	async processMessage(msg: string) {
-		const resp = await fetch('/askChatbot?question=' + msg);
-		const out = await resp.json();
-		return this.interpretReply(out.answer);
+	private game: Game;
+	private curVerificationResolveCb: (response: string) => void;
+
+	constructor(game: Game){
+		this.game = game;
+		this.game.socket.socketEvents.addListener("ChatbotVerifyAnswerResponse", (res: string) => { this.onAnswerVerified(res) });
+	}
+
+	async processMessage(msg: string): Promise<string> {
+		this.requestAnswerVerification(msg);
+
+		return new Promise<string>((res, rej) => {
+			this.curVerificationResolveCb = res;
+		});
+	}
+
+	private requestAnswerVerification(msg: string){
+		this.game.socket.chatbotVerifyAnswer(msg);
+	}
+
+	private onAnswerVerified(msg: string){
+		this.curVerificationResolveCb(this.interpretReply(msg));
 	}
 
 	interpretReply(rep: string) {

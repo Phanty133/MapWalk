@@ -30,6 +30,7 @@
     "leaflet": "^1.7.1",
     "leaflet-customlayer": "^2.1.0",
     "leaflet-routing-machine": "^3.2.12",
-    "socket.io-client": "^4.0.0"
+    "socket.io-client": "^4.0.0",
+    "webrtc-adapter": "^7.7.1"
   }
 }

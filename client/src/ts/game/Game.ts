@@ -12,6 +12,7 @@ import Clock from "./Clock";
 import { MapObjectData } from "ts/map/MapObject";
 import GameEndUI from "ts/ui/gameui/GameEndUI";
 import Time from "./Time";
+import Socket from "ts/networking/Socket";
 
 type ManifestCheckCompleteCallback = () => void;
 
@@ -46,9 +47,11 @@ export default class Game{
 	map: Map;
 	clock: Clock;
 	gameEnd: boolean = false;
+	socket: Socket;
 
-	constructor(settings: GameSettings, lobby?: Lobby){
+	constructor(settings: GameSettings, socket: Socket, lobby?: Lobby){
 		this.settings = settings;
+		this.socket = socket;
 
 		this.clock = new Clock();
 		this.turnMan = new TurnManager();
@@ -249,7 +252,6 @@ export default class Game{
 					this.onGameEnd();
 					return;
 				}
-
 				break;
 			case GameMode.HundredPercentClock:
 				// this is something

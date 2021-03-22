@@ -32,14 +32,11 @@ export default class Routes {
 		this.router.get("/join", (req, res) => { this.join(req, res); });
 		this.router.get("/createLobby", (req, res) => { this.createLobby(req, res); });
 		this.router.get("/objects", (req, res) => { this.objects(req, res); });
-		this.router.get("/askChatbot", (req, res) => { this.askChatbot(req, res); })
 
 		// Add the static file middleware, so custom routes have priority over the middleware
 		this.router.use(express.static(this.baseDir));
 
 		this.loadObjects();
-
-		this.chatBoot = new ChatBoot();
 	}
 
 	private async loadObjects() {
@@ -85,11 +82,5 @@ export default class Routes {
 		const randElements = randomArrayElements(this.objectData, objCount);
 
 		res.json(randElements);
-	}
-
-	private askChatbot(req: Request, res: Response) {
-		const chatbotAns = this.chatBoot.processMessage(req.query.question.toString());
-
-		res.json({ answer: chatbotAns });
 	}
 }

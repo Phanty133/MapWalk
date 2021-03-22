@@ -1,5 +1,6 @@
 import * as socketio from "socket.io-client";
 import P2PLobby, { IceCandidate, RemoteSessionData, IceCandidateData, PeerData } from "./P2PLobby";
+import { EventEmitter } from "events";
 
 type OnGameLobbyJoined = () => void;
 
@@ -9,6 +10,7 @@ export default class Socket{
 	p2p: P2PLobby;
 	id: string;
 	onGameLobbyJoined: OnGameLobbyJoined;
+	socketEvents: EventEmitter = new EventEmitter();
 
 	constructor(){
 		this.connectToServer();
@@ -25,6 +27,7 @@ export default class Socket{
 		this.socket.on("P2PAddPeer", (msg: PeerData) => { this.onP2PAddPeer(msg); })
 		this.socket.on("P2PIceCandidate", (msg: IceCandidateData) => { this.onP2PIceCandidate(msg); });
 		this.socket.on("P2PSessionDesc", (msg: RemoteSessionData) => { this.onP2PSessionDesc(msg); });
+		this.socket.on("ChatbotVerifyAnswerResponse", (msg: { response: string }) => { this.onChatbotVerifyAnswerResponse(msg); });
 	}
 
 	private onSocketConnect(){
@@ -41,6 +44,10 @@ export default class Socket{
 
 	private onP2PSessionDesc(msg: RemoteSessionData){
 		this.p2p.remoteSessionDesc(msg);
+	}
+
+	private onChatbotVerifyAnswerResponse(msg: { response: string }){
+		this.socketEvents.emit("ChatbotVerifyAnswerResponse", msg.response);
 	}
 
 	private emit(event: string, data?: object){
@@ -61,5 +68,9 @@ export default class Socket{
 
 	P2PJoinLobby(){
 		this.emit("P2PJoinLobby");
+	}
+
+	chatbotVerifyAnswer(msg: string){
+		this.emit("ChatbotVerifyAnswer", { msg });
 	}
 }

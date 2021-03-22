@@ -12,6 +12,7 @@ import SocketServer from "./SocketServer";
 import path from "path";
 import Logger from "./Logger";
 import Routes from "./routes/Routes";
+import ChatBoot from "./ChatBoot";
 
 // Initializations
 
@@ -41,3 +42,4 @@ httpServer.listen(port, () => {
 });
 
 export const socketServer = new SocketServer(httpServer);
+export const chatBoot = new ChatBoot();
