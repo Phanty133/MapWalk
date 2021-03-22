@@ -5,7 +5,8 @@ import fetch from "node-fetch";
 interface ObjectData{
 	name: string,
 	description: string,
-	image: string
+	image: string, 
+	id?: number
 }
 
 const dataPath = path.join(__dirname, "..", "data");
@@ -14,6 +15,15 @@ const objectData: ObjectData[] = fse.readJSONSync(path.join(dataPath, "objects.j
 const imgPath = path.join(dataPath, "img");
 
 objectData.forEach((obj: ObjectData, i: number) => {
+	if(!obj.id){
+		if(!objectData.find(o => o.id === i)){
+			obj.id = i;
+		}
+		else{
+			obj.id = objectData.length - 1;
+		}
+	}
+
 	const name = obj.name;
 	const mapInfoEntry = mapInfo.find(e => e[0] === name);
 	if(!mapInfoEntry) {
