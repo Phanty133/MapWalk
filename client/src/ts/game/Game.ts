@@ -245,7 +245,7 @@ export default class Game{
 				}
 				break;
 			case GameMode.HundredPercent:
-				if(this.localPlayer.stats.score === 1){ // this.mapObjectData.length
+				if(this.localPlayer.stats.score === this.mapObjectData.length){
 					this.onGameEnd();
 					return;
 				}
