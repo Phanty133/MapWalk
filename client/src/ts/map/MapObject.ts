@@ -136,10 +136,13 @@ export default class MapObject {
 		}
 	}
 
-	onIncorrectAnswer() {
+	onIncorrectAnswer(origin?: string) {
 		if (this.answered) return;
 
 		Log.log("u stupid");
-		this.game.clock.addTime(this.timeLossOnIncorrectAnswer);
+
+		if(!this.game.isMultiplayer){
+			this.game.clock.addTime(this.timeLossOnIncorrectAnswer);
+		}
 	}
 }

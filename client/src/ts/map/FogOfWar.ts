@@ -75,14 +75,17 @@ export default class FogOfWar{
 			const cssTransform = div.style.transform;
 			const regexp = /translate3d\((?<x>-?\d+)px, (?<y>-?\d+)px, (-?\d+)px\)/;
 			const match = cssTransform.match(regexp);
-			this.panOffset = new L.Point(parseInt(match.groups.x, 10), parseInt(match.groups.y, 10));
-			canvasContainer.style.transform = `translate3d(${-this.panOffset.x}px, ${-this.panOffset.y}px, 0px)`;
 
 			if(initial){
 				initial = false;
 
 				this.multiCanvas.fillRect(0, 0, this.canvasSize.x, this.canvasSize.y, "rgba(0, 0, 0, 0.95)");
 			}
+
+			if(!match) return;
+
+			this.panOffset = new L.Point(parseInt(match.groups.x, 10), parseInt(match.groups.y, 10));
+			canvasContainer.style.transform = `translate3d(${-this.panOffset.x}px, ${-this.panOffset.y}px, 0px)`;
 		});
 
 		customLayer.addTo(this.map.map);

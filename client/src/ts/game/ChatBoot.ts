@@ -27,7 +27,19 @@ export default class ChatBoot {
 		if(this.game.isMultiplayer){
 			this.game.eventHandler.on("QuestionAnswer", (e: GameEventData) => {
 				if(e.success){
-					this.curVerificationResolveCb(this.interpretReply(e.event.data.response));
+					if(!e.foreign){
+						this.curVerificationResolveCb(this.interpretReply(e.event.data.response));
+					}
+					else{
+						const targetObj = this.game.map.objectsByID[e.event.data.objectID];
+
+						if(e.event.data.response === "correct"){
+							targetObj.onCorrectAnswer(e.origin);
+						}
+						else{
+							targetObj.onIncorrectAnswer(e.origin);
+						}
+					}
 				}
 				else{
 					this.curVerificationResolveCb(this.interpretReply(null)); // If the other players don't get the same response, assume the answer as incorrect?
@@ -60,14 +72,26 @@ export default class ChatBoot {
 		this.currentQ = null;
 	}
 
-	correctQuestion() {
+	private correctQuestion(id?: number) {
 		this.invalidateQuestion();
-		this.game.map.activeObject.onCorrectAnswer();
+
+		if(id){
+			this.game.map.objectsByID[id].onCorrectAnswer();
+		}
+		else{
+			this.game.map.activeObject.onCorrectAnswer();
+		}
 	}
 
-	incorrectQuestion() {
+	private incorrectQuestion(id?: number) {
 		// this.invalidateQuestion(); -- Actually, I am unsure if I am supposed to discard the question on an incorrect answer
-		this.game.map.activeObject.onIncorrectAnswer();
+
+		if(id){
+			this.game.map.objectsByID[id].onIncorrectAnswer();
+		}
+		else{
+			this.game.map.activeObject.onIncorrectAnswer();
+		}
 	}
 
 	private requestAnswerVerification(msg: string) {
@@ -90,6 +114,8 @@ export default class ChatBoot {
 	}
 
 	interpretReply(rep: string) {
+		this.currentAnswer = null;
+
 		if (this.replyBook[rep]) {
 			if (this.currentQ) {
 				if (this.currentQ === this.replyBook[rep] || rep === "correct") {
@@ -100,6 +126,7 @@ export default class ChatBoot {
 					return "That was wrong.";
 				}
 			}
+
 			return this.replyBook[rep];
 		}
 		else if(rep === null){
