@@ -1,24 +1,15 @@
 import express, { Request, Response } from "express";
 import path from "path";
 import LobbyManager from "../LobbyManager";
-import { logger } from "../index";
+import { logger, mapObjectLoader } from "../index";
 import Lobby from "../Lobby";
-import fse from "fs-extra";
 import { randomArrayElements } from "../lib/util";
 import ChatBoot from "../ChatBoot";
-
-interface ObjectData {
-	name: string;
-	description: string;
-	image: string;
-	location: { x: number, y: number };
-};
 
 export default class Routes {
 	router: express.Router;
 	private baseDir: string;
 	private dataDir: string;
-	private objectData: ObjectData[];
 
 	private chatBoot: ChatBoot;
 
@@ -31,16 +22,10 @@ export default class Routes {
 		this.router.get("/game", (req, res) => { this.game(req, res); })
 		this.router.get("/join", (req, res) => { this.join(req, res); });
 		this.router.get("/createLobby", (req, res) => { this.createLobby(req, res); });
-		this.router.get("/objects", (req, res) => { this.objects(req, res); });
+		this.router.post("/objects", (req, res) => { this.objects(req, res); });
 
 		// Add the static file middleware, so custom routes have priority over the middleware
 		this.router.use(express.static(this.baseDir));
-
-		this.loadObjects();
-	}
-
-	private async loadObjects() {
-		this.objectData = await fse.readJSON(path.join(this.dataDir, "objects-full.json"));
 	}
 
 	private index(req: Request, res: Response) {
@@ -59,28 +44,26 @@ export default class Routes {
 		}
 		else {
 			res.cookie("lobby", lobbyID);
-			res.redirect("/game");
+			res.redirect("/game?mode=mp");
 		}
 	}
 
 	private createLobby(req: Request, res: Response) {
 		const newLobby: Lobby = LobbyManager.createLobby();
 		res.cookie("lobby", newLobby.id);
-		res.redirect("/game");
+		res.redirect("/game?mode=mp");
 	}
 
 	private objects(req: Request, res: Response) {
 		let objCount: number;
 
-		if (!req.query.count) {
+		if (!req.body.count) {
 			objCount = 1;
 		}
 		else {
-			objCount = parseInt(req.query.count.toString(), 10);
+			objCount = parseInt(req.body.count.toString(), 10);
 		}
 
-		const randElements = randomArrayElements(this.objectData, objCount);
-
-		res.json(randElements);
+		res.json(mapObjectLoader.getRandomObjects(objCount));
 	}
 }

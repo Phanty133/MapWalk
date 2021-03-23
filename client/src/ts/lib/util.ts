@@ -5,3 +5,12 @@ export function randInt(min: number, max: number): number{
 export function genHexString(len: number): string{
 	return [...new Array(len)].map(e => randInt(0, 16).toString(16)).join("");
 }
+
+export function uint8ToHex(uint8: Uint8Array){
+	return Array.from(uint8).map(int8 => int8.toString(16).slice(-1)).join("");
+}
+
+export async function getHashString(data: any): Promise<string>{
+	const digest = await crypto.subtle.digest("SHA-1", Uint8Array.from(data));
+	return uint8ToHex(new Uint8Array(digest));
+}

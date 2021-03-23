@@ -2,6 +2,7 @@ import createElement from "ts/lib/createElement";
 import Log from "ts/lib/log";
 import DynamicElement from "../DynamicElement";
 import { Color } from "ts/lib/Color";
+import { EventEmitter } from "events";
 
 export default class ColorSelect extends DynamicElement{
 	static colors: string[] = [
@@ -17,6 +18,7 @@ export default class ColorSelect extends DynamicElement{
 
 	private disabled: boolean;
 	private prevColor: string;
+	public events: EventEmitter = new EventEmitter();
 
 	public get el(){
 		return this.objectContainer;
@@ -38,7 +40,7 @@ export default class ColorSelect extends DynamicElement{
 				color: defaultColor
 			},
 			events: {
-				change: () => { this.onSelectChange(); }
+				change: (e: Event) => { this.onSelectChange(e); }
 			}
 		});
 
@@ -64,7 +66,7 @@ export default class ColorSelect extends DynamicElement{
 		});
 	}
 
-	private onSelectChange(){
+	private onSelectChange(e: Event){
 		const newColor: string = (this.objectContainer as HTMLSelectElement).value;
 		this.objectContainer.style.color = newColor;
 
@@ -85,6 +87,8 @@ export default class ColorSelect extends DynamicElement{
 			previouslyDisabled.style.color = this.prevColor;
 			toBeDisabled.style.color = darkerNewColor;
 		}
+
+		if(e.isTrusted) this.events.emit("ColorChange", newColor);
 
 		this.prevColor = newColor;
 	}

@@ -1,13 +1,10 @@
+import { uint8ToHex } from "ts/lib/util";
 import GameEvent from "./GameEvent";
 
 export interface GameManifestData{
 	val1: string;
 	val2: number;
 	val3: number[]
-}
-
-function uint8ToHex(uint8: Uint8Array){
-	return Array.from(uint8).map(int8 => int8.toString(16).slice(-1)).join("");
 }
 
 export default class GameManifest{

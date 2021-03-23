@@ -154,6 +154,11 @@ body{
 	filter: brightness(85%);
 }
 
+.button:disabled{
+	filter: brightness(60%) !important;
+	cursor: initial;
+}
+
 .objectSelection{
 	display: grid;
 	grid-auto-flow: row;
@@ -212,6 +217,14 @@ body{
 	overflow-y: auto;
 
 	grid-template-rows: auto 1fr auto;
+}
+
+#p2pChatMessages{
+	display: grid;
+    grid-auto-rows: max-content;
+    row-gap: 0.25em;
+	overflow-y: auto;
+	height: 100%;
 }
 
 #p2pUsers{
@@ -411,6 +424,10 @@ body{
 
 #gameScoreContainer{
 	color: green;
+}
+
+#gameTurnContainer{
+	display: none;
 }
 
 #chatOverlay{

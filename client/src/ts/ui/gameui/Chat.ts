@@ -27,7 +27,7 @@ export default class Chat{
 			if(this.inputStateCooldown) return;
 
 			if(this.inputVisible){
-				if(this.chatInput.value !== ""){
+				if(this.chatInput.value.trim() !== ""){
 					this.sendMessage(this.chatInput.value);
 				}
 

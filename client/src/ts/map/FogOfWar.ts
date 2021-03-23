@@ -1,5 +1,5 @@
 import Player from "ts/game/Player";
-import Map from "ts/map/map";
+import GameMap from "ts/map/GameMap";
 import * as L from "leaflet";
 import Log from "ts/lib/log";
 import "leaflet-customlayer";
@@ -8,7 +8,7 @@ import Vector2 from "ts/lib/Vector2";
 
 export default class FogOfWar{
 	player: Player;
-	map: Map;
+	map: GameMap;
 	private ctx: CanvasRenderingContext2D;
 	private canvasSize: L.Point;
 	private canvasOffset: L.Point;
@@ -18,7 +18,7 @@ export default class FogOfWar{
 	private multiCanvas: MultiCanvas;
 	private relativeCanvasReferencePoint: L.Point;
 
-	constructor(map: Map, player: Player){
+	constructor(map: GameMap, player: Player){
 		this.player = player;
 		this.map = map;
 

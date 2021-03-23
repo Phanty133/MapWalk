@@ -3,9 +3,10 @@ import GameManifest, { GameManifestData } from "ts/game/GameManifest";
 import { randInt } from "ts/lib/util";
 import Socket from "./Socket";
 import Log from "ts/lib/log";
+import "webrtc-adapter";
 
 export interface PeerData{
-	peer: string;
+	peer: string; // SocketID?
 	createOffer: boolean;
 }
 
@@ -43,6 +44,7 @@ export namespace MessageData{
 		response: GameEventResponse;
 		manifestHash: string;
 		key?: JsonWebKey;
+		eventHash: string;
 	}
 
 	export interface  EventEffect extends MessageDataBase{

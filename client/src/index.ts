@@ -1,5 +1,4 @@
 import "css/index.css"
-import Map from "ts/map/map"
 import { MapObjectData } from "ts/map/MapObject"
 import Lobby from "ts/networking/Lobby"
 import * as Cookies from "js-cookie"
@@ -12,7 +11,9 @@ import { randInt } from "ts/lib/util"
 import { bindGameUI } from "ts/ui/gameui/BindGameUI"
 import ChatBoot from "ts/game/ChatBoot"
 import { bindChatBoot } from "ts/ui/gameui/ChatbotUI"
-import Socket from "ts/networking/Socket"
+import Socket, { ServerLobbyStartGameData } from "ts/networking/Socket"
+import * as L from "leaflet";
+import Log from "ts/lib/log"
 
 document.body.onload = () => {
 	loadPreGame();
@@ -26,8 +27,22 @@ document.body.onload = () => {
 };
 
 function loadPreGame() {
+	const socket = new Socket();
+
 	if (new URLSearchParams(window.location.search).get("mode") === "mp") {
-		const lobbyUI = new LobbyUI();
+		const lobbyUI = new LobbyUI(socket);
+		const lobbyCookie = Cookies.get("lobby");
+
+		if(!lobbyCookie){
+			window.location.href = "/";
+			return;
+		}
+
+		socket.joinGameLobby(lobbyCookie, Cookies.get("username"));
+
+		socket.events.addListener("ServerLobbyStartGame", (data: ServerLobbyStartGameData) => {
+			loadMPGame(data, socket);
+		});
 	}
 	else {
 		const settingsSelection = new SettingsSelection();
@@ -35,40 +50,33 @@ function loadPreGame() {
 
 		settingsSelection.onStart = (settings: GameSettings) => {
 			settingsSelection.close();
-			document.getElementById("game'ntContainer").style.display = "none";
-			document.getElementById("game").style.display = "block";
 
-			loadGame(settings);
+			loadSPGame(settings, socket);
 		};
 	}
 }
 
 async function loadObjects(count: number): Promise<MapObjectData[]> {
-	const req = await fetch(`/objects?count=${count}`);
+	const req = await fetch(`/objects`, { method: "POST", body: `count=${count}` });
 	return await req.json();
 }
 
-async function loadGame(settings: GameSettings) {
-	let lobby: Lobby;
-	let game: Game;
-	const socket = new Socket();
+function openGameView(){
+	document.getElementById("game'ntContainer").style.display = "none";
+	document.getElementById("game").style.display = "block";
 
-	const lobbyCookie = Cookies.get("lobby");
+}
 
-	if (lobbyCookie) {
-		lobby = new Lobby(lobbyCookie, socket);
-		game = new Game(settings, socket, lobby);
-		// tslint:disable-next-line: no-console
-		console.log(lobby.id);
-		Cookies.remove("lobby");
-	}
-	else {
-		game = new Game(settings, socket);
-	}
+async function loadSPGame(settings: GameSettings, socket: Socket) {
+	openGameView();
+	Log.log("singleplayer");
 
+	const game = new Game(settings, socket);
 	const objects = await loadObjects(settings.objectCount);
+
 	game.createMap(objects);
-	game.createPlayer();
+	game.localPlayer = game.createPlayer(settings.location.pos);
+	game.localPlayer.createFogOfWar();
 
 	const time = new Time();
 	game.state = GameState.PlayerAction;
@@ -77,4 +85,51 @@ async function loadGame(settings: GameSettings) {
 
 	bindChatBoot(chatBoot);
 	bindGameUI(game);
+}
+
+function loadMPGame(gameData: ServerLobbyStartGameData, socket: Socket){
+	openGameView();
+	Log.log("multiplayer");
+
+	const lobbyCookie = Cookies.get("lobby");
+
+	if(!lobbyCookie) {
+		window.location.href = "/dicks1";
+		return;
+	}
+
+	Cookies.remove("lobby");
+
+	const lobby = new Lobby(lobbyCookie, socket);
+	const game = new Game(gameData.settings, socket, lobby);
+
+	game.createMap(gameData.objects);
+
+	// Load the players
+
+	for(const plyrSocket of gameData.playerOrder){
+		const coordObj = gameData.playerCoords[plyrSocket];
+		const coord = new L.LatLng(coordObj.lat, coordObj.lng);
+		const plyr = game.createPlayer(coord, plyrSocket, gameData.playerSettings[plyrSocket]);
+
+		if(plyrSocket === socket.id){
+			game.localPlayer = plyr
+			game.map.map.panTo(coord);
+		}
+	}
+
+	game.localPlayer.createFogOfWar();
+	// game.localPlayer.fow.revealAll();
+
+	game.map.createObjects(gameData.objects);
+
+	const time = new Time();
+	game.state = GameState.PlayerAction;
+
+	const chatBoot = new ChatBoot(game);
+
+	bindChatBoot(chatBoot);
+	bindGameUI(game);
+
+	lobby.p2p.joinLobby();
 }

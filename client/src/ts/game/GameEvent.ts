@@ -1,5 +1,11 @@
-import { genHexString } from "../lib/util";
+import { genHexString, getHashString } from "../lib/util";
 import GameManifest from "./GameManifest";
+import * as L from "leaflet";
+
+export interface MoveEventData{
+	targetPos: L.LatLng;
+	route: L.Routing.IRoute;
+}
 
 export enum GameEventResponse{
 	Ok,
@@ -9,13 +15,16 @@ export enum GameEventResponse{
 
 export default class GameEvent{
 	type: string;
-	id: string;
-	data: string;
+	hash: string;
 	manifestHash: string;
+	data: any;
 
-	constructor(type: string, data: string){
+	constructor(type: string, data?: any){
 		this.type = type;
-		this.id = genHexString(8);
 		this.data = data;
+	}
+
+	async createHash(){
+		this.hash = await getHashString(Object.values(this));
 	}
 }

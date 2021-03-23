@@ -13,6 +13,7 @@ import path from "path";
 import Logger from "./Logger";
 import Routes from "./routes/Routes";
 import ChatBoot from "./ChatBoot";
+import MapObjectLoader from "./MapObjectLoader";
 
 // Initializations
 
@@ -26,6 +27,9 @@ app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, "client")));
 
 // Routing
+
+export const mapObjectLoader = new MapObjectLoader();
+mapObjectLoader.loadObjects(); // Async
 
 const routes = new Routes();
 app.use(routes.router);

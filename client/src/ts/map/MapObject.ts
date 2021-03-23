@@ -2,7 +2,7 @@ import * as L from "leaflet";
 import cumfuck from "img/cumfuck.png";
 import cumfuckActive from "img/cumfuckActive.png";
 import objectAnswered from "img/objectAnswered.png";
-import Map from "./map";
+import GameMap from "./GameMap";
 import Game from "ts/game/Game";
 import MathExtras from "ts/lib/MathExtras";
 import Log from "ts/lib/log";
@@ -19,7 +19,7 @@ export default class MapObject {
 	data: MapObjectData;
 	private marker: L.Marker;
 	private game: Game;
-	private map: Map;
+	private map: GameMap;
 	private active: boolean = false;
 	private visible: boolean = false;
 	private fadeIn: boolean = false;
@@ -64,7 +64,7 @@ export default class MapObject {
 		this.marker.bindTooltip(this.data.name, { offset: new L.Point(0, -30) });
 		this.marker.addEventListener("click", e => { this.toggleState(); });
 
-		if(Map.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) <= this.game.localPlayer.stats.visibility){
+		if(GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) <= this.game.localPlayer.stats.visibility){
 			this.showMarker();
 		}
 	}
@@ -93,7 +93,7 @@ export default class MapObject {
 		if(this.visible) return;
 		if(!this.game.localPlayer.moving) return;
 
-		if(Map.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) <= this.game.localPlayer.stats.visibility){
+		if(GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) <= this.game.localPlayer.stats.visibility){
 			this.showMarker();
 		}
 	}
@@ -112,7 +112,7 @@ export default class MapObject {
 
 		this.marker.setIcon(this.iconActive);
 
-		if(Map.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) < MathExtras.EPSILON){
+		if(GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) < MathExtras.EPSILON){
 			this.map.popOpenQuestion();
 		}
 	}

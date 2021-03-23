@@ -6,7 +6,7 @@ import { EventEmitter } from "events";
 import createElement from "ts/lib/createElement";
 import Game from "ts/game/Game";
 
-export default class Map {
+export default class GameMap {
 	EPSILON = 0.001;
 
 	map: L.Map;
@@ -218,7 +218,7 @@ export default class Map {
 	moveDone() {
 		if (!this.activeObject) return;
 
-		if (Map.nonMetricDistanceTo(this.activeObject.pos, this.game.localPlayer.marker.getLatLng()) < this.EPSILON) {
+		if (GameMap.nonMetricDistanceTo(this.activeObject.pos, this.game.localPlayer.marker.getLatLng()) < this.EPSILON) {
 			this.popOpenQuestion();
 		}
 	}

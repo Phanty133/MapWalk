@@ -11,6 +11,7 @@ export interface IceCandidate{
 
 interface ServerJoinLobbyData{
 	id: string;
+	username: string;
 }
 
 export interface P2PRelayIceCandidateData{
@@ -25,6 +26,36 @@ export interface P2PRelaySessionDescData{
 
 export interface ChatbotVerifyAnswerData{
 	msg: string;
+}
+
+export interface ServerLobbyColorChangeData{
+	color: string;
+	socketID: string;
+}
+
+export interface ServerLobbyMakeHostData{
+	socketID: string;
+}
+
+export interface ServerLobbyKickData{
+	socketID: string;
+}
+
+export interface ServerLobbyChatMessageData{
+	authorSocketID: string;
+	content: string;
+}
+
+export interface ServerLobbyStartGameData{
+	settings: GameSettings;
+}
+
+export interface GameSettings{
+	mode: string;
+	gamemode: any; // Not important
+	location: any; // Not important
+	objectCount: number;
+	timeLimit?: number;
 }
 
 export default class SocketServer{
@@ -42,12 +73,25 @@ export default class SocketServer{
 		this.sockets[socket.id] = socket;
 		logger.info("Connected to socket!");
 
-		socket.on("disconnect", () => { this.onSocketDisconnect(socket); })
+		// Interplayer communication stuff
+
 		socket.on("ServerJoinLobby", (data: ServerJoinLobbyData) => { this.onServerJoinLobby(socket, data); });
+		socket.on("ServerLobbyChangeColor", (data: ServerLobbyColorChangeData) => { this.onServerLobbyChangeColor(socket, data); });
+		socket.on("ServerLobbyMakeHost", (data: ServerLobbyMakeHostData) => { this.onServerLobbyMakeHost(socket, data); });
+		socket.on("ServerLobbyKick", (data: ServerLobbyKickData) => { this.onServerLobbyKick(socket, data); });
+		socket.on("ServerLobbyChatMessage", (data: ServerLobbyChatMessageData) => { this.onServerLobbyChatMessage(socket, data); });
+		socket.on("ServerLobbyStartGame", (data: ServerLobbyStartGameData) => { this.onServerLobbyStartGame(socket, data); });
+
+		// WebRTC signaling stuff
+
 		socket.on("P2PRelayIceCandidate", (data: P2PRelayIceCandidateData) => { this.onP2PRelayIceCandidate(socket, data); });
 		socket.on("P2PRelaySessionDesc", (data: P2PRelaySessionDescData) => { this.onP2PRelaySessionDesc(socket, data); });
 		socket.on("P2PJoinLobby", () => { this.onP2PJoinLobby(socket); });
-		socket.on("ChatbotVerifyAnswer", (data: ChatbotVerifyAnswerData) => { this.onChatbotVerifyAnswer(socket, data); })
+
+		// Other stuff
+
+		socket.on("ChatbotVerifyAnswer", (data: ChatbotVerifyAnswerData) => { this.onChatbotVerifyAnswer(socket, data); });
+		socket.on("disconnect", () => { this.onSocketDisconnect(socket); });
 	}
 
 	emit(id: string, event: string, msg?: object){
@@ -61,8 +105,15 @@ export default class SocketServer{
 	}
 
 	private onServerJoinLobby(socket: socketio.Socket, msg: ServerJoinLobbyData){
-		LobbyManager.joinLobby(msg.id, socket.id);
-		socket.emit("ServerLobbyJoined");
+		if(!LobbyManager.joinLobby(msg.id, socket.id)) return;
+
+		this.lobbies[socket.id].newPlayer(socket.id, {
+			socketID: socket.id,
+			username: msg.username,
+			isHost: this.lobbies[socket.id].players.length === 0
+		});
+
+		socket.emit("ServerLobbyJoined", { players: this.lobbies[socket.id].players, lobbyId: this.lobbies[socket.id].id });
 	}
 
 	private onP2PJoinLobby(socket: socketio.Socket){
@@ -87,5 +138,35 @@ export default class SocketServer{
 		const chatbotAns = chatBoot.processMessage(msg.msg);
 
 		socket.emit("ChatbotVerifyAnswerResponse", { response: chatbotAns });
+	}
+
+	private onServerLobbyChangeColor(socket: socketio.Socket, data: ServerLobbyColorChangeData){
+		if(!this.lobbies[socket.id]) return;
+
+		this.lobbies[socket.id].serverLobbyChangeColor(socket.id, data);
+	}
+
+	private onServerLobbyChatMessage(socket: socketio.Socket, data: ServerLobbyChatMessageData){
+		if(!this.lobbies[socket.id]) return;
+
+		this.lobbies[socket.id].serverLobbyChatMessage(data);
+	}
+
+	private onServerLobbyKick(socket: socketio.Socket, data: ServerLobbyKickData){
+		if(!this.lobbies[socket.id]) return;
+
+		this.lobbies[socket.id].serverLobbyKick(socket.id, data);
+	}
+
+	private onServerLobbyMakeHost(socket: socketio.Socket, data: ServerLobbyMakeHostData){
+		if(!this.lobbies[socket.id]) return;
+
+		this.lobbies[socket.id].serverLobbyMakeHost(socket.id, data);
+	}
+
+	private onServerLobbyStartGame(socket: socketio.Socket, data: ServerLobbyStartGameData){
+		if(!this.lobbies[socket.id]) return;
+
+		this.lobbies[socket.id].serverLobbyStartGame(socket.id, data);
 	}
 }

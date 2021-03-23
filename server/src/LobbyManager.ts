@@ -12,9 +12,13 @@ export default class LobbyManager{
 		return newLobby;
 	}
 
-	static joinLobby(lobbyID: string, socketID: string){
-		if(!(lobbyID in LobbyManager.lobbies)) return;
+	static joinLobby(lobbyID: string, socketID: string): boolean{
+		if(!(lobbyID in LobbyManager.lobbies)) return false;
+		if(LobbyManager.lobbies[lobbyID].sockets.includes(socketID)) return false;
+
 		LobbyManager.lobbies[lobbyID].joinLobby(socketID);
+
+		return true;
 	}
 
 	static removeLobby(lobbyID: string){

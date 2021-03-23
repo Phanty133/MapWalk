@@ -6,13 +6,14 @@ import P2PGameEventHandler from "./P2PGameEventHandler";
 import Log from "ts/lib/log";
 import TurnManager from "./TurnManager";
 import Player from "./Player";
-import Map from "ts/map/map";
+import GameMap from "ts/map/GameMap";
 import { GameSettings } from "ts/ui/settingsUI/SettingsSelection";
 import Clock from "./Clock";
 import { MapObjectData } from "ts/map/MapObject";
 import GameEndUI from "ts/ui/gameui/GameEndUI";
 import Time from "./Time";
-import Socket from "ts/networking/Socket";
+import Socket, { PlayerData } from "ts/networking/Socket";
+import GameEventHandler from "./GameEventHandler";
 
 type ManifestCheckCompleteCallback = () => void;
 
@@ -33,36 +34,43 @@ export default class Game{
 	lobby: Lobby;
 	p2p: P2PLobby;
 	manifest: GameManifest;
-	eventHandler: P2PGameEventHandler;
+	p2pEventHandler: P2PGameEventHandler;
 	manifestCheckActive: boolean = false;
 	private receivedManifests: Record<string, string> = {}; // {PeerID:manifestHash}
 	public onManifestCheckComplete: ManifestCheckCompleteCallback = () => {};
 	private settings: GameSettings;
 	private mapObjectData: MapObjectData[];
 	gameEndUI: GameEndUI;
-	isMultiplayer: boolean;
+	isMultiplayer: boolean = false;
 	state: GameState = GameState.Idle;
 	turnMan: TurnManager;
 	localPlayer: Player;
-	map: Map;
+	otherPlayers: Player[];
+	map: GameMap;
 	clock: Clock;
 	gameEnd: boolean = false;
 	socket: Socket;
+	eventHandler: GameEventHandler;
 
 	constructor(settings: GameSettings, socket: Socket, lobby?: Lobby){
-		this.settings = settings;
-		this.socket = socket;
-
-		this.clock = new Clock();
-		this.turnMan = new TurnManager();
 		this.manifest = new GameManifest();
 
-		if(lobby){
-			this.isMultiplayer = true;
+		if(lobby) {
 			this.lobby = lobby;
 			this.p2p = this.lobby.p2p;
-			this.eventHandler = new P2PGameEventHandler(this);
+			this.isMultiplayer = true;
+		}
 
+		this.settings = settings;
+		this.socket = socket;
+		this.eventHandler = new GameEventHandler(this);
+		this.clock = new Clock();
+		this.turnMan = new TurnManager(this);
+
+		if(this.isMultiplayer){
+			// this.p2pEventHandler = new P2PGameEventHandler(this);
+
+			/*
 			this.eventHandler.onEvent = (e: GameEvent) => {
 				Log.log("Game event received: " + e.type);
 
@@ -99,42 +107,37 @@ export default class Game{
 				return true;
 			}
 
-			this.bindEvents();
-
 			if(!P2PLobby.debugHost){
 				setTimeout(() => {
 					const ev: GameEvent = new GameEvent("test", "Hello world!");
 					this.eventHandler.dispatchEvent(ev);
 				}, 1500);
-			}
+			} */
 
 			this.onManifestCheckComplete = () => {
 				Log.log("manifest check complete!");
 				this.eventHandler.dispatchEvent(new GameEvent("test", "Hello world!"));
 			};
-		}
-		else{
-			this.isMultiplayer = false;
+
+			this.bindP2PEvents();
 		}
 	}
 
 	createMap(objects?: MapObjectData[]){
-		this.map = new Map("map", this);
+		this.map = new GameMap("map", this);
 		this.mapObjectData = objects;
 	}
 
-	createPlayer(){
-		this.localPlayer = new Player(this.map, this, this.settings.location.pos);
+	createPlayer(pos: L.LatLng, socketID?: string, plyrData?: PlayerData): Player{
+		const plyr = new Player(this.map, this, pos, socketID, plyrData);
 
-		this.localPlayer.events.on("MoveDone", () => {
+		plyr.events.on("MoveDone", () => {
 			this.map.moveDone();
 		});
 
-		if(!this.isMultiplayer){
-			this.turnMan.playerOrder = [ this.localPlayer ];
-		}
+		this.turnMan.addPlayer(plyr);
 
-		this.map.createObjects(this.mapObjectData);
+		return plyr;
 	}
 
 	checkManifest(){
@@ -146,7 +149,7 @@ export default class Game{
 		this.p2p.broadcast({ cmd: "getManifestHash" });
 	}
 
-	private bindEvents(){
+	private bindP2PEvents(){
 		this.p2p.bindToChannel("checkManifest", (data: MessageData.CheckManifest) => {
 			this.checkManifest();
 		});

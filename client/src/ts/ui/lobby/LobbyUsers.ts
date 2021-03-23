@@ -2,6 +2,8 @@ import DynamicElement from "../DynamicElement";
 import createElement from "ts/lib/createElement";
 import ColorSelect from "./ColorSelect";
 import Log from "ts/lib/log";
+import * as Cookies from "js-cookie";
+import Socket, { PlayerData } from "ts/networking/Socket";
 
 export interface User{
 	username: string;
@@ -13,70 +15,25 @@ export interface User{
 export default class LobbyUsers extends DynamicElement{
 	users: User[] = [];
 	selfIsHost: boolean = false;
+	socket: Socket;
 
-	constructor(containerSelector: string | HTMLElement){
+	constructor(containerSelector: string | HTMLElement, socket: Socket){
 		super(containerSelector);
+		this.socket = socket;
 
 		this.createBase();
 	}
 
 	protected createBase(){
 		this.objectContainer = createElement("div", { id: "p2pUsers", parent: this.mainContainer });
+	}
 
+	public addUserFromData(userData: PlayerData){
 		this.addUser({
-			username: "User1",
-			isHost: true,
-			isSelf: true,
-			socketID: "0"
-		});
-
-		this.addUser({
-			username: "User2",
-			isHost: false,
-			isSelf: false,
-			socketID: "1"
-		});
-
-		this.addUser({
-			username: "User3",
-			isHost: false,
-			isSelf: false,
-			socketID: "2"
-		});
-
-		this.addUser({
-			username: "User4",
-			isHost: false,
-			isSelf: false,
-			socketID: "2"
-		});
-
-		this.addUser({
-			username: "User5",
-			isHost: false,
-			isSelf: false,
-			socketID: "2"
-		});
-
-		this.addUser({
-			username: "User6",
-			isHost: false,
-			isSelf: false,
-			socketID: "2"
-		});
-
-		this.addUser({
-			username: "User7",
-			isHost: false,
-			isSelf: false,
-			socketID: "2"
-		});
-
-		this.addUser({
-			username: "User8",
-			isHost: false,
-			isSelf: false,
-			socketID: "2"
+			username: userData.username,
+			socketID: userData.socketID,
+			isSelf: userData.socketID === this.socket.id,
+			isHost: userData.isHost
 		});
 	}
 
@@ -101,8 +58,13 @@ export default class LobbyUsers extends DynamicElement{
 		const colorSelect = new ColorSelect(userContainer, !user.isSelf, this.firstAvailableColor());
 		colorSelect.el.setAttribute("data-color", "data-color");
 
+		colorSelect.events.on("ColorChange", (newColor: string) => {
+			this.socket.serverLobbyChangeColor(newColor);
+		});
+
 		if(this.selfIsHost){
-			this.addHostButtons(user, userContainer);
+			// this.addHostButtons(user, userContainer);
+			this.updateHostButtons();
 		}
 
 		ColorSelect.updateDisabledColors();
@@ -139,9 +101,11 @@ export default class LobbyUsers extends DynamicElement{
 	private updateHostButtons(){
 		for(const user of this.users){
 			const container = this.findContainerWithUser(user);
+			const startGameBtn = document.getElementById("p2pStartGame") as HTMLButtonElement;
 
 			if(this.selfIsHost){
 				this.addHostButtons(user, this.findContainerWithUser(user));
+				startGameBtn.disabled = false;
 			}
 			else{
 				const kickBtn = container.querySelector("button[data-kick]");
@@ -149,6 +113,7 @@ export default class LobbyUsers extends DynamicElement{
 
 				if(kickBtn) kickBtn.remove();
 				if(hostBtn) hostBtn.remove();
+				startGameBtn.disabled = true;
 			}
 		}
 	}
@@ -169,15 +134,21 @@ export default class LobbyUsers extends DynamicElement{
 	}
 
 	private setHostHandler(e: Event){
-		const socketId = (e.target as HTMLElement).parentElement.getAttribute("data-socket");
+		if(!this.selfIsHost) return;
 
-		Log.log("set host: " + socketId);
+		const socketId = (e.target as HTMLElement).parentElement.getAttribute("data-socket");
+		this.socket.serverLobbyMakeHost(socketId);
 	}
 
 	private kickPlayerHandler(e: Event){
-		const socketId = (e.target as HTMLElement).parentElement.getAttribute("data-socket");
+		if(!this.selfIsHost) return;
 
-		Log.log("kick: " + socketId);
+		const socketId = (e.target as HTMLElement).parentElement.getAttribute("data-socket");
+		this.socket.serverLobbyKick(socketId);
+	}
+
+	getPlayerElement(id: string): HTMLDivElement{
+		return this.objectContainer.querySelector(`.p2pUserEntry[data-socket="${id}`);
 	}
 
 	setHost(id: string){
@@ -202,5 +173,20 @@ export default class LobbyUsers extends DynamicElement{
 
 			this.updateHostButtons();
 		}
+	}
+
+	kickPlayer(id: string){
+		this.getPlayerElement(id).remove();
+		ColorSelect.updateDisabledColors();
+	}
+
+	updateColor(id: string, color: string){
+		const el = this.getPlayerElement(id);
+		const selectEl = el.querySelector("[data-color]") as HTMLSelectElement;
+
+		selectEl.value = color;
+
+		const changeEv = new Event("change");
+		selectEl.dispatchEvent(changeEv);
 	}
 }

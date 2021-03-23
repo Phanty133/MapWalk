@@ -41,7 +41,7 @@ window.onload = () => {
 
 	document.getElementById("btnCreateLobby").addEventListener("click", () => {
 		Cookies.set("username", usernameInput.value);
-		window.location.href = "/game?mode=mp";
+		window.location.href = "/createLobby";
 	});
 
 	document.getElementById("mpJoinLobbyOK").addEventListener("click", () => {

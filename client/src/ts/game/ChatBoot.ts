@@ -16,7 +16,7 @@ export default class ChatBoot {
 
 	constructor(game: Game){
 		this.game = game;
-		this.game.socket.socketEvents.addListener("ChatbotVerifyAnswerResponse", (res: string) => { this.onAnswerVerified(res) });
+		this.game.socket.events.addListener("ChatbotVerifyAnswerResponse", (res: string) => { this.onAnswerVerified(res) });
 	}
 
 	async processMessage(msg: string): Promise<string> {
