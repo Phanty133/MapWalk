@@ -57,7 +57,12 @@ function loadPreGame() {
 }
 
 async function loadObjects(count: number): Promise<MapObjectData[]> {
-	const req = await fetch(`/objects`, { method: "POST", body: `count=${count}` });
+	const req = await fetch(`/objects`, {
+		method: "POST",
+		body: `count=${count}`,
+		headers: { "Content-type": "application/x-www-form-urlencoded" }
+	});
+
 	return await req.json();
 }
 
@@ -77,6 +82,10 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	game.createMap(objects);
 	game.localPlayer = game.createPlayer(settings.location.pos);
 	game.localPlayer.createFogOfWar();
+
+	Log.log(settings);
+	Log.log(objects);
+	game.map.createObjects(objects);
 
 	const time = new Time();
 	game.state = GameState.PlayerAction;
