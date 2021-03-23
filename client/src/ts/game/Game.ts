@@ -47,6 +47,7 @@ export default class Game {
 	turnMan: TurnManager;
 	localPlayer: Player;
 	otherPlayers: Player[];
+	playersByID: Record<string, Player> = {};
 	map: GameMap;
 	clock: Clock;
 	gameEnd: boolean = false;
@@ -138,6 +139,10 @@ export default class Game {
 		});
 
 		this.turnMan.addPlayer(plyr);
+
+		if(socketID){
+			this.playersByID[socketID] = plyr;
+		}
 
 		return plyr;
 	}

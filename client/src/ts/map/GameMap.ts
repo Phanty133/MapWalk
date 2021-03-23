@@ -17,6 +17,7 @@ export default class GameMap {
 	link: L.Polyline;
 
 	activeObject: MapObject = null;
+	objectsByID: Record<number, MapObject> = {};
 
 	selectBounds: L.LatLngBounds = L.latLngBounds(
 		L.latLng(56.47, 20.95),
@@ -64,26 +65,32 @@ export default class GameMap {
 				location: new L.LatLng(56.512922, 21.012326),
 				image: null,
 				description: null,
-				questions: ["you"]
+				questions: ["you"],
+				id: 0
 			},
 			{
 				name: "The fish zone",
 				location: new L.LatLng(56.512519, 21.028135),
 				image: null,
 				description: null,
-				questions: ["you"]
+				questions: ["you"],
+				id: 1
 			},
 			{
 				name: "Plce 3 with no joke!!!",
 				location: new L.LatLng(56.5189124, 20.98500),
 				image: null,
 				description: null,
-				questions: ["you"]
+				questions: [""],
+				id: 2
 			}
 			]
 		}
 
-		objects.map(obj => new MapObject(this.game, obj));
+		for(const obj of objects){
+			const mapObj = new MapObject(this.game, obj);
+			this.objectsByID[mapObj.id] = mapObj;
+		}
 	}
 
 	bindMapEvents() {

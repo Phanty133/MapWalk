@@ -1,6 +1,8 @@
 import Log from "ts/lib/log";
 import { displayMsg, persons } from "ts/ui/gameui/ChatbotUI";
 import Game from "./Game";
+import GameEvent, { QuestionAnswerEventData } from "./GameEvent";
+import { GameEventData } from "./GameEventHandler";
 
 export default class ChatBoot {
 	// nvm still need this
@@ -16,14 +18,33 @@ export default class ChatBoot {
 	private game: Game;
 	private curVerificationResolveCb: (response: string) => void;
 	private currentQ: string;
+	private currentAnswer: string = null;
 
 	constructor(game: Game) {
 		this.game = game;
 		this.game.socket.events.addListener("ChatbotVerifyAnswerResponse", (res: string) => { this.onAnswerVerified(res) });
+
+		if(this.game.isMultiplayer){
+			this.game.eventHandler.on("QuestionAnswer", (e: GameEventData) => {
+				if(e.success){
+					this.curVerificationResolveCb(this.interpretReply(e.event.data.response));
+				}
+				else{
+					this.curVerificationResolveCb(this.interpretReply(null)); // If the other players don't get the same response, assume the answer as incorrect?
+				}
+			});
+
+			this.game.p2pEventHandler.eventVerifiers.QuestionAnswer = async () => {
+				return true;
+			};
+		}
 	}
 
 	async processMessage(msg: string): Promise<string> {
+		if(this.currentAnswer !== null) return;
+
 		this.requestAnswerVerification(msg);
+		this.currentAnswer = msg;
 
 		return new Promise<string>((res, rej) => {
 			this.curVerificationResolveCb = res;
@@ -54,7 +75,18 @@ export default class ChatBoot {
 	}
 
 	private onAnswerVerified(msg: string) {
-		this.curVerificationResolveCb(this.interpretReply(msg));
+		if(this.game.isMultiplayer){
+			const ansEvData: QuestionAnswerEventData = {
+				response: msg,
+				answer: this.currentAnswer,
+				objectID: this.game.map.activeObject.id
+			};
+
+			this.game.eventHandler.dispatchEvent(new GameEvent("QuestionAnswer", ansEvData));
+		}
+		else{
+			this.curVerificationResolveCb(this.interpretReply(msg));
+		}
 	}
 
 	interpretReply(rep: string) {
@@ -69,7 +101,11 @@ export default class ChatBoot {
 				}
 			}
 			return this.replyBook[rep];
-		} else {
+		}
+		else if(rep === null){
+			return "Something went wrong. Try again."
+		}
+		else {
 			if (this.currentQ) {
 				this.incorrectQuestion();
 				return "That was wrong.";

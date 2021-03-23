@@ -14,6 +14,7 @@ export interface MapObjectData {
 	image: string;
 	location: L.LatLng;
 	questions: string[];
+	id: number;
 };
 
 export default class MapObject {
@@ -27,11 +28,14 @@ export default class MapObject {
 	private fadeInTimeSinceStart: number = 0; // ms since fade started
 	private timeLossOnIncorrectAnswer: number = 1;
 	private answered: boolean = false;
-
 	private fadeInTime = 500; // In ms
 
 	public get pos() {
 		return this.data.location;
+	}
+
+	public get id(): number{
+		return this.data.id;
 	}
 
 	private iconInactive: L.Icon = new L.Icon({
@@ -118,12 +122,18 @@ export default class MapObject {
 		}
 	}
 
-	onCorrectAnswer() {
+	onCorrectAnswer(origin?: string) {
 		if (this.answered) return;
 
 		this.answered = true;
 		this.marker.setIcon(this.iconAnswered);
-		this.game.localPlayer.incrementScore();
+
+		if(origin){
+			this.game.playersByID[origin].incrementScore();
+		}
+		else{
+			this.game.localPlayer.incrementScore();
+		}
 	}
 
 	onIncorrectAnswer() {
