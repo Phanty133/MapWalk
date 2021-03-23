@@ -65,6 +65,11 @@ export namespace MessageData{
 	}
 
 	export interface  CheckManifest extends MessageDataBase{}
+
+	export interface ChatMessage extends MessageDataBase{
+		content: string;
+		authorSocketID: string;
+	}
 }
 
 type MessageCallback = (data: MessageDataBase, channel?:RTCDataChannel) => void;

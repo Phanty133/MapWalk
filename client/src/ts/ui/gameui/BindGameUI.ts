@@ -11,6 +11,6 @@ export function bindGameUI(game: Game){
 		game.map.saveSelection();
 	});
 
-	new Chat();
+	new Chat(game);
 	game.gameEndUI = new GameEndUI(game);
 }

@@ -3,7 +3,7 @@ import createElement from "ts/lib/createElement";
 import Log from "ts/lib/log";
 import DynamicElement from "../DynamicElement";
 
-export interface MessageData{
+export interface ChatMessageData{
 	content: string,
 	author: string,
 	authorColor: string
@@ -12,11 +12,11 @@ export interface MessageData{
 export default class ChatMessage extends DynamicElement{
 	static timeTillFade: number = 5000; // Time till fade
 	static fadeTime: number = 500; // Fade time
-	private data: MessageData;
+	private data: ChatMessageData;
 	private timeSinceFadeStart: number = 0;
 	public fade = false;
 
-	constructor(container: HTMLDivElement | string, message: MessageData){
+	constructor(container: HTMLDivElement | string, message: ChatMessageData){
 		super(container);
 
 		this.data = message;

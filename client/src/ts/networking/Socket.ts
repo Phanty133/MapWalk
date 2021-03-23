@@ -10,6 +10,7 @@ export interface PlayerData {
 	username: string;
 	socketID: string;
 	isHost: boolean;
+	color?: string;
 };
 
 export interface ServerLobbyColorChangeData{

@@ -1,7 +1,9 @@
 import Time from "ts/game/Time";
 import Log from "ts/lib/log";
-import ChatMessage, { MessageData } from "./ChatMessage";
+import ChatMessage, { ChatMessageData } from "./ChatMessage";
+import { MessageData } from "ts/networking/P2PLobby";
 import * as L from "leaflet";
+import Game from "ts/game/Game";
 
 export default class Chat{
 	static inputStateCooldown: number = 100;
@@ -10,8 +12,11 @@ export default class Chat{
 	private inputVisible: boolean = false;
 	private inputStateCooldown: boolean = false;
 	private messages: ChatMessage[] = [];
+	private game: Game;
 
-	constructor(){
+	constructor(game: Game){
+		this.game = game;
+
 		this.chatInput = document.getElementById("chatInput") as HTMLInputElement;
 		this.chatMessageContainer = document.getElementById("chatMessageContainer") as HTMLDivElement;
 
@@ -40,14 +45,47 @@ export default class Chat{
 			this.inputStateCooldown = true;
 			setTimeout(() => { this.inputStateCooldown = false; }, Chat.inputStateCooldown);
 		});
+
+		if(this.game.isMultiplayer){
+			this.game.p2p.bindToChannel("ChatMessage", (data: MessageData.ChatMessage) => {
+				const senderData = this.game.playersByID[data.peer].info.plyrData;
+				const chatMsgData: ChatMessageData = {
+					content: data.content,
+					author: senderData.username,
+					authorColor: senderData.color ? senderData.color : "#FFAA00"
+				};
+
+				this.addMessage(chatMsgData);
+			});
+		}
 	}
 
 	sendMessage(text: string){
-		// to be used for transmission when that's done
-		this.addMessage({ content: text, author: "1337h4ck3rm4n", authorColor: "#FFAA00" });
+		if(this.game.isMultiplayer){
+			const localPlayerInfo = this.game.localPlayer.info;
+
+			this.game.p2p.broadcast({
+				cmd: "ChatMessage",
+				content: text,
+				authorSocketID: localPlayerInfo.socketID
+			});
+
+			this.addMessage({
+				content: text,
+				author: localPlayerInfo.plyrData.username,
+				authorColor: localPlayerInfo.plyrData.color ? localPlayerInfo.plyrData.color : "#FFAA00"
+			});
+		}
+		else{
+			this.addMessage({
+				content: text,
+				author: "LocalPlayer",
+				authorColor: "#FFAA00"
+			});
+		}
 	}
 
-	addMessage(data: MessageData){
+	addMessage(data: ChatMessageData){
 		this.messages.push(new ChatMessage(this.chatMessageContainer, data));
 		const i = this.messages.length - 1;
 
