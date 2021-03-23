@@ -9,6 +9,7 @@ export interface PlayerData{
 	socketID: string;
 	username: string;
 	isHost: boolean;
+	color: string;
 }
 
 export default class Lobby{
@@ -70,7 +71,10 @@ export default class Lobby{
 	}
 
 	serverLobbyChangeColor(origin: string, data: ServerLobbyColorChangeData){
+		if(this.players.find(plyrData => plyrData.color === data.color)) return;
+
 		this.broadcast("ServerLobbyChangeColor", data, origin);
+		this.playersBySocket[origin].color = data.color;
 	}
 
 	serverLobbyMakeHost(origin: string, data: ServerLobbyMakeHostData){

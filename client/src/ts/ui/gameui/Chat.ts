@@ -13,10 +13,12 @@ export default class Chat{
 	private inputStateCooldown: boolean = false;
 	private messages: ChatMessage[] = [];
 	private game: Game;
+	private aiInput: HTMLInputElement;
 
 	constructor(game: Game){
 		this.game = game;
 
+		this.aiInput = document.getElementById("speech") as HTMLInputElement;
 		this.chatInput = document.getElementById("chatInput") as HTMLInputElement;
 		this.chatMessageContainer = document.getElementById("chatMessageContainer") as HTMLDivElement;
 
@@ -29,6 +31,7 @@ export default class Chat{
 	private bindEvents(){
 		document.addEventListener("keydown", (e: KeyboardEvent) => {
 			if(e.key !== "Enter") return;
+			if(this.aiInput === document.activeElement) return;
 			if(this.inputStateCooldown) return;
 
 			if(this.inputVisible){

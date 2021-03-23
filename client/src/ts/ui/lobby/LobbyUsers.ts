@@ -55,8 +55,11 @@ export default class LobbyUsers extends DynamicElement{
 			createElement("span", { textContent: "Host", parent: userContainer, attr: { "data-host": "data-host" } });
 		}
 
-		const colorSelect = new ColorSelect(userContainer, !user.isSelf, this.firstAvailableColor());
+		const defaultColor = this.firstAvailableColor()
+		const colorSelect = new ColorSelect(userContainer, !user.isSelf, defaultColor);
 		colorSelect.el.setAttribute("data-color", "data-color");
+
+		this.socket.serverLobbyChangeColor(defaultColor); // Send the server the player's color
 
 		colorSelect.events.on("ColorChange", (newColor: string) => {
 			this.socket.serverLobbyChangeColor(newColor);

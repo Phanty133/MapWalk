@@ -7,7 +7,7 @@ import LobbyUsers from "./LobbyUsers";
 export default class LobbyUI{
 	private containerSelector: string;
 	private container: HTMLElement;
-	private users: LobbyUsers;
+	users: LobbyUsers;
 	private chat: LobbyChat;
 	private settings: SettingsSelection;
 	private socket: Socket;

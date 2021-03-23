@@ -110,7 +110,8 @@ export default class SocketServer{
 		this.lobbies[socket.id].newPlayer(socket.id, {
 			socketID: socket.id,
 			username: msg.username,
-			isHost: this.lobbies[socket.id].players.length === 0
+			isHost: this.lobbies[socket.id].players.length === 0,
+			color: ""
 		});
 
 		socket.emit("ServerLobbyJoined", { players: this.lobbies[socket.id].players, lobbyId: this.lobbies[socket.id].id });
