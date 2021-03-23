@@ -5,6 +5,7 @@ import MapObject, { MapObjectData } from "ts/map/MapObject";
 import { EventEmitter } from "events";
 import createElement from "ts/lib/createElement";
 import Game from "ts/game/Game";
+import { randInt } from "ts/lib/util";
 
 export default class GameMap {
 	EPSILON = 0.001;
@@ -54,28 +55,31 @@ export default class GameMap {
 		L.control.scale().addTo(this.map);
 	}
 
-	createObjects(_objects?: MapObjectData[]){
+	createObjects(_objects?: MapObjectData[]) {
 		let objects = _objects;
 
-		if(!_objects){
+		if (!_objects) {
 			objects = [{
-					name: "This is a river of cum, click if you dare.",
-					location: new L.LatLng(56.512922, 21.012326),
-					image: null,
-					description: null
-				},
-				{
-					name: "The fish zone",
-					location: new L.LatLng(56.512519, 21.028135),
-					image: null,
-					description: null
-				},
-				{
-					name: "Plce 3 with no joke!!!",
-					location: new L.LatLng(56.5189124, 20.98500),
-					image: null,
-					description: null
-				}
+				name: "This is a river of cum, click if you dare.",
+				location: new L.LatLng(56.512922, 21.012326),
+				image: null,
+				description: null,
+				questions: ["you"]
+			},
+			{
+				name: "The fish zone",
+				location: new L.LatLng(56.512519, 21.028135),
+				image: null,
+				description: null,
+				questions: ["you"]
+			},
+			{
+				name: "Plce 3 with no joke!!!",
+				location: new L.LatLng(56.5189124, 20.98500),
+				image: null,
+				description: null,
+				questions: ["you"]
+			}
 			]
 		}
 
@@ -149,12 +153,12 @@ export default class GameMap {
 		}
 	}*/
 
-	onMarkerActivate(){
+	onMarkerActivate() {
 		this.game.localPlayer.traceRoute(this.activeObject.pos);
 	}
 
-	cancelCurrentOrder(clearMarker = true){
-		if(this.activeObject && clearMarker){
+	cancelCurrentOrder(clearMarker = true) {
+		if (this.activeObject && clearMarker) {
 			this.activeObject.toggleState(true);
 		}
 
@@ -249,7 +253,7 @@ export default class GameMap {
 
 		const btnContainer = document.getElementById("objAnswerBtnContainer");
 
-		createElement("button", {
+		/*createElement("button", {
 			textContent: "Answer question correctly",
 			parent: btnContainer,
 			events: {
@@ -267,10 +271,18 @@ export default class GameMap {
 					this.activeObject.onIncorrectAnswer();
 				}
 			}
-		});
+		});*/
+
+		if (this.activeObject.data.questions.length > 0) {
+			this.game.chatBot.askQuestion(this.activeObject.data.questions[randInt(0, this.activeObject.data.questions.length)]);
+		} else {
+			this.game.chatBot.askQuestion("There was no question so here's a placeholder!");
+		}
 	}
 
 	popClosedQuestion() {
 		document.getElementById("qotd")!.hidden = true;
+
+		this.game.chatBot.invalidateQuestion();
 	}
 }

@@ -13,6 +13,7 @@ export interface MapObjectData {
 	description: string;
 	image: string;
 	location: L.LatLng;
+	questions: string[];
 };
 
 export default class MapObject {
@@ -29,7 +30,7 @@ export default class MapObject {
 
 	private fadeInTime = 500; // In ms
 
-	public get pos(){
+	public get pos() {
 		return this.data.location;
 	}
 
@@ -57,7 +58,7 @@ export default class MapObject {
 		Time.bindToFrame(() => { this.onFrame() });
 	}
 
-	private initMarker(){
+	private initMarker() {
 		this.marker = L.marker(this.pos, { icon: this.iconInactive });
 		this.marker.setOpacity(0);
 
@@ -69,37 +70,37 @@ export default class MapObject {
 		}
 	}
 
-	private showMarker(){
+	private showMarker() {
 		this.marker.addTo(this.map.map);
 		this.visible = true;
 		this.fadeIn = true;
 	}
 
-	private onFrame(){
+	private onFrame() {
 		// Check if the player is in visibility range of the marker
 		// TODO: make it a tad more efficient
 
-		if(this.fadeIn){
-			if(this.fadeInTimeSinceStart >= this.fadeInTime) {
+		if (this.fadeIn) {
+			if (this.fadeInTimeSinceStart >= this.fadeInTime) {
 				this.fadeIn = false;
 				this.fadeInTimeSinceStart = 0;
 			}
-			else{
+			else {
 				this.marker.setOpacity(this.fadeInTimeSinceStart / this.fadeInTime);
 				this.fadeInTimeSinceStart += Time.deltaTime;
 			}
 		}
 
-		if(this.visible) return;
-		if(!this.game.localPlayer.moving) return;
+		if (this.visible) return;
+		if (!this.game.localPlayer.moving) return;
 
 		if(GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) <= this.game.localPlayer.stats.visibility){
 			this.showMarker();
 		}
 	}
 
-	toggleState(deactivate = false){ // The argument determines whether the marker should be forcefully deactivated (no matter the current state)
-		if(this.active || deactivate) {
+	toggleState(deactivate = false) { // The argument determines whether the marker should be forcefully deactivated (no matter the current state)
+		if (this.active || deactivate) {
 			this.marker.setIcon(this.answered ? this.iconAnswered : this.iconInactive);
 			this.map.activeObject = null;
 			return;
@@ -117,16 +118,16 @@ export default class MapObject {
 		}
 	}
 
-	onCorrectAnswer(){
-		if(this.answered) return;
+	onCorrectAnswer() {
+		if (this.answered) return;
 
 		this.answered = true;
 		this.marker.setIcon(this.iconAnswered);
 		this.game.localPlayer.incrementScore();
 	}
 
-	onIncorrectAnswer(){
-		if(this.answered) return;
+	onIncorrectAnswer() {
+		if (this.answered) return;
 
 		Log.log("u stupid");
 		this.game.clock.addTime(this.timeLossOnIncorrectAnswer);

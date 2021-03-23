@@ -26,5 +26,14 @@
 			"Ko izdarija mazais janitis?"
 		],
 		"answer": "chem"
+	},
+	"anstest": {
+		"questions": [
+			"correct answer",
+			"yes",
+			"correct",
+			"indeed"
+		],
+		"answer": "correct"
 	}
 }

@@ -82,6 +82,7 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	game.state = GameState.PlayerAction;
 
 	const chatBoot = new ChatBoot(game);
+	game.chatBot = chatBoot;
 
 	bindChatBoot(chatBoot);
 	bindGameUI(game);
@@ -127,6 +128,7 @@ function loadMPGame(gameData: ServerLobbyStartGameData, socket: Socket){
 	game.state = GameState.PlayerAction;
 
 	const chatBoot = new ChatBoot(game);
+	game.chatBot = chatBoot;
 
 	bindChatBoot(chatBoot);
 	bindGameUI(game);
