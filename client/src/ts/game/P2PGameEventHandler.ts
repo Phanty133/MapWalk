@@ -20,11 +20,12 @@ export default class P2PGameEventHandler{
 	}
 	private eventSignatures: Record<string, ArrayBuffer> = {}; // Event hash : GameEvent
 	private eventResponse: Record<string, MessageData.EventResponse[]> = {};
-	private activeEvent: Record<string, GameEvent> = {}; // Event hash : GameEvent
+	private activeEvents: Record<string, GameEvent> = {}; // Event hash : GameEvent
 	public onEventAccepted: EventVerificationCallback = () => {};
 	public onEventDeclined: EventVerificationCallback = () => {};
 	public onEventEffect: EventEffectCallback = () => {};
 	public eventVerifiers: Record<string, EventVerifier> = {};
+	private eventCache: string[] = []; // IDs of cached events. Used to give process responses only when all previous events have been applied
 
 	constructor(game: Game){
 		this.game = game;
@@ -39,7 +40,7 @@ export default class P2PGameEventHandler{
 
 			if(manifestHash !== data.event.manifestHash){
 				Log.log("Manifests don't match");
-				P2PLobby.send(channel, { cmd: "eventResponse", response: GameEventResponse.InvalidManifest, manifestHash });
+				P2PLobby.send(channel, { cmd: "eventResponse", eventHash: data.event.hash, response: GameEventResponse.InvalidManifest, manifestHash });
 				return;
 			}
 
@@ -88,67 +89,13 @@ export default class P2PGameEventHandler{
 			// If all event responses haven't been received, don't go further
 			if(this.eventResponse[data.eventHash].length !== Object.keys(this.p2p.peers).length) return;
 
-			// Find the consensus hash
-
-			const hashCount: Record<string, number> = {};
-			const selfManifestHash: string = await this.manifest.getHash();
-			let consensusHash: string = selfManifestHash;
-			let maxHashCount: number = 1;
-
-			hashCount[selfManifestHash] = 1; // Also account for own hash
-
-			for(const res of this.eventResponse[data.eventHash]){
-				if(res.manifestHash in hashCount){
-					if(++hashCount[res.manifestHash] > maxHashCount){
-						consensusHash = res.manifestHash;
-						maxHashCount = hashCount[res.manifestHash];
-					}
-				}
-				else{
-					hashCount[res.manifestHash] = 1;
-				}
-			}
-
-			// Validate self hash
-
-			if(selfManifestHash !== consensusHash){
-				Log.log("Own hash doesn't match the consensus hash!");
-				this.game.checkManifest();
+			if(Object.keys(this.eventResponse).length > 1){ // If there's an event before this one, cache the current one
+				this.eventCache.push(data.eventHash);
 				return;
 			}
-
-			// Review event responses
-
-			let eventOKCount = 0;
-
-			for(const res of this.eventResponse[data.eventHash]){
-				if(res.manifestHash !== consensusHash){
-					Log.log(`Peer's (${res.peer}) hash doesn't match the consensus hash!`);
-					P2PLobby.send(this.p2p.channels[res.peer], { cmd: "checkManifest" });
-					continue;
-				}
-
-				if(res.response === GameEventResponse.Ok) eventOKCount++;
-			}
-
-			if(eventOKCount >= Math.ceil(this.eventResponse[data.eventHash].length / 2)){
-				Log.log(`Event (${this.activeEvent[data.eventHash].type}) was valid!`);
-
-				for(const res of this.eventResponse[data.eventHash]){
-					const targetChannel = this.p2p.channels[res.peer];
-
-					P2PLobby.send(targetChannel, { cmd: "eventEffect", event: this.activeEvent[data.eventHash], key: res.key });
-				}
-
-				this.onEventAccepted(this.activeEvent[data.eventHash]);
-			}
 			else{
-				Log.log("Event was invalid!");
-				this.onEventDeclined(this.activeEvent[data.eventHash]);
+				this.processEventResponses(data.eventHash);
 			}
-
-			delete this.activeEvent[data.eventHash];
-			delete this.eventResponse[data.eventHash];
 		});
 
 		this.p2p.bindToChannel("eventEffect", async (data: MessageData.EventEffect) => {
@@ -175,8 +122,88 @@ export default class P2PGameEventHandler{
 			}
 
 			delete this.eventSignatures[data.event.hash];
-			// delete this.activeEvent[data.event.hash];
+			// delete this.activeEvents[data.event.hash];
 		});
+	}
+
+	private async processEventResponses(eventHash: string){
+		// Find the consensus hash
+
+		Log.log(this.activeEvents);
+		Log.log(eventHash);
+
+		const hashCount: Record<string, number> = {};
+		const selfManifestHash: string = this.activeEvents[eventHash].manifestHash; // Get the original manifest hash
+		let consensusHash: string = selfManifestHash;
+		let maxHashCount: number = 1;
+
+		hashCount[selfManifestHash] = 1; // Also account for own hash
+
+		for(const res of this.eventResponse[eventHash]){
+			if(res.manifestHash in hashCount){
+				if(++hashCount[res.manifestHash] > maxHashCount){
+					consensusHash = res.manifestHash;
+					maxHashCount = hashCount[res.manifestHash];
+				}
+			}
+			else{
+				hashCount[res.manifestHash] = 1;
+			}
+		}
+
+		// Validate self hash
+
+		if(selfManifestHash !== consensusHash){
+			Log.log("Own hash doesn't match the consensus hash!");
+			this.game.checkManifest();
+			return;
+		}
+
+		// Review event responses
+
+		let eventOKCount = 0;
+
+		for(const res of this.eventResponse[eventHash]){
+			if(res.manifestHash !== consensusHash){
+				Log.log("--------");
+				Log.log(`Peer's (${res.peer}) hash doesn't match the consensus hash!`);
+				Log.log(`Consensus hash: ${consensusHash}`);
+				Log.log(`Peer's hash: ${res.manifestHash}`);
+				Log.log(`Local manifest`);
+				Log.log(this.game.manifest.data);
+				Log.log("--------");
+				P2PLobby.send(this.p2p.channels[res.peer], { cmd: "checkManifest" });
+				continue;
+			}
+
+			if(res.response === GameEventResponse.Ok) eventOKCount++;
+		}
+
+		if(eventOKCount >= Math.ceil(this.eventResponse[eventHash].length / 2)){
+			Log.log(`Event (${this.activeEvents[eventHash].type}) was valid!`);
+
+			for(const res of this.eventResponse[eventHash]){
+				const targetChannel = this.p2p.channels[res.peer];
+
+				P2PLobby.send(targetChannel, { cmd: "eventEffect", event: this.activeEvents[eventHash], key: res.key });
+			}
+
+			this.onEventAccepted(this.activeEvents[eventHash]);
+		}
+		else{
+			Log.log("Event was invalid!");
+			this.onEventDeclined(this.activeEvents[eventHash]);
+		}
+
+		if(this.eventCache.length > 0){
+			const nextEvHash: string = this.eventCache[0];
+			Log.log("indeed");
+			this.processEventResponses(nextEvHash);
+			this.eventCache.splice(0, 1);
+		}
+
+		delete this.activeEvents[eventHash];
+		delete this.eventResponse[eventHash];
 	}
 
 	private async genEventKeypair(): Promise<CryptoKeyPair>{
@@ -184,9 +211,7 @@ export default class P2PGameEventHandler{
 	}
 
 	async dispatchEvent(event: GameEvent){
-		if(!event.hash) await event.createHash();
-
-		this.activeEvent[event.hash] = event;
+		this.activeEvents[event.hash] = event;
 
 		const hash = await this.manifest.getHash();
 		event.manifestHash = hash;

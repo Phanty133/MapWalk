@@ -42,14 +42,15 @@ export default class Game {
 	manifestCheckActive: boolean = false;
 	private receivedManifests: Record<string, string> = {}; // {PeerID:manifestHash}
 	public onManifestCheckComplete: ManifestCheckCompleteCallback = () => { };
-	private settings: GameSettings;
-	private mapObjectData: MapObjectData[];
+	settings: GameSettings;
+	mapObjectData: MapObjectData[];
 	gameEndUI: GameEndUI;
 	isMultiplayer: boolean = false;
 	private _state: GameState = GameState.Loading;
 	turnMan: TurnManager;
 	localPlayer: Player;
 	otherPlayers: Player[] = [];
+	players: Player[] = [];
 	playersByID: Record<string, Player> = {};
 	map: GameMap;
 	clock: Clock;
@@ -63,7 +64,7 @@ export default class Game {
 	}
 
 	constructor(settings: GameSettings, socket: Socket, lobby?: Lobby){
-		this.manifest = new GameManifest();
+		this.manifest = new GameManifest(this);
 
 		if(lobby) {
 			this.lobby = lobby;
@@ -125,8 +126,7 @@ export default class Game {
 			} */
 
 			this.onManifestCheckComplete = () => {
-				Log.log("manifest check complete!");
-				this.eventHandler.dispatchEvent(new GameEvent("test", "Hello world!"));
+				Log.log("Manifest check complete!");
 			};
 
 			this.bindP2PEvents();
@@ -151,14 +151,25 @@ export default class Game {
 			this.playersByID[socketID] = plyr;
 		}
 
+		this.players.push(plyr);
+
 		return plyr;
 	}
 
 	checkManifest() {
 		if (this.manifestCheckActive) return;
 
+		// this._state = GameState.Sync;
+		// this.turnMan.update();
+
 		this.manifestCheckActive = true;
+
+		Log.log("--------");
 		Log.log("Syncing game manifest");
+		Log.log(`Local manifest`);
+		Log.log(this.manifest.data);
+		Log.log(`Local hash: ${this.manifest.getHash()}`);
+		Log.log("--------");
 
 		this.p2p.broadcast({ cmd: "getManifestHash" });
 	}
@@ -184,7 +195,7 @@ export default class Game {
 			if (Object.keys(this.receivedManifests).length !== Object.keys(this.p2p.peers).length) return;
 
 			const hashCount: Record<string, number> = {};
-			const selfManifestHash: string = await this.manifest.getHash();
+			const selfManifestHash: string = this.manifest.getHash();
 			let consensusHash: string = Object.values(this.receivedManifests)[0];
 			let maxHashCount: number = 1;
 
@@ -224,8 +235,12 @@ export default class Game {
 			if (!this.manifestCheckActive) return;
 			this.manifestCheckActive = false;
 
+			Log.log("Prev manifest");
+			Log.log(this.manifest.data);
 			// Apply the new manifest
-			this.manifest.data = data.manifestData;
+			this.manifest.loadFromManifestData(data.manifestData);
+			Log.log("New manifest");
+			Log.log(this.manifest.data);
 
 			// Apply all unapplied events
 			// The manifestHash for each event is the hash of the state of the GameManifest when the event should've been applied.
@@ -291,5 +306,10 @@ export default class Game {
 		const stateEvData: GameStateEventData = { state: newState };
 
 		this.eventHandler.dispatchEvent(new GameEvent("GameState", stateEvData));
+	}
+
+	loadGameState(loadedState: GameState){
+		this._state = loadedState;
+		this.turnMan.update();
 	}
 }

@@ -19,6 +19,7 @@ export default class ChatBoot {
 	private curVerificationResolveCb: (response: string) => void;
 	private currentQ: string;
 	private currentAnswer: string = null;
+	private checkForeignAnswer: boolean = false;
 
 	constructor(game: Game) {
 		this.game = game;
@@ -48,9 +49,10 @@ export default class ChatBoot {
 		}
 	}
 
-	async processMessage(msg: string): Promise<string> {
+	async processMessage(msg: string, foreign: boolean = false): Promise<string> {
 		if(this.currentAnswer !== null) return;
 
+		this.checkForeignAnswer = foreign;
 		this.requestAnswerVerification(msg);
 		this.currentAnswer = msg;
 
@@ -96,13 +98,20 @@ export default class ChatBoot {
 
 	private onAnswerVerified(msg: string) {
 		if(this.game.isMultiplayer){
-			const ansEvData: QuestionAnswerEventData = {
-				response: msg,
-				answer: this.currentAnswer,
-				objectID: this.game.map.activeObject.id
-			};
+			if(this.checkForeignAnswer){
+				this.curVerificationResolveCb(msg);
+				this.checkForeignAnswer = false;
+				this.currentAnswer = null;
+			}
+			else{
+				const ansEvData: QuestionAnswerEventData = {
+					response: msg,
+					answer: this.currentAnswer,
+					objectID: this.game.map.activeObject.id
+				};
 
-			this.game.eventHandler.dispatchEvent(new GameEvent("QuestionAnswer", ansEvData));
+				this.game.eventHandler.dispatchEvent(new GameEvent("QuestionAnswer", ansEvData));
+			}
 		}
 		else{
 			this.curVerificationResolveCb(this.interpretReply(msg));

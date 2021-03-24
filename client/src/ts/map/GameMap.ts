@@ -56,6 +56,18 @@ export default class GameMap {
 		L.control.scale().addTo(this.map);
 	}
 
+	clearObjects(){
+		this.clearSelection();
+
+		for(const objIDStr of Object.keys(this.objectsByID)){
+			const id = parseInt(objIDStr, 10);
+			this.objectsByID[id].remove();
+			delete this.objectsByID[id];
+		}
+
+		this.objectsByID = {}; // Redundant?
+	}
+
 	createObjects(_objects?: MapObjectData[]) {
 		let objects = _objects;
 

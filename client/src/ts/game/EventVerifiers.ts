@@ -1,3 +1,4 @@
+import Log from "ts/lib/log";
 import Game from "./Game";
 import GameEvent from "./GameEvent";
 import P2PGameEventHandler from "./P2PGameEventHandler";
@@ -20,7 +21,7 @@ export default function bindEventVerifiers(p2p: P2PGameEventHandler){
 	p2p.eventVerifiers.QuestionAnswer = async (e: GameEvent, game: Game) => {
 		if(!game.turnMan.doesSocketHaveTurn(e.origin)) return false;
 
-		const resp = await game.chatBot.processMessage(e.data.answer);
+		const resp = await game.chatBot.processMessage(e.data.answer, true);
 		return resp === e.data.response;
 	};
 
