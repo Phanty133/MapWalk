@@ -426,8 +426,9 @@ body{
 	color: green;
 }
 
-#gameTurnContainer{
+#gameTurnInfo{
 	display: none;
+	text-align: center;
 }
 
 #chatOverlay{

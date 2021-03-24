@@ -1,4 +1,4 @@
-import GameEvent from "./GameEvent";
+import GameEvent, { GameStateEventData } from "./GameEvent";
 import P2PLobby, { MessageData } from "ts/networking/P2PLobby";
 import Lobby from "ts/networking/Lobby";
 import GameManifest from "./GameManifest";
@@ -13,7 +13,7 @@ import { MapObjectData } from "ts/map/MapObject";
 import GameEndUI from "ts/ui/gameui/GameEndUI";
 import Time from "./Time";
 import Socket, { PlayerData } from "ts/networking/Socket";
-import GameEventHandler from "./GameEventHandler";
+import GameEventHandler, { GameEventData } from "./GameEventHandler";
 import ChatBoot from "./ChatBoot";
 
 type ManifestCheckCompleteCallback = () => void;
@@ -21,7 +21,10 @@ type ManifestCheckCompleteCallback = () => void;
 export enum GameState {
 	Idle,
 	PlayerAction, // The player(s) can do something
+	PlayerInteracting,
+	PlayerActionComplete,
 	Loading, // The game is waiting for something
+	Sync, // The game is synchronizing/checking manifests
 	Paused // The game is paused obviously
 }
 
@@ -43,10 +46,10 @@ export default class Game {
 	private mapObjectData: MapObjectData[];
 	gameEndUI: GameEndUI;
 	isMultiplayer: boolean = false;
-	state: GameState = GameState.Idle;
+	private _state: GameState = GameState.Loading;
 	turnMan: TurnManager;
 	localPlayer: Player;
-	otherPlayers: Player[];
+	otherPlayers: Player[] = [];
 	playersByID: Record<string, Player> = {};
 	map: GameMap;
 	clock: Clock;
@@ -54,6 +57,10 @@ export default class Game {
 	socket: Socket;
 	eventHandler: GameEventHandler;
 	chatBot: ChatBoot;
+
+	public get state(): GameState{
+		return this._state;
+	}
 
 	constructor(settings: GameSettings, socket: Socket, lobby?: Lobby){
 		this.manifest = new GameManifest();
@@ -247,6 +254,11 @@ export default class Game {
 
 			this.onManifestCheckComplete();
 		});
+
+		this.eventHandler.on("GameState", (e: GameEventData) => {
+			this._state = e.event.data.state;
+			this.turnMan.update();
+		});
 	}
 
 	checkGameEndCondition() {
@@ -273,5 +285,11 @@ export default class Game {
 		this.gameEnd = true;
 		Time.paused = true;
 		this.gameEndUI.show();
+	}
+
+	setGameState(newState: GameState){
+		const stateEvData: GameStateEventData = { state: newState };
+
+		this.eventHandler.dispatchEvent(new GameEvent("GameState", stateEvData));
 	}
 }

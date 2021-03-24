@@ -124,8 +124,9 @@ export default class Player {
 			zIndexOffset: 100
 		});
 
+		this.marker.addTo(this.map.map);
+
 		if(this.isLocalPlayer){
-			this.marker.addTo(this.map.map);
 			this.map.map.panTo(this.pos);
 
 			this.energyDisplay = new EnergyDisplay(document.getElementById("gameEnergy"), this);
@@ -135,7 +136,7 @@ export default class Player {
 			this.map.bindMapEvents();
 		}
 		else{
-			this.marker.addTo(this.map.map); // temporary
+			this.marker.setOpacity(0);
 		}
 
 		this.router = new PlayerRouter(this.map.map, this);
@@ -147,7 +148,7 @@ export default class Player {
 		});
 	}
 
-	private isMoveOrderValid(target?: L.LatLng): boolean{
+	isMoveOrderValid(target?: L.LatLng): boolean{
 		if(this.moveQueue.length > 0) return false;
 		if(!this.hasTurn()) return false;
 
@@ -159,6 +160,10 @@ export default class Player {
 		}
 
 		return true;
+	}
+
+	isPosVisible(pos: L.LatLng){ // Whether the given position is within visibility range
+		return GameMap.nonMetricDistanceTo(pos, this.pos) <= this.stats.visibility / 1.5
 	}
 
 	createFogOfWar(){
@@ -180,16 +185,6 @@ export default class Player {
 
 		this.game.eventHandler.on("PlayerMove", (res: GameEventData) => { this.onMoveEvent(res); });
 		this.game.eventHandler.on("PlayerRest", (res: GameEventData) => { this.onRestEvent(res); });
-
-		if(this.game.isMultiplayer){
-			this.game.eventHandler.p2pHandler.eventVerifiers.PlayerMove = async (e: GameEvent, game: Game) => {
-				return true;
-			};
-
-			this.game.eventHandler.p2pHandler.eventVerifiers.PlayerRest = async (e: GameEvent, game: Game) => {
-				return true;
-			};
-		}
 	}
 
 	moveToTarget(target: L.LatLng) {
@@ -328,6 +323,17 @@ export default class Player {
 		this.game.checkGameEndCondition();
 	}
 
+	private onRouteEnd(){
+		if(this.isLocalPlayer){
+			this.router.clearRoute();
+			this.map.map.dragging.enable();
+
+			this.events.emit("ActionDone");
+		}
+
+		this.events.emit("MoveDone");
+	}
+
 	private onFrame() {
 		if (this.moving) {
 			this.moveInterpolater += this.moveFractionPerSecond * (Time.deltaTime / 1000);
@@ -337,17 +343,23 @@ export default class Player {
 				this.moving = false;
 
 				if (this.moveQueue.length === 0) {
-					if(this.isLocalPlayer){
-						this.router.clearRoute();
-						this.map.map.dragging.enable();
-						this.events.emit("ActionDone");
-					}
-
-					this.events.emit("MoveDone");
+					this.onRouteEnd();
 				}
 			}
 			else {
 				this.setPos(MathExtras.lerpPoint(this.initialMovePos, this.targetPos, this.moveInterpolater));
+			}
+
+			// Check whether a player is visible
+			// Absolute cancer
+
+			for(const plyr of this.game.otherPlayers){
+				if(this.game.localPlayer.isPosVisible(plyr.pos)){
+					plyr.marker.setOpacity(1);
+				}
+				else{
+					plyr.marker.setOpacity(0);
+				}
 			}
 		}
 

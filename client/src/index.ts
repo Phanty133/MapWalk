@@ -14,6 +14,7 @@ import { bindChatBoot } from "ts/ui/gameui/ChatbotUI"
 import Socket, { ServerLobbyStartGameData } from "ts/networking/Socket"
 import * as L from "leaflet";
 import Log from "ts/lib/log"
+import bindEventVerifiers from "ts/game/EventVerifiers"
 
 document.body.onload = () => {
 	loadPreGame();
@@ -88,7 +89,7 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	game.map.createObjects(objects);
 
 	const time = new Time();
-	game.state = GameState.PlayerAction;
+	game.setGameState(GameState.PlayerAction);
 
 	const chatBoot = new ChatBoot(game);
 	game.chatBot = chatBoot;
@@ -126,6 +127,9 @@ function loadMPGame(gameData: ServerLobbyStartGameData, socket: Socket){
 			game.localPlayer = plyr
 			game.map.map.panTo(coord);
 		}
+		else{
+			game.otherPlayers.push(plyr);
+		}
 	}
 
 	game.localPlayer.createFogOfWar();
@@ -134,13 +138,23 @@ function loadMPGame(gameData: ServerLobbyStartGameData, socket: Socket){
 	game.map.createObjects(gameData.objects);
 
 	const time = new Time();
-	game.state = GameState.PlayerAction;
 
 	const chatBoot = new ChatBoot(game);
 	game.chatBot = chatBoot;
 
 	bindChatBoot(chatBoot);
 	bindGameUI(game);
+	bindEventVerifiers(game.p2pEventHandler);
 
 	lobby.p2p.joinLobby();
+
+	lobby.p2p.events.on("Connection", () => {
+		if(Object.values(lobby.p2p.channels).length === gameData.playerOrder.length - 1){
+			Log.log("All players connected!");
+
+			if(game.turnMan.activePlayer === game.localPlayer){
+				game.setGameState(GameState.PlayerAction);
+			}
+		}
+	});
 }

@@ -3,6 +3,7 @@ import GameManifest, { GameManifestData } from "ts/game/GameManifest";
 import { randInt } from "ts/lib/util";
 import Socket from "./Socket";
 import Log from "ts/lib/log";
+import { EventEmitter } from "events";
 import "webrtc-adapter";
 
 export interface PeerData{
@@ -81,6 +82,7 @@ export default class P2PLobby{
 	socket: Socket;
 	channelBinds: Record<string, MessageCallback[]> = {};
 	joinedLobby: boolean = false;
+	events: EventEmitter = new EventEmitter();
 	static debugHost: boolean = false;
 
 	constructor(socket: Socket){
@@ -88,6 +90,7 @@ export default class P2PLobby{
 
 		this.bindToChannel("init", (msgData: MessageData.Init, channel: RTCDataChannel) => {
 			Log.log("Init " + msgData.status);
+			this.events.emit("Connection");
 		});
 	}
 
@@ -110,6 +113,7 @@ export default class P2PLobby{
 			channel.onclose = () => {
 				Log.log("Channel close");
 			};
+
 			P2PLobby.debugHost = true;
 
 			channel.onmessage = (e: MessageEvent) => { this.messageHandler(peer, e); };
@@ -168,9 +172,6 @@ export default class P2PLobby{
 					this.channels[data.peer] = channel;
 				});
 
-			// tslint:disable-next-line: no-console
-			Log.log("Creating an RTC offer to " + data.peer);
-
 			const localDesc = await peerConnection.createOffer();
 
 			await peerConnection.setLocalDescription(localDesc);
@@ -193,15 +194,10 @@ export default class P2PLobby{
 	}
 
 	async remoteSessionDesc(data: RemoteSessionData){
-		// tslint:disable-next-line: no-console
-		Log.log("Remote desc received!");
 		const desc = new RTCSessionDescription(data.sessionDesc);
 		const peer = this.peers[data.peer];
 
 		await peer.setRemoteDescription(desc);
-
-		// tslint:disable-next-line: no-console
-		Log.log("setRemoteDescription OK");
 
 		if(data.sessionDesc.type === "offer"){
 			const localDesc = await peer.createAnswer();

@@ -19,7 +19,7 @@ export default class P2PGameEventHandler{
 		publicExponent: new Uint8Array([1, 0, 1])
 	}
 	private eventSignatures: Record<string, ArrayBuffer> = {}; // Event hash : GameEvent
-	private eventResponse: MessageData.EventResponse[] = [];
+	private eventResponse: Record<string, MessageData.EventResponse[]> = {};
 	private activeEvent: Record<string, GameEvent> = {}; // Event hash : GameEvent
 	public onEventAccepted: EventVerificationCallback = () => {};
 	public onEventDeclined: EventVerificationCallback = () => {};
@@ -70,6 +70,8 @@ export default class P2PGameEventHandler{
 					keypair.privateKey,
 					textEncoder.encode(data.event.hash)
 				);
+
+				Log.log(data.event.hash);
 			}
 
 			// Send the event origin the response with authorization for further action
@@ -77,10 +79,14 @@ export default class P2PGameEventHandler{
 		});
 
 		this.p2p.bindToChannel("eventResponse", async (data: MessageData.EventResponse, channel: RTCDataChannel) => {
-			this.eventResponse.push(data);
+			if(!this.eventResponse[data.eventHash]){
+				this.eventResponse[data.eventHash] = [];
+			}
+
+			this.eventResponse[data.eventHash].push(data);
 
 			// If all event responses haven't been received, don't go further
-			if(this.eventResponse.length !== Object.keys(this.p2p.peers).length) return;
+			if(this.eventResponse[data.eventHash].length !== Object.keys(this.p2p.peers).length) return;
 
 			// Find the consensus hash
 
@@ -91,7 +97,7 @@ export default class P2PGameEventHandler{
 
 			hashCount[selfManifestHash] = 1; // Also account for own hash
 
-			for(const res of this.eventResponse){
+			for(const res of this.eventResponse[data.eventHash]){
 				if(res.manifestHash in hashCount){
 					if(++hashCount[res.manifestHash] > maxHashCount){
 						consensusHash = res.manifestHash;
@@ -115,7 +121,7 @@ export default class P2PGameEventHandler{
 
 			let eventOKCount = 0;
 
-			for(const res of this.eventResponse){
+			for(const res of this.eventResponse[data.eventHash]){
 				if(res.manifestHash !== consensusHash){
 					Log.log(`Peer's (${res.peer}) hash doesn't match the consensus hash!`);
 					P2PLobby.send(this.p2p.channels[res.peer], { cmd: "checkManifest" });
@@ -125,10 +131,10 @@ export default class P2PGameEventHandler{
 				if(res.response === GameEventResponse.Ok) eventOKCount++;
 			}
 
-			if(eventOKCount >= Math.ceil(this.eventResponse.length / 2)){
-				Log.log("Event was valid!");
+			if(eventOKCount >= Math.ceil(this.eventResponse[data.eventHash].length / 2)){
+				Log.log(`Event (${this.activeEvent[data.eventHash].type}) was valid!`);
 
-				for(const res of this.eventResponse){
+				for(const res of this.eventResponse[data.eventHash]){
 					const targetChannel = this.p2p.channels[res.peer];
 
 					P2PLobby.send(targetChannel, { cmd: "eventEffect", event: this.activeEvent[data.eventHash], key: res.key });
@@ -142,33 +148,34 @@ export default class P2PGameEventHandler{
 			}
 
 			delete this.activeEvent[data.eventHash];
-			this.eventResponse = [];
+			delete this.eventResponse[data.eventHash];
 		});
 
 		this.p2p.bindToChannel("eventEffect", async (data: MessageData.EventEffect) => {
-			Log.log("Event effect received!");
+			Log.log(`Event (${data.event.type}) effect received!`);
+			Log.log(data);
 
 			if(!data.key){
 				Log.log("Authorization key missing! shitty hax0r alert");
 				return;
 			}
 
+			Log.log(this.eventSignatures);
 			const signature = this.eventSignatures[data.event.hash];
 			const dataToBeVerified = new TextEncoder().encode(data.event.hash);
 			const publicKey = await crypto.subtle.importKey("jwk", data.key, P2PGameEventHandler.encryptionAlgorithm, false, ["verify"]);
 			const result = await crypto.subtle.verify(P2PGameEventHandler.encryptionAlgorithm, publicKey, signature, dataToBeVerified);
 
 			if(result){
-				Log.log("Event effect authorized!");
-				Log.log(data);
+				Log.log(`Event (${data.event.type}) effect authorized!`);
 				this.onEventEffect(data.event, data.peer);
 			}
 			else{
-				Log.log("Event effect unauthorized! hax0r alert");
+				Log.log(`Event (${data.event.type}) effect unauthorized!`);
 			}
 
 			delete this.eventSignatures[data.event.hash];
-			delete this.activeEvent[data.event.hash];
+			// delete this.activeEvent[data.event.hash];
 		});
 	}
 
@@ -183,7 +190,10 @@ export default class P2PGameEventHandler{
 
 		const hash = await this.manifest.getHash();
 		event.manifestHash = hash;
+		event.origin = this.game.socket.id;
 
+		Log.log(`Sending event (${event.type})`);
+		Log.log(event);
 		this.p2p.broadcast({ cmd: "event", event });
 	}
 }

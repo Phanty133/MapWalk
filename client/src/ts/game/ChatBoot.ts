@@ -45,10 +45,6 @@ export default class ChatBoot {
 					this.curVerificationResolveCb(this.interpretReply(null)); // If the other players don't get the same response, assume the answer as incorrect?
 				}
 			});
-
-			this.game.p2pEventHandler.eventVerifiers.QuestionAnswer = async () => {
-				return true;
-			};
 		}
 	}
 

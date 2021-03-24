@@ -7,7 +7,7 @@ export interface GameManifestData{
 	val3: number[]
 }
 
-export default class GameManifest{
+export default class GameManifest{ // Mainly of use only in multiplayer for game synchronization
 	data: GameManifestData;
 	events: GameEvent[] = [];
 	eventQueue: GameEvent[] = [];
@@ -23,5 +23,9 @@ export default class GameManifest{
 	async getHash(): Promise<string>{
 		const digest = await crypto.subtle.digest("SHA-1", Uint8Array.from(Object.values(this.data)));
 		return uint8ToHex(new Uint8Array(digest));
+	}
+
+	loadGameFromManifest(){
+
 	}
 }

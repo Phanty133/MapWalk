@@ -98,7 +98,7 @@ export default class MapObject {
 		if (this.visible) return;
 		if (!this.game.localPlayer.moving) return;
 
-		if(GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) <= this.game.localPlayer.stats.visibility){
+		if(this.game.localPlayer.isPosVisible(this.pos)){
 			this.showMarker();
 		}
 	}

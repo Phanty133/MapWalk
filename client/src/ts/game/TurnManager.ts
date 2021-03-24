@@ -1,6 +1,6 @@
 import Log from "ts/lib/log";
 import TurnDisplay from "ts/ui/gameui/TurnDisplay";
-import Game from "./Game";
+import Game, { GameState } from "./Game";
 import GameEvent from "./GameEvent";
 import { GameEventData } from "./GameEventHandler";
 import Player from "./Player";
@@ -28,20 +28,17 @@ export default class TurnManager{
 
 	private bindToEvents(){
 		this.game.eventHandler.on("NextTurn", (data: GameEventData) => { this.onNextTurn(data); });
-
-		if(this.game.isMultiplayer){
-			this.game.p2pEventHandler.eventVerifiers.NextTurn = async () => {
-				return true;
-			}
-		}
 	}
 
 	private onNextTurn(data: GameEventData){
 		if(!data.success) return;
-		Log.log(this);
 
 		if(++this.activeIndex === this.playerOrder.length){
 			this.activeIndex = 0;
+		}
+
+		if(this.activePlayer === this.game.localPlayer){
+			this.game.setGameState(GameState.PlayerAction);
 		}
 
 		if(this.game.isMultiplayer) this.turnDisplay.update();
@@ -62,7 +59,17 @@ export default class TurnManager{
 	}
 
 	next(){
+		this.game.setGameState(GameState.Loading);
+
 		const nextTurnEvent = new GameEvent("NextTurn");
 		this.game.eventHandler.dispatchEvent(nextTurnEvent);
+	}
+
+	doesSocketHaveTurn(socketid: string){
+		return this.activePlayer.info.socketID === socketid;
+	}
+
+	update(){
+		this.turnDisplay.update();
 	}
 }
