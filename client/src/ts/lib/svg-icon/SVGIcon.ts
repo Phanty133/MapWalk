@@ -51,12 +51,12 @@ export class SVGIcon extends L.DivIcon {
 			for (const path of Object.values(pathAr)) {
 				path.style.setProperty("fill", this.options.color);
 				const strokeColour = Color.rgbStringToRGB(this.options.color);
-				strokeColour.r -= 20;
-				strokeColour.r = Math.max(0, strokeColour.r);
-				strokeColour.g -= 20;
-				strokeColour.g = Math.max(0, strokeColour.g);
-				strokeColour.b -= 20;
-				strokeColour.b = Math.max(0, strokeColour.b);
+				strokeColour.r /= 2;
+				// strokeColour.r = Math.max(0, strokeColour.r);
+				strokeColour.g /= 2;
+				// strokeColour.g = Math.max(0, strokeColour.g);
+				strokeColour.b /= 2;
+				// strokeColour.b = Math.max(0, strokeColour.b);
 				path.style.setProperty("stroke", Color.rgbToRGBString(strokeColour));
 				path.style.setProperty("opacity", this.options.opacity.toString());
 			}
