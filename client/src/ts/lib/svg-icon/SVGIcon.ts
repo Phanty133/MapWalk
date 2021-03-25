@@ -7,8 +7,6 @@ import SVGIconOptions from "./SVGIconOptions";
 export class SVGIcon extends L.DivIcon {
 	options: SVGIconOptions = {
 		color: "rgb(255,255,255)",
-		fillColor: null, // defaults to colour
-		fillOpacity: 0.4,
 		iconAnchor: null,
 		iconSize: new L.Point(32, 48),
 		opacity: 1,
@@ -45,10 +43,26 @@ export class SVGIcon extends L.DivIcon {
 		}
 
 		const resEl = document.createElement("object") as HTMLObjectElement;
-		resEl.setAttribute("style", "fill:" + this.options.color + ";");
+		// resEl.setAttribute("style", "fill:" + this.options.color + ";");
 		resEl.setAttribute("data", this.options.svgLink);
+		resEl.addEventListener("load", (ev) => {
+			const innerSVAG = resEl.getSVGDocument();
+			const pathAr = innerSVAG.getElementsByTagNameNS("http://www.w3.org/2000/svg", "path");
+			for (const path of Object.values(pathAr)) {
+				path.style.setProperty("fill", this.options.color);
+				const strokeColour = Color.rgbStringToRGB(this.options.color);
+				strokeColour.r -= 20;
+				strokeColour.r = Math.max(0, strokeColour.r);
+				strokeColour.g -= 20;
+				strokeColour.g = Math.max(0, strokeColour.g);
+				strokeColour.b -= 20;
+				strokeColour.b = Math.max(0, strokeColour.b);
+				path.style.setProperty("stroke", Color.rgbToRGBString(strokeColour));
+				path.style.setProperty("opacity", this.options.opacity.toString());
+			}
+		});
 		const svg = resEl.outerHTML;
 
-		return svg;
+		return resEl;
 	}
 }

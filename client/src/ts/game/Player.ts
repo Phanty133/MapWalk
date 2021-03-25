@@ -17,6 +17,7 @@ import GameEvent, { GameEventResponse, MoveEventData } from "./GameEvent";
 import { GameEventData } from "./GameEventHandler";
 import { PlayerData } from "ts/networking/Socket";
 import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
+import { Color } from "ts/lib/Color";
 
 type TracingCallback = (route: L.Routing.IRoute) => void;
 
@@ -128,7 +129,8 @@ export default class Player {
 		// Awesome!
 		this.icon = new SVGIcon({
 			iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
-			svgLink: playerSVG
+			svgLink: playerSVG,
+			color: Color.rgbToRGBString({ r: 255, g: 0, b: 128 })
 		});
 
 		this.marker = L.marker(this.pos, {
