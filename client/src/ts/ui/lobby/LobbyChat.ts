@@ -41,4 +41,9 @@ export default class LobbyChat{
 		createElement("span", { parent: msgContainer, textContent: author, style: { color } });
 		createElement("span", { parent: msgContainer, textContent: `: ${content}` });
 	}
+
+	addSystemMessage(content: string, color: string){
+		const msgContainer = createElement("span", { parent: this.chatMessageContainer });
+		createElement("span", { parent: msgContainer, textContent: content, style: { color } });
+	}
 }

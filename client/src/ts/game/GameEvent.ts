@@ -1,4 +1,4 @@
-import { genHexString, getHashString } from "../lib/util";
+import { genHexString } from "../lib/util";
 import GameManifest from "./GameManifest";
 import * as L from "leaflet";
 import { GameState } from "./Game";

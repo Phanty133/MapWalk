@@ -1,7 +1,8 @@
-import SocketServer, { P2PRelayIceCandidateData, P2PRelaySessionDescData, ServerLobbyChatMessageData, ServerLobbyColorChangeData, ServerLobbyKickData, ServerLobbyMakeHostData, ServerLobbyStartGameData } from "./SocketServer";
+import SocketServer, { P2PRelayIceCandidateData, P2PRelaySessionDescData, ServerLobbyChatMessageData, ServerLobbyColorChangeData, ServerLobbyKickData, ServerLobbyMakeHostData, ServerLobbySettingsChangedData, ServerLobbyStartGameData } from "./SocketServer";
 import { genHexString, randomArrayElements } from "./lib/util";
 import { logger, mapObjectLoader } from "./index";
 import { Socket } from "socket.io";
+import LobbyManager from "./LobbyManager";
 
 type SocketCallback = (socket: Socket) => void;
 
@@ -39,6 +40,18 @@ export default class Lobby{
 	}
 
 	removePeer(socketID: string){
+		if(this.players.length > 1){
+			this.broadcast("ServerLobbyUserDisconnected", { socketID });
+
+			if(this.playersBySocket[socketID].isHost){
+				// If it is the host, make the host the next player in the players array
+				this.serverLobbyMakeHost(socketID, { socketID: this.players[1].socketID });
+			}
+		}
+		else{
+			LobbyManager.removeLobby(this.id);
+		}
+
 		this.sockets.splice(this.sockets.findIndex(s => s === socketID), 1);
 	}
 
@@ -129,5 +142,11 @@ export default class Lobby{
 			playerOrder: randomizedPlayerOrderData,
 			playerSettings: this.playersBySocket
 		}, data));
+	}
+
+	serverLobbySettingsChanged(origin: string, data: ServerLobbySettingsChangedData){
+		if(!this.playersBySocket[origin].isHost) return;
+
+		this.broadcast("ServerLobbySettingsChanged", data, origin);
 	}
 }

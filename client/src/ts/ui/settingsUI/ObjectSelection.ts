@@ -1,5 +1,7 @@
 import DynamicElement from "../DynamicElement";
 
+type ChangeCallback = (value: number) => void;
+
 export default class ObjectSelection extends DynamicElement{
 	private objectCountEl: HTMLElement;
 	private inputEl: HTMLInputElement;
@@ -8,6 +10,7 @@ export default class ObjectSelection extends DynamicElement{
 		min: 5,
 		max: 45
 	};
+	onChange: ChangeCallback = () => {};
 
 	public get value(): number{
 		return parseInt(this.inputEl.value, 10);
@@ -47,6 +50,16 @@ export default class ObjectSelection extends DynamicElement{
 	}
 
 	private onInputHandler(e: Event){
+		this.objectCountEl.textContent = this.inputEl.value;
+		this.onChange(this.value);
+	}
+
+	setDisabled(disabled: boolean = true){
+		this.inputEl.disabled = disabled;
+	}
+
+	setValue(value: number){
+		this.inputEl.value = value.toString();
 		this.objectCountEl.textContent = this.inputEl.value;
 	}
 }

@@ -16,6 +16,8 @@ the map do be walkin' doe
 * `ServerLobbyMakeHost : { socketID: string }` - A new host identified by `socketID` has been selected
 * `ServerLobbyChatMessage : { authorSocketID: string, username: string, content: string }` - Someone sends a chat message
 * `ServerLobbyStartGame : { settings: GameSettings, objects: MapObjectData[], playerCoords: Record<string, L.LatLng>, playerOrder: string[], playerSettings: PlayerData[] }` - The host starts the game
+* `ServerLobbySettingsChanged : { settings: GameSettings }` - Game settings have been changed by the host
+* `ServerLobbyUserDisconnected : { socketID: string }` - A user disconnected
 
 #### WebRTC signaling
 

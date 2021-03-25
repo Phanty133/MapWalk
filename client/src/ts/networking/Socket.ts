@@ -45,6 +45,14 @@ export interface ServerLobbyStartGameData{
 	playerSettings: Record<string, PlayerData>
 }
 
+export interface ServerLobbyUserDisconnectedData{
+	socketID: string
+}
+
+export interface ServerLobbySettingsChangedData{
+	settings: GameSettings;
+}
+
 export default class Socket{
 	url: string = "http://localhost:8080";
 	socket: socketio.Socket;
@@ -75,6 +83,8 @@ export default class Socket{
 		this.socket.on("ServerLobbyChatMessage", (data: ServerLobbyChatMessageData) => { this.onServerLobbyChatMessage(data); });
 		this.socket.on("ServerLobbyStartGame", (data: ServerLobbyStartGameData) => { this.onServerLobbyStartGame(data); });
 		this.socket.on("ServerLobbyKicked", () => { this.onServerLobbyKicked(); });
+		this.socket.on("ServerLobbyUserDisconnected", (data: ServerLobbyUserDisconnectedData) => { this.onServerLobbyUserDisconnected(data); });
+		this.socket.on("ServerLobbySettingsChanged", (data: ServerLobbySettingsChangedData) => { this.onServerLobbySettingsChanged(data); });
 
 		// WebRTC signaling
 
@@ -135,6 +145,14 @@ export default class Socket{
 		this.events.emit("ServerLobbyStartGame", data);
 	}
 
+	private onServerLobbyUserDisconnected(data: ServerLobbyUserDisconnectedData){
+		this.events.emit("ServerLobbyUserDisconnected", data);
+	}
+
+	private onServerLobbySettingsChanged(data: ServerLobbySettingsChangedData){
+		this.events.emit("ServerLobbySettingsChanged", data);
+	}
+
 	private emit(event: string, data?: object){
 		this.socket.emit(event, data);
 	}
@@ -177,5 +195,9 @@ export default class Socket{
 
 	serverLobbyStartGame(settings: GameSettings){
 		this.emit("ServerLobbyStartGame", { settings });
+	}
+
+	serverLobbySettingsChanged(settings: GameSettings){
+		this.emit("ServerLobbySettingsChanged", { settings });
 	}
 }

@@ -1,6 +1,6 @@
 import Log from "ts/lib/log";
-import Socket, { PlayerData, ServerLobbyChatMessageData, ServerLobbyColorChangeData, ServerLobbyJoinedData, ServerLobbyKickData, ServerLobbyMakeHostData } from "ts/networking/Socket";
-import SettingsSelection from "ts/ui/settingsUI/SettingsSelection";
+import Socket, { PlayerData, ServerLobbyColorChangeData, ServerLobbyJoinedData, ServerLobbyKickData, ServerLobbyMakeHostData, ServerLobbySettingsChangedData, ServerLobbyUserDisconnectedData } from "ts/networking/Socket";
+import SettingsSelection, { GameSettings } from "ts/ui/settingsUI/SettingsSelection";
 import LobbyChat from "./LobbyChat";
 import LobbyUsers from "./LobbyUsers";
 
@@ -12,6 +12,7 @@ export default class LobbyUI{
 	private settings: SettingsSelection;
 	private socket: Socket;
 	private lobbyID: string;
+	private startGameBtn: HTMLButtonElement;
 
 	constructor(socket: Socket, containerSelector: string = "#p2pLobby"){
 		this.containerSelector = containerSelector;
@@ -26,20 +27,23 @@ export default class LobbyUI{
 
 		this.users = new LobbyUsers(this.container, this.socket);
 		this.chat = new LobbyChat(this.socket, this.users);
-		this.settings = new SettingsSelection("#lobbySettingsSelection", true);
+		this.settings = new SettingsSelection("#lobbySettingsSelection", { misc: false, location: false });
+		this.settings.onChange = (newSettings: GameSettings) => { this.onSettingsChange(newSettings); };
 		this.settings.open();
 
 		document.getElementById("lobbyID").textContent = this.lobbyID;
 		document.getElementById("p2pQuitLobby").addEventListener("click", () => { window.location.href = "/"; });
 
-		const startGameBtn = document.getElementById("p2pStartGame") as HTMLButtonElement;
-		startGameBtn.disabled = !this.users.selfIsHost;
-		startGameBtn.addEventListener("click", () => { this.onStartGame(); });
+		this.startGameBtn = document.getElementById("p2pStartGame") as HTMLButtonElement;
+		this.startGameBtn.disabled = !this.users.selfIsHost;
+		this.startGameBtn.addEventListener("click", () => { this.onStartGame(); });
 	}
 
 	private bindUIEvents(){
 		this.socket.events.addListener("ServerLobbyNewPlayer", (plyrData: PlayerData) => {
+			this.chat.addSystemMessage(`${plyrData.username} has joined!`, "#388e3c");
 			this.users.addUserFromData(plyrData);
+			this.updateStartBtnState();
 		});
 
 		this.socket.events.addListener("ServerLobbyJoined", (data: ServerLobbyJoinedData) => {
@@ -49,6 +53,9 @@ export default class LobbyUI{
 			for(const plyr of data.players){
 				this.users.addUserFromData(plyr);
 			}
+
+			this.settings.setSettingsDisabled(!this.users.selfIsHost);
+			this.updateStartBtnState();
 		});
 
 		this.socket.events.addListener("ServerLobbyKicked", () => {
@@ -60,17 +67,41 @@ export default class LobbyUI{
 		});
 
 		this.socket.events.addListener("ServerLobbyKick", (data: ServerLobbyKickData) => {
-			this.users.kickPlayer(data.socketID);
+			this.chat.addSystemMessage(`${this.users.userByID(data.socketID).username} has been kicked!`, "#EE0000");
+			this.users.removePlayer(data.socketID);
+			this.updateStartBtnState();
 		});
 
 		this.socket.events.addListener("ServerLobbyMakeHost", (data: ServerLobbyMakeHostData) => {
+			this.chat.addSystemMessage(`${this.users.userByID(data.socketID).username} has been made host!`, "#0288d1");
 			this.users.setHost(data.socketID);
+			this.settings.setSettingsDisabled(!this.users.selfIsHost);
 		});
+
+		this.socket.events.addListener("ServerLobbyUserDisconnected", (data: ServerLobbyUserDisconnectedData) => {
+			this.chat.addSystemMessage(`${this.users.userByID(data.socketID).username} has disconnected!`, "#EE0000");
+			this.users.removePlayer(data.socketID);
+			this.updateStartBtnState();
+		});
+
+		this.socket.events.addListener("ServerLobbySettingsChanged", (data: ServerLobbySettingsChangedData) => {
+			this.settings.updateSettings(data.settings);
+		});
+	}
+
+	private updateStartBtnState(){
+		if(!this.users.selfIsHost) return;
+
+		this.startGameBtn.disabled = this.users.users.length < 2;
 	}
 
 	private onStartGame(){
 		if(!this.users.selfIsHost) return;
 
 		this.socket.serverLobbyStartGame(this.settings.getSettings());
+	}
+
+	private onSettingsChange(newSettings: GameSettings){
+		this.socket.serverLobbySettingsChanged(newSettings);
 	}
 }

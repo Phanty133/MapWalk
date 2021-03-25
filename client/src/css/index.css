@@ -45,6 +45,12 @@ body{
 	background-color: var(--backgroundColor);
 }
 
+#gamentContainer #mainContainer{
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+} 
+
 .preSelectionContainer{
 	display: none;
 	grid-auto-flow: row;
@@ -139,8 +145,13 @@ body{
 	cursor: initial;
 }
 
-.selectionContainer > button[data-selected]:hover{
+.selectionContainer:not([disabled]) > button[data-selected]:hover{
 	filter: none !important;
+}
+
+.selectionContainer[disabled] > button{
+	filter: brightness(60%) !important;
+	cursor: initial;
 }
 
 .button{
@@ -233,6 +244,7 @@ body{
 	grid-auto-flow: row;
 	grid-auto-rows: min-content;
 	row-gap: 0.5em;
+	padding-top: 1em;
 }
 
 .p2pUserEntry{
@@ -242,12 +254,13 @@ body{
 	column-gap: 1em;
 	grid-template-columns: 4fr 1fr 6fr 2fr 2fr 2fr 1fr;
 
-	border-bottom: 1px solid lightgrey;
-	padding-bottom: 0.5em;
+	border: 1px solid lightgrey;
+	border-radius: 2px;
+	padding: 0.5em;
 }
 
 .p2pUserEntry:last-child{
-	border: none;
+	/* border: none; */
 }
 
 .p2pUserEntry button{

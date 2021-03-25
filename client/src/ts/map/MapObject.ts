@@ -79,7 +79,7 @@ export default class MapObject {
 		this.marker.bindTooltip(this.data.name, { offset: new L.Point(0, -30) });
 		this.marker.addEventListener("click", e => { this.toggleState(); });
 
-		if(this.answered || this.visible) this.showMarker();
+		if(this.visible) this.showMarker();
 
 		for(const plyr of this.game.players){
 			if(plyr.isPosVisible(this.pos)) {

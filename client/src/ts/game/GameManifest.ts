@@ -1,4 +1,3 @@
-import { getHashString, uint8ToHex } from "ts/lib/util";
 import MapObject, { MapObjectData } from "ts/map/MapObject";
 import { GameSettings } from "ts/ui/settingsUI/SettingsSelection";
 import Game, { GameState } from "./Game";
