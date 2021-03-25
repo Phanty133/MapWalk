@@ -70,6 +70,6 @@ export default class TurnManager{
 	}
 
 	update(){
-		this.turnDisplay.update();
+		this.turnDisplay?.update();
 	}
 }
