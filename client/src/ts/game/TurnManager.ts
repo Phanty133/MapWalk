@@ -41,7 +41,10 @@ export default class TurnManager{
 			this.game.setGameState(GameState.PlayerAction);
 		}
 
-		if(this.game.isMultiplayer) this.turnDisplay.update();
+		if(this.game.isMultiplayer) {
+			this.turnDisplay.update();
+			this.game.clock.addTime(10);
+		}
 	}
 
 	addPlayer(plyr: Player){

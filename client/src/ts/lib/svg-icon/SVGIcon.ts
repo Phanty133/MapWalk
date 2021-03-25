@@ -49,16 +49,28 @@ export class SVGIcon extends L.DivIcon {
 			const innerSVAG = resEl.getSVGDocument();
 			const pathAr = innerSVAG.getElementsByTagNameNS("http://www.w3.org/2000/svg", "path");
 			for (const path of Object.values(pathAr)) {
-				path.style.setProperty("fill", this.options.color);
-				const strokeColour = Color.rgbStringToRGB(this.options.color);
-				strokeColour.r /= 2;
+				let colorStr: string;
+				let strokeColor: Color.RGB;
+
+				if(typeof(this.options.color) === "string"){
+					colorStr = this.options.color;
+					strokeColor = Color.rgbStringToRGB(this.options.color);
+				}
+				else{
+					strokeColor = this.options.color;
+					colorStr = Color.rgbToRGBString(this.options.color);
+				}
+
+				strokeColor.r /= 2;
 				// strokeColour.r = Math.max(0, strokeColour.r);
-				strokeColour.g /= 2;
+				strokeColor.g /= 2;
 				// strokeColour.g = Math.max(0, strokeColour.g);
-				strokeColour.b /= 2;
+				strokeColor.b /= 2;
 				// strokeColour.b = Math.max(0, strokeColour.b);
-				path.style.setProperty("stroke", Color.rgbToRGBString(strokeColour));
+
+				path.style.setProperty("stroke", Color.rgbToRGBString(strokeColor));
 				path.style.setProperty("opacity", this.options.opacity.toString());
+				path.style.setProperty("fill", colorStr);
 			}
 		});
 		const svg = resEl.outerHTML;

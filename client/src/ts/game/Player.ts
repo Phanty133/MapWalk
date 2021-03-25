@@ -1,7 +1,6 @@
 import * as L from "leaflet";
 import Log from "ts/lib/log";
 import PlayerRouter from "ts/map/PlayerRouter";
-import playerImg from "img/player.png";
 import playerSVG from "img/MarkerPlayer.svg";
 import "leaflet-routing-machine";
 import GameMap from "ts/map/GameMap";
@@ -11,9 +10,8 @@ import MathExtras from "ts/lib/MathExtras";
 import FogOfWar from "ts/map/FogOfWar";
 import { EventEmitter } from "events";
 import EnergyDisplay from "ts/ui/gameui/EnergyDisplay";
-import MapObject from "ts/map/MapObject";
 import ScoreDisplay from "ts/ui/gameui/ScoreDisplay";
-import GameEvent, { GameEventResponse, MoveEventData } from "./GameEvent";
+import GameEvent, { MoveEventData } from "./GameEvent";
 import { GameEventData } from "./GameEventHandler";
 import { PlayerData } from "ts/networking/Socket";
 import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
@@ -130,7 +128,7 @@ export default class Player {
 		this.icon = new SVGIcon({
 			iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
 			svgLink: playerSVG,
-			color: Color.rgbToRGBString({ r: 255, g: 0, b: 128 })
+			color: Color.hexToRGB(this.info.plyrData.color)
 		});
 
 		this.marker = L.marker(this.pos, {

@@ -2,14 +2,14 @@ import Log from "./log";
 
 // tslint:disable-next-line: no-namespace
 export namespace Color{
-	interface RGB{
+	export interface RGB{
 		r: number,
 		g: number,
 		b: number,
 		a?: number
 	}
 
-	interface HSL{
+	export interface HSL{
 		h: number,
 		s: number,
 		l: number,
