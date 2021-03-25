@@ -128,7 +128,7 @@ export default class Player {
 		this.icon = new SVGIcon({
 			iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
 			svgLink: playerSVG,
-			color: Color.hexToRGB(this.info.plyrData.color)
+			color: Color.hexToRGB(this.info.plyrData?.color ?? "#FFAA00")
 		});
 
 		this.marker = L.marker(this.pos, {
@@ -393,7 +393,7 @@ export default class Player {
 					plyr.marker.setOpacity(1);
 				}
 				else {
-					plyr.marker.setOpacity(1);
+					plyr.marker.setOpacity(0);
 				}
 			}
 		}
