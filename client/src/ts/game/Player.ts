@@ -2,6 +2,7 @@ import * as L from "leaflet";
 import Log from "ts/lib/log";
 import PlayerRouter from "ts/map/PlayerRouter";
 import playerImg from "img/player.png";
+import playerSVG from "img/MarkerPlayer.svg";
 import "leaflet-routing-machine";
 import GameMap from "ts/map/GameMap";
 import Game, { GameState } from "./Game";
@@ -15,6 +16,7 @@ import ScoreDisplay from "ts/ui/gameui/ScoreDisplay";
 import GameEvent, { GameEventResponse, MoveEventData } from "./GameEvent";
 import { GameEventData } from "./GameEventHandler";
 import { PlayerData } from "ts/networking/Socket";
+import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
 
 type TracingCallback = (route: L.Routing.IRoute) => void;
 
@@ -26,7 +28,7 @@ export interface PlayerStats {
 	walkedDistance: number;
 }
 
-export interface PlayerInfo{
+export interface PlayerInfo {
 	pos: L.LatLng;
 	restTime: number;
 	timeToVisibilityEnd: number;
@@ -43,7 +45,7 @@ export default class Player {
 	private router: PlayerRouter;
 	private map: GameMap;
 	private game: Game;
-	private icon: L.Icon;
+	private icon: SVGIcon;
 	private initialMovePos: L.LatLng;
 	private distanceToTarget: number;
 	private moveFractionPerSecond: number;
@@ -63,27 +65,27 @@ export default class Player {
 
 	events: EventEmitter = new EventEmitter();
 
-	public get pos(){
+	public get pos() {
 		return this.info.pos;
 	}
 
-	public set pos(p: L.LatLng){
+	public set pos(p: L.LatLng) {
 		this.info.pos = p;
 	}
 
-	public get speed(){
+	public get speed() {
 		return this.info.speed;
 	}
 
-	public get moving(){
+	public get moving() {
 		return this.info.moving;
 	}
 
-	public set moving(moving: boolean){
+	public set moving(moving: boolean) {
 		this.info.moving = moving;
 	}
 
-	public get metersPerEnergyUnit(){
+	public get metersPerEnergyUnit() {
 		return this.info.metersPerEnergyUnit;
 	}
 
@@ -114,9 +116,16 @@ export default class Player {
 
 		this.isLocalPlayer = socket === this.game.socket.id || socket === undefined;
 
-		this.icon = new L.Icon({
+		// Lame
+		/* this.icon = new L.Icon({
 			iconUrl: playerImg,
 			iconAnchor: L.Icon.Default.prototype.options.iconAnchor
+		}); */
+
+		// Awesome!
+		this.icon = new SVGIcon({
+			iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
+			svgLink: playerSVG
 		});
 
 		this.marker = L.marker(this.pos, {
@@ -126,7 +135,7 @@ export default class Player {
 
 		this.marker.addTo(this.map.map);
 
-		if(this.isLocalPlayer){
+		if (this.isLocalPlayer) {
 			this.map.map.panTo(this.pos);
 
 			this.energyDisplay = new EnergyDisplay(document.getElementById("gameEnergy"), this);
@@ -135,7 +144,7 @@ export default class Player {
 
 			this.map.bindMapEvents();
 		}
-		else{
+		else {
 			this.marker.setOpacity(0);
 		}
 
@@ -148,11 +157,11 @@ export default class Player {
 		});
 	}
 
-	isMoveOrderValid(target?: L.LatLng): boolean{
-		if(this.moveQueue.length > 0) return false;
-		if(!this.hasTurn()) return false;
+	isMoveOrderValid(target?: L.LatLng): boolean {
+		if (this.moveQueue.length > 0) return false;
+		if (!this.hasTurn()) return false;
 
-		if(target){
+		if (target) {
 			const distToTarget = GameMap.nonMetricDistanceTo(this.pos, target);
 
 			if (distToTarget > this.stats.visibility) return false;
@@ -162,11 +171,11 @@ export default class Player {
 		return true;
 	}
 
-	isPosVisible(pos: L.LatLng){ // Whether the given position is within visibility range
+	isPosVisible(pos: L.LatLng) { // Whether the given position is within visibility range
 		return GameMap.nonMetricDistanceTo(pos, this.pos) <= this.stats.visibility / 1.5
 	}
 
-	createFogOfWar(){
+	createFogOfWar() {
 		this.fow = new FogOfWar(this.map, this);
 		this.fow.setVisibilityRadius(this.stats.visibility);
 		this.fow.setVisibilityPos(this.pos);
@@ -188,7 +197,7 @@ export default class Player {
 	}
 
 	moveToTarget(target: L.LatLng) {
-		if(!this.isMoveOrderValid(target)) return;
+		if (!this.isMoveOrderValid(target)) return;
 
 		this.router.routeToPoint(target, (routeEv: L.Routing.RoutingResultEvent) => {
 			const distance = routeEv.routes[0].summary.totalDistance;
@@ -213,7 +222,7 @@ export default class Player {
 			this.moveToPoint(p);
 		}
 
-		if(this.isLocalPlayer) this.map.map.dragging.disable();
+		if (this.isLocalPlayer) this.map.map.dragging.disable();
 	}
 
 	moveToPoint(p: L.LatLng) {
@@ -231,8 +240,8 @@ export default class Player {
 		this.moveFractionPerSecond = this.speed / this.distanceToTarget;
 	}
 
-	private onMoveEvent(e: GameEventData){
-		if(this.game.isMultiplayer && e.origin !== this.info.socketID) return;
+	private onMoveEvent(e: GameEventData) {
+		if (this.game.isMultiplayer && e.origin !== this.info.socketID) return;
 
 		this.activeRoute = e.event.data.route;
 		const distance = this.activeRoute.summary.totalDistance;
@@ -245,18 +254,18 @@ export default class Player {
 
 		// If the game isn't multiplayer, update the time
 
-		if(!this.game.isMultiplayer){
+		if (!this.game.isMultiplayer) {
 			const visibilityFraction = GameMap.nonMetricDistanceTo(this.pos, e.event.data.targetPos) / this.stats.visibility;
 			this.game.clock.addTime(visibilityFraction * this.info.timeToVisibilityEnd);
 		}
 	}
 
-	private onRestEvent(e: GameEventData){
-		if(this.game.isMultiplayer && e.origin !== this.info.socketID) return;
+	private onRestEvent(e: GameEventData) {
+		if (this.game.isMultiplayer && e.origin !== this.info.socketID) return;
 
 		this.drainEnergy(-(this.metersToVisibilityEnd / this.metersPerEnergyUnit));
 
-		if(this.isLocalPlayer){
+		if (this.isLocalPlayer) {
 			this.game.clock.addTime(this.info.restTime);
 			this.events.emit("ActionDone");
 		}
@@ -265,7 +274,7 @@ export default class Player {
 	setPos(newPos: L.LatLng) {
 		this.marker.setLatLng(newPos);
 
-		if(this.isLocalPlayer){
+		if (this.isLocalPlayer) {
 			this.map.map.panTo(newPos);
 			this.fow.setVisibilityPos(newPos);
 		}
@@ -282,7 +291,7 @@ export default class Player {
 
 	drainEnergy(amount: number) {
 		this.stats.energy = MathExtras.clamp(this.stats.energy - Math.round(amount), 0, this.stats.maxEnergy);
-		if(this.isLocalPlayer) this.energyDisplay.updateEnergy();
+		if (this.isLocalPlayer) this.energyDisplay.updateEnergy();
 	}
 
 	traceRoute(targetPos: L.LatLng, cb: TracingCallback = () => { }) {
@@ -311,20 +320,20 @@ export default class Player {
 		return true;
 	}
 
-	rest(){
+	rest() {
 		const restEvent = new GameEvent("PlayerRest");
 		this.game.eventHandler.dispatchEvent(restEvent);
 	}
 
-	incrementScore(){
+	incrementScore() {
 		this.stats.score++;
-		if(this.isLocalPlayer) this.scoreDisplay.update();
+		if (this.isLocalPlayer) this.scoreDisplay.update();
 
 		this.game.checkGameEndCondition();
 	}
 
-	private onRouteEnd(){
-		if(this.isLocalPlayer){
+	private onRouteEnd() {
+		if (this.isLocalPlayer) {
 			this.router.clearRoute();
 			this.map.map.dragging.enable();
 
@@ -353,11 +362,11 @@ export default class Player {
 			// Check whether a player is visible
 			// Absolute cancer
 
-			for(const plyr of this.game.otherPlayers){
-				if(this.game.localPlayer.isPosVisible(plyr.pos)){
+			for (const plyr of this.game.otherPlayers) {
+				if (this.game.localPlayer.isPosVisible(plyr.pos)) {
 					plyr.marker.setOpacity(1);
 				}
-				else{
+				else {
 					plyr.marker.setOpacity(0);
 				}
 			}
