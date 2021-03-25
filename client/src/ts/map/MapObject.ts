@@ -15,6 +15,7 @@ export interface MapObjectData {
 	location: L.LatLng;
 	questions: string[];
 	id: number;
+	answered?: boolean;
 };
 
 export default class MapObject {
@@ -27,8 +28,15 @@ export default class MapObject {
 	private fadeIn: boolean = false;
 	private fadeInTimeSinceStart: number = 0; // ms since fade started
 	private timeLossOnIncorrectAnswer: number = 1;
-	private answered: boolean = false;
 	private fadeInTime = 500; // In ms
+
+	public get answered(){
+		return this.data.answered ? this.data.answered : false;
+	}
+
+	public set answered(ans: boolean){
+		this.data.answered = ans;
+	}
 
 	public get pos() {
 		return this.data.location;
@@ -58,23 +66,30 @@ export default class MapObject {
 		this.game = game;
 		this.map = game.map;
 
+		this.answered = data.answered ? data.answered : false;
+
 		this.initMarker();
 		Time.bindToFrame(() => { this.onFrame() });
 	}
 
 	private initMarker() {
-		this.marker = L.marker(this.pos, { icon: this.iconInactive });
+		this.marker = L.marker(this.pos, { icon: this.answered ? this.iconAnswered : this.iconInactive });
 		this.marker.setOpacity(0);
 
 		this.marker.bindTooltip(this.data.name, { offset: new L.Point(0, -30) });
 		this.marker.addEventListener("click", e => { this.toggleState(); });
 
-		if(GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) <= this.game.localPlayer.stats.visibility){
-			this.showMarker();
+		if(this.visible) this.showMarker();
+
+		for(const plyr of this.game.players){
+			if(plyr.isPosVisible(this.pos)) {
+				if(plyr.isLocalPlayer && !this.visible) this.showMarker();
+				if(!plyr.info.visibleMarkers.includes(this.id)) plyr.info.visibleMarkers.push(this.id);
+			}
 		}
 	}
 
-	private showMarker() {
+	showMarker() {
 		this.marker.addTo(this.map.map);
 		this.visible = true;
 		this.fadeIn = true;
@@ -95,7 +110,16 @@ export default class MapObject {
 			}
 		}
 
-		if (this.visible) return;
+		for(const plyr of this.game.players){
+			if(!plyr.moving) continue;
+			if((plyr.isLocalPlayer && this.visible) || plyr.info.visibleMarkers.includes(this.id)) continue;
+
+			if(plyr.isPosVisible(this.pos)){
+				if(plyr.isLocalPlayer) this.showMarker();
+				plyr.info.visibleMarkers.push(this.id);
+			}
+		}
+
 		if (!this.game.localPlayer.moving) return;
 
 		if(this.game.localPlayer.isPosVisible(this.pos)){
@@ -144,5 +168,11 @@ export default class MapObject {
 		if(!this.game.isMultiplayer){
 			this.game.clock.addTime(this.timeLossOnIncorrectAnswer);
 		}
+	}
+
+	remove(){
+		this.map.map.removeLayer(this.marker);
+		this.visible = false;
+		this.active = false;
 	}
 }

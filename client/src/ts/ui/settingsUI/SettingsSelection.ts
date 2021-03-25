@@ -12,7 +12,15 @@ export interface GameSettings{
 	timeLimit?: number;
 }
 
+export interface SettingsConfig{
+	misc?:boolean;
+	gamemode?:boolean;
+	location?:boolean;
+	objectCount?:boolean;
+}
+
 type StartGameCallback = (settings: GameSettings) => void;
+type SettingsChangeCallback = (settings: GameSettings) => void;
 
 export default class SettingsSelection{
 	private gameModeSelection: GameModeSelection;
@@ -22,14 +30,15 @@ export default class SettingsSelection{
 	private container: HTMLElement;
 	private mode: string;
 	onStart: StartGameCallback = () => {};
+	onChange: SettingsChangeCallback = () => {};
 
-	constructor(containerSelector = "#settingsSelection", noMisc = false){
+	constructor(containerSelector = "#settingsSelection", config?: SettingsConfig){
 		this.mode = (new URLSearchParams(window.location.search)).get("mode");
 		this.containerSelector = containerSelector;
 		this.container = document.querySelector(containerSelector);
 		this.container.style.display = "none";
 
-		this.createElements(noMisc);
+		this.createElements(config || {});
 	}
 
 	open(){
@@ -40,14 +49,25 @@ export default class SettingsSelection{
 		this.container.style.display = "none";
 	}
 
-	private createElements(noMisc: boolean = false){
-		if(!noMisc) this.createTitle();
+	private createElements(config: SettingsConfig){
+		if(config.misc || config.misc === undefined) this.createTitle();
 
-		this.gameModeSelection = new GameModeSelection(this.containerSelector);
-		this.locationSelection = new LocationSelection(this.containerSelector);
-		this.objectSelection = new ObjectSelection(this.containerSelector);
+		if(config.gamemode || config.gamemode === undefined) {
+			this.gameModeSelection = new GameModeSelection(this.containerSelector);
+			this.gameModeSelection.onSelect = () => { this.onChange(this.getSettings()) };
+		}
 
-		if(!noMisc) this.createStartGameButton();
+		if(config.location || config.location === undefined) {
+			this.locationSelection = new LocationSelection(this.containerSelector);
+			this.locationSelection.onSelect = () => { this.onChange(this.getSettings()) };
+		}
+
+		if(config.objectCount || config.objectCount === undefined) {
+			this.objectSelection = new ObjectSelection(this.containerSelector);
+			this.objectSelection.onChange = () => { this.onChange(this.getSettings()) };
+		}
+
+		if(config.misc || config.misc === undefined) this.createStartGameButton();
 	}
 
 	private createTitle(){
@@ -65,12 +85,24 @@ export default class SettingsSelection{
 		this.container.appendChild(btn);
 	}
 
+	setSettingsDisabled(disabled: boolean = true){
+		this.gameModeSelection?.setDisabled(disabled);
+		this.locationSelection?.setDisabled(disabled);
+		this.objectSelection?.setDisabled(disabled);
+	}
+
+	updateSettings(newSettings: GameSettings){
+		this.gameModeSelection?.setValue(newSettings.gamemode?.toString());
+		this.locationSelection?.setValue(newSettings.location?.toString());
+		this.objectSelection?.setValue(newSettings.objectCount);
+	}
+
 	getSettings(): GameSettings{
 		return {
 			mode: this.mode,
-			gamemode: this.gameModeSelection.value,
-			location: this.locationSelection.value,
-			objectCount: this.objectSelection.value
+			gamemode: this.gameModeSelection?.value,
+			location: this.locationSelection?.value,
+			objectCount: this.objectSelection?.value
 		};
 	}
 }

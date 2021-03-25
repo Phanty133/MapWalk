@@ -39,10 +39,12 @@ function loadPreGame() {
 			return;
 		}
 
+		Cookies.remove("lobby");
+
 		socket.joinGameLobby(lobbyCookie, Cookies.get("username"));
 
 		socket.events.addListener("ServerLobbyStartGame", (data: ServerLobbyStartGameData) => {
-			loadMPGame(data, socket);
+			loadMPGame(lobbyCookie, data, socket);
 		});
 	}
 	else {
@@ -68,7 +70,7 @@ async function loadObjects(count: number): Promise<MapObjectData[]> {
 }
 
 function openGameView(){
-	document.getElementById("game'ntContainer").style.display = "none";
+	document.getElementById("gamentContainer").style.display = "none";
 	document.getElementById("game").style.display = "block";
 
 }
@@ -98,20 +100,11 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	bindGameUI(game);
 }
 
-function loadMPGame(gameData: ServerLobbyStartGameData, socket: Socket){
+function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, socket: Socket){
 	openGameView();
 	Log.log("multiplayer");
 
-	const lobbyCookie = Cookies.get("lobby");
-
-	if(!lobbyCookie) {
-		window.location.href = "/dicks1";
-		return;
-	}
-
-	Cookies.remove("lobby");
-
-	const lobby = new Lobby(lobbyCookie, socket);
+	const lobby = new Lobby(lobbyID, socket);
 	const game = new Game(gameData.settings, socket, lobby);
 
 	game.createMap(gameData.objects);

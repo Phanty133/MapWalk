@@ -4,6 +4,7 @@ import ColorSelect from "./ColorSelect";
 import Log from "ts/lib/log";
 import * as Cookies from "js-cookie";
 import Socket, { PlayerData } from "ts/networking/Socket";
+import { removeFromArray } from "ts/lib/util";
 
 export interface User{
 	username: string;
@@ -59,7 +60,9 @@ export default class LobbyUsers extends DynamicElement{
 		const colorSelect = new ColorSelect(userContainer, !user.isSelf, defaultColor);
 		colorSelect.el.setAttribute("data-color", "data-color");
 
-		this.socket.serverLobbyChangeColor(defaultColor); // Send the server the player's color
+		if(user.isSelf){
+			this.socket.serverLobbyChangeColor(defaultColor); // Send the server the player's color
+		}
 
 		colorSelect.events.on("ColorChange", (newColor: string) => {
 			this.socket.serverLobbyChangeColor(newColor);
@@ -158,16 +161,18 @@ export default class LobbyUsers extends DynamicElement{
 		const prevHost = this.users.find(user => user.isHost);
 		const newHost = this.users.find(user => user.socketID === id);
 
-		prevHost.isHost = false;
-		newHost.isHost = true;
+		if(prevHost){
+			prevHost.isHost = false;
+			this.findContainerWithUser(prevHost).querySelector("[data-host]").remove();
+		}
 
-		this.findContainerWithUser(prevHost).querySelector("[data-host]").remove();
+		newHost.isHost = true;
 
 		const newHostContainer: HTMLElement = this.findContainerWithUser(newHost);
 		createElement("span", { textContent: "Host", parent: newHostContainer, attr: { "data-host": "data-host" } });
 
-		if(prevHost.isSelf || newHost.isSelf){
-			if(prevHost.isSelf){
+		if(prevHost?.isSelf || newHost.isSelf){
+			if(prevHost?.isSelf){
 				this.selfIsHost = false;
 			}
 			else{
@@ -178,8 +183,9 @@ export default class LobbyUsers extends DynamicElement{
 		}
 	}
 
-	kickPlayer(id: string){
+	removePlayer(id: string){
 		this.getPlayerElement(id).remove();
+		removeFromArray(this.users, user => user.socketID === id);
 		ColorSelect.updateDisabledColors();
 	}
 
@@ -191,5 +197,9 @@ export default class LobbyUsers extends DynamicElement{
 
 		const changeEv = new Event("change");
 		selectEl.dispatchEvent(changeEv);
+	}
+
+	public userByID(id: string): User{
+		return this.users.find(user => user.socketID === id);
 	}
 }

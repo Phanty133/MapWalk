@@ -58,6 +58,10 @@ export interface GameSettings{
 	timeLimit?: number;
 }
 
+export interface ServerLobbySettingsChangedData{
+	settings: GameSettings;
+}
+
 export default class SocketServer{
 	io: socketio.Server;
 	sockets: Record<string, socketio.Socket> = {}; // {socketID: socket}
@@ -81,6 +85,7 @@ export default class SocketServer{
 		socket.on("ServerLobbyKick", (data: ServerLobbyKickData) => { this.onServerLobbyKick(socket, data); });
 		socket.on("ServerLobbyChatMessage", (data: ServerLobbyChatMessageData) => { this.onServerLobbyChatMessage(socket, data); });
 		socket.on("ServerLobbyStartGame", (data: ServerLobbyStartGameData) => { this.onServerLobbyStartGame(socket, data); });
+		socket.on("ServerLobbySettingsChanged", (data: ServerLobbySettingsChangedData) => { this.onServerLobbySettingsChanged(socket, data); });
 
 		// WebRTC signaling stuff
 
@@ -169,5 +174,11 @@ export default class SocketServer{
 		if(!this.lobbies[socket.id]) return;
 
 		this.lobbies[socket.id].serverLobbyStartGame(socket.id, data);
+	}
+
+	private onServerLobbySettingsChanged(socket: socketio.Socket, data: ServerLobbySettingsChangedData){
+		if(!this.lobbies[socket.id]) return;
+
+		this.lobbies[socket.id].serverLobbySettingsChanged(socket.id, data);
 	}
 }

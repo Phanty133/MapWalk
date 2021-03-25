@@ -8,6 +8,7 @@
 		"allowJs": false,
 		"moduleResolution": "node",
 		"baseUrl": "./src/",
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"allowSyntheticDefaultImports": true
 	}
 }

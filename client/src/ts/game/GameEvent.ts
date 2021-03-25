@@ -1,8 +1,9 @@
-import { genHexString, getHashString } from "../lib/util";
+import { genHexString } from "../lib/util";
 import GameManifest from "./GameManifest";
 import * as L from "leaflet";
 import { GameState } from "./Game";
 import Log from "ts/lib/log";
+import hash from "object-hash";
 
 export interface MoveEventData{
 	targetPos: L.LatLng;
@@ -35,9 +36,6 @@ export default class GameEvent{
 	constructor(type: string, data?: any){
 		this.type = type;
 		this.data = data;
-	}
-
-	async createHash(){
-		this.hash = await getHashString(Object.values(this));
+		this.hash = hash.sha1(this);
 	}
 }

@@ -38,7 +38,9 @@ export interface PlayerInfo {
 	metersPerEnergyUnit: number;
 	socketID: string;
 	hasPerformedAction: boolean;
-	plyrData: PlayerData
+	plyrData: PlayerData;
+	visibleMarkers: number[];
+	metersToVisibilityEnd: number;
 }
 
 export default class Player {
@@ -53,11 +55,10 @@ export default class Player {
 	private moveQueue: L.LatLng[] = [];
 	private energyDisplay: EnergyDisplay;
 	private scoreDisplay: ScoreDisplay;
-	private metersToVisibilityEnd: number;
 	private targetPos: L.LatLng;
 	private activeRoute: L.Routing.IRoute;
-	private isLocalPlayer: boolean = true;
 
+	isLocalPlayer: boolean = true;
 	marker: L.Marker;
 	stats: PlayerStats;
 	info: PlayerInfo;
@@ -111,7 +112,9 @@ export default class Player {
 			metersPerEnergyUnit: 10,
 			socketID: socket,
 			hasPerformedAction: false, // Whether the player has performed an action during the current turn
-			plyrData
+			plyrData,
+			visibleMarkers: [],
+			metersToVisibilityEnd: startingPos.distanceTo(new L.LatLng(startingPos.lat + this.stats.visibility, startingPos.lng))
 		};
 
 		this.isLocalPlayer = socket === this.game.socket.id || socket === undefined;
@@ -140,7 +143,6 @@ export default class Player {
 
 			this.energyDisplay = new EnergyDisplay(document.getElementById("gameEnergy"), this);
 			this.scoreDisplay = new ScoreDisplay(document.getElementById("gameScore"), this);
-			this.metersToVisibilityEnd = this.pos.distanceTo(new L.LatLng(this.pos.lat + this.stats.visibility, this.pos.lng));
 
 			this.map.bindMapEvents();
 		}
@@ -248,7 +250,6 @@ export default class Player {
 
 		this.stats.walkedDistance += distance;
 		this.drainEnergy(distance / this.metersPerEnergyUnit);
-		Log.log("Energy: " + this.stats.energy);
 
 		this.moveAlongRoute(this.activeRoute);
 
@@ -263,10 +264,13 @@ export default class Player {
 	private onRestEvent(e: GameEventData) {
 		if (this.game.isMultiplayer && e.origin !== this.info.socketID) return;
 
-		this.drainEnergy(-(this.metersToVisibilityEnd / this.metersPerEnergyUnit));
+		this.drainEnergy(-(this.info.metersToVisibilityEnd / this.metersPerEnergyUnit));
+
+		if (!this.game.isMultiplayer) {
+			this.game.clock.addTime(this.info.restTime);
+		}
 
 		if (this.isLocalPlayer) {
-			this.game.clock.addTime(this.info.restTime);
 			this.events.emit("ActionDone");
 		}
 	}
@@ -310,6 +314,7 @@ export default class Player {
 	}
 
 	killRoute() {
+		if (!this.router.activeRoute) return;
 		this.router.clearRoute();
 	}
 
@@ -330,6 +335,27 @@ export default class Player {
 		if (this.isLocalPlayer) this.scoreDisplay.update();
 
 		this.game.checkGameEndCondition();
+	}
+
+	updateInfo(newInfo: PlayerInfo) {
+		this.info = Object.assign({}, newInfo);
+
+		this.setPos(this.pos);
+
+		// Update visible markers
+
+		for (const id of this.info.visibleMarkers) {
+			this.map.objectsByID[id].showMarker();
+		}
+	}
+
+	updateStats(newStats: PlayerStats) {
+		this.stats = Object.assign({}, newStats);
+
+		if (this.isLocalPlayer) {
+			this.energyDisplay.updateEnergy();
+			this.scoreDisplay.update();
+		}
 	}
 
 	private onRouteEnd() {
@@ -367,7 +393,7 @@ export default class Player {
 					plyr.marker.setOpacity(1);
 				}
 				else {
-					plyr.marker.setOpacity(0);
+					plyr.marker.setOpacity(1);
 				}
 			}
 		}
