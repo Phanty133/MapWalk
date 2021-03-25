@@ -131,6 +131,8 @@ export default class Game {
 
 			this.bindP2PEvents();
 		}
+
+		this.bindEvents();
 	}
 
 	createMap(objects?: MapObjectData[]){
@@ -172,6 +174,13 @@ export default class Game {
 		Log.log("--------");
 
 		this.p2p.broadcast({ cmd: "getManifestHash" });
+	}
+
+	private bindEvents(){
+		this.eventHandler.on("GameState", (e: GameEventData) => {
+			this._state = e.event.data.state;
+			this.turnMan.update();
+		});
 	}
 
 	private bindP2PEvents(){
@@ -268,11 +277,6 @@ export default class Game {
 			}
 
 			this.onManifestCheckComplete();
-		});
-
-		this.eventHandler.on("GameState", (e: GameEventData) => {
-			this._state = e.event.data.state;
-			this.turnMan.update();
 		});
 	}
 
