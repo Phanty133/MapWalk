@@ -23,7 +23,9 @@ export default class PlayerRouter{
 			autoRoute: true,
 			showAlternatives: false,
 			addWaypoints: false,
-			fitSelectedRoutes: false
+			fitSelectedRoutes: false,
+			// @ts-ignore
+			createMarker: () => { return null; }
 		};
 
 		this.player = player;

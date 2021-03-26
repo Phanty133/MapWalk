@@ -16,6 +16,7 @@ import { GameEventData } from "./GameEventHandler";
 import { PlayerData } from "ts/networking/Socket";
 import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
 import { Color } from "ts/lib/Color";
+import MapObject from "ts/map/MapObject";
 
 type TracingCallback = (route: L.Routing.IRoute) => void;
 
@@ -56,6 +57,7 @@ export default class Player {
 	private scoreDisplay: ScoreDisplay;
 	private targetPos: L.LatLng;
 	private activeRoute: L.Routing.IRoute;
+	private nearbyObjects: MapObject[] = null;
 
 	isLocalPlayer: boolean = true;
 	marker: L.Marker;
@@ -152,7 +154,7 @@ export default class Player {
 
 		this.router = new PlayerRouter(this.map.map, this);
 
-		this.bindMovementEvents();
+		this.bindEvents();
 
 		Time.bindToFrame(() => {
 			this.onFrame();
@@ -183,7 +185,7 @@ export default class Player {
 		this.fow.setVisibilityPos(this.pos);
 	}
 
-	bindMovementEvents() {
+	bindEvents() {
 		// Reminder, you can always double click.
 		/* this.map.map.on("click", (e: L.LeafletMouseEvent) => {
 			this.moveToTarget(e.latlng);
@@ -196,6 +198,12 @@ export default class Player {
 
 		this.game.eventHandler.on("PlayerMove", (res: GameEventData) => { this.onMoveEvent(res); });
 		this.game.eventHandler.on("PlayerRest", (res: GameEventData) => { this.onRestEvent(res); });
+
+		this.game.events.on("GameStateChanged", (newState: GameState) => {
+			if(newState !== GameState.PlayerInteracting) return;
+
+			this.map.highlightObjects(this.nearbyObjects);
+		});
 	}
 
 	moveToTarget(target: L.LatLng) {
@@ -358,15 +366,30 @@ export default class Player {
 		}
 	}
 
-	private onRouteEnd() {
-		if (this.isLocalPlayer) {
-			this.router.clearRoute();
-			this.map.map.dragging.enable();
+	getVisibleMapObjects(): MapObject[]{
+		const nearbyObjects: MapObject[] = [];
 
-			this.events.emit("ActionDone");
+		for(const obj of Object.values(this.map.objectsByID)){
+			if(this.isPosVisible(obj.pos)) nearbyObjects.push(obj); // Perhaps there's a more efficient way of implementing this?
 		}
 
-		this.events.emit("MoveDone");
+		return nearbyObjects;
+	}
+
+	private onRouteEnd() {
+		if(!this.isLocalPlayer) return;
+
+		this.router.clearRoute();
+		this.map.map.dragging.enable();
+
+		this.nearbyObjects = this.getVisibleMapObjects();
+
+		if(this.nearbyObjects.length > 0) {
+			this.game.setGameState(GameState.PlayerInteracting);
+		}
+		else{
+			this.events.emit("ActionDone");
+		}
 	}
 
 	private onFrame() {

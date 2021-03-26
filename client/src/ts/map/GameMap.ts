@@ -1,11 +1,14 @@
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import posMarkImg from "img/hue-zero-marker.png";
+import MarkerMoveTarget from "img/MarkerMoveTarget.svg";
 import MapObject, { MapObjectData } from "ts/map/MapObject";
 import { EventEmitter } from "events";
 import createElement from "ts/lib/createElement";
 import Game from "ts/game/Game";
 import { randInt } from "ts/lib/util";
+import Log from "ts/lib/log";
+import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
+import { Color } from "ts/lib/Color";
 
 export default class GameMap {
 	EPSILON = 0.001;
@@ -18,6 +21,13 @@ export default class GameMap {
 
 	activeObject: MapObject = null;
 	objectsByID: Record<number, MapObject> = {};
+
+	private posMarkerIcon: SVGIcon = new SVGIcon({
+		iconAnchor: [16, 16],
+		iconSize: new L.Point(32, 32),
+		svgLink: MarkerMoveTarget,
+		color: Color.hexToRGB("#11d30e")
+	});
 
 	selectBounds: L.LatLngBounds = L.latLngBounds(
 		L.latLng(56.47, 20.95),
@@ -200,13 +210,8 @@ export default class GameMap {
 
 		this.popClosedQuestion();
 
-		const tempIcon = new L.Icon({
-			iconUrl: posMarkImg,
-			iconAnchor: L.Icon.Default.prototype.options.iconAnchor
-		});
-
 		this.posMarker = L.marker(ev.latlng, {
-			icon: tempIcon
+			icon: this.posMarkerIcon
 		}).addTo(this.map);
 
 		this.game.localPlayer.traceRoute(ev.latlng);
@@ -238,12 +243,16 @@ export default class GameMap {
 		this.popClosedQuestion();
 	}
 
-	moveDone() {
-		if (!this.activeObject) return;
+	highlightObjects(objects: MapObject[]) {
+		for(const obj of objects){
+			Log.log(obj);
+		}
+
+	/*	if (!this.activeObject) return;
 
 		if (GameMap.nonMetricDistanceTo(this.activeObject.pos, this.game.localPlayer.marker.getLatLng()) < this.EPSILON) {
 			this.popOpenQuestion();
-		}
+		} */
 	}
 
 	popOpenQuestion() {

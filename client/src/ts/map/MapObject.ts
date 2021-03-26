@@ -1,12 +1,13 @@
 import * as L from "leaflet";
-import cumfuck from "img/cumfuck.png";
-import cumfuckActive from "img/cumfuckActive.png";
-import objectAnswered from "img/objectAnswered.png";
+import objectUnansweredSVG from "img/MarkerObjectUnanswered.svg";
+import objectAnsweredSVG from "img/MarkerObjectAnswered.svg";
 import GameMap from "./GameMap";
 import Game from "ts/game/Game";
 import MathExtras from "ts/lib/MathExtras";
 import Log from "ts/lib/log";
 import Time from "ts/game/Time";
+import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
+import { Color } from "ts/lib/Color";
 
 export interface MapObjectData {
 	name: string;
@@ -46,19 +47,16 @@ export default class MapObject {
 		return this.data.id;
 	}
 
-	private iconInactive: L.Icon = new L.Icon({
-		iconUrl: cumfuck,
-		iconAnchor: L.Icon.Default.prototype.options.iconAnchor
+	private iconUnanswered = new SVGIcon({
+		iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
+		svgLink: objectUnansweredSVG,
+		color: Color.hexToRGB("#D3BF0E")
 	});
 
-	private iconActive: L.Icon = new L.Icon({
-		iconUrl: cumfuckActive,
-		iconAnchor: L.Icon.Default.prototype.options.iconAnchor
-	});
-
-	private iconAnswered: L.Icon = new L.Icon({
-		iconUrl: objectAnswered,
-		iconAnchor: L.Icon.Default.prototype.options.iconAnchor
+	private iconAnswered = new SVGIcon({
+		iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
+		svgLink: objectAnsweredSVG,
+		color: Color.hexToRGB("#11D30E")
 	});
 
 	constructor(game: Game, data: MapObjectData) {
@@ -73,7 +71,7 @@ export default class MapObject {
 	}
 
 	private initMarker() {
-		this.marker = L.marker(this.pos, { icon: this.answered ? this.iconAnswered : this.iconInactive });
+		this.marker = L.marker(this.pos, { icon: this.answered ? this.iconAnswered : this.iconUnanswered });
 		this.marker.setOpacity(0);
 
 		this.marker.bindTooltip(this.data.name, { offset: new L.Point(0, -30) });
@@ -129,7 +127,7 @@ export default class MapObject {
 
 	toggleState(deactivate = false) { // The argument determines whether the marker should be forcefully deactivated (no matter the current state)
 		if (this.active || deactivate) {
-			this.marker.setIcon(this.answered ? this.iconAnswered : this.iconInactive);
+			this.marker.setIcon(this.answered ? this.iconAnswered : this.iconUnanswered);
 			this.map.activeObject = null;
 			return;
 		}
@@ -139,7 +137,7 @@ export default class MapObject {
 		this.map.activeObject = this;
 		this.map.onMarkerActivate();
 
-		this.marker.setIcon(this.iconActive);
+		// this.marker.setIcon(this.iconActive);
 
 		if(GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) < MathExtras.EPSILON){
 			this.map.popOpenQuestion();
