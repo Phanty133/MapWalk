@@ -2,6 +2,7 @@
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Color } from "../Color";
+import Log from "../log";
 import SVGIconOptions from "./SVGIconOptions";
 
 export class SVGIcon extends L.DivIcon {
@@ -45,10 +46,14 @@ export class SVGIcon extends L.DivIcon {
 		const resEl = document.createElement("object") as HTMLObjectElement;
 		// resEl.setAttribute("style", "fill:" + this.options.color + ";");
 		resEl.setAttribute("data", this.options.svgLink);
+
 		resEl.addEventListener("load", (ev) => {
 			const innerSVAG = resEl.getSVGDocument();
 			const pathAr = innerSVAG.getElementsByTagNameNS("http://www.w3.org/2000/svg", "path");
+
 			for (const path of Object.values(pathAr)) {
+				if(path.hasAttribute("iconColorIgnore")) continue;
+
 				let colorStr: string;
 				let strokeColor: Color.RGB;
 
@@ -73,7 +78,6 @@ export class SVGIcon extends L.DivIcon {
 				path.style.setProperty("fill", colorStr);
 			}
 		});
-		const svg = resEl.outerHTML;
 
 		return resEl;
 	}

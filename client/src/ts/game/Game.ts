@@ -15,6 +15,7 @@ import Time from "./Time";
 import Socket, { PlayerData } from "ts/networking/Socket";
 import GameEventHandler, { GameEventData } from "./GameEventHandler";
 import ChatBoot from "./ChatBoot";
+import { EventEmitter } from "events";
 
 type ManifestCheckCompleteCallback = () => void;
 
@@ -25,7 +26,8 @@ export enum GameState {
 	PlayerActionComplete,
 	Loading, // The game is waiting for something
 	Sync, // The game is synchronizing/checking manifests
-	Paused // The game is paused obviously
+	Paused, // The game is paused, obviously
+	Ended
 }
 
 export enum GameMode {
@@ -58,6 +60,7 @@ export default class Game {
 	socket: Socket;
 	eventHandler: GameEventHandler;
 	chatBot: ChatBoot;
+	events: EventEmitter = new EventEmitter();
 
 	public get state(): GameState{
 		return this._state;
@@ -143,10 +146,6 @@ export default class Game {
 	createPlayer(pos: L.LatLng, socketID?: string, plyrData?: PlayerData): Player{
 		const plyr = new Player(this.map, this, pos, socketID, plyrData);
 
-		plyr.events.on("MoveDone", () => {
-			this.map.moveDone();
-		});
-
 		this.turnMan.addPlayer(plyr);
 
 		if(socketID){
@@ -180,6 +179,8 @@ export default class Game {
 		this.eventHandler.on("GameState", (e: GameEventData) => {
 			this._state = e.event.data.state;
 			this.turnMan.update();
+
+			this.events.emit("GameStateChanged", this.state);
 		});
 	}
 
