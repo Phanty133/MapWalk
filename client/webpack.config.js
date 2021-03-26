@@ -1,5 +1,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const outputPath = path.resolve(__dirname, "client");
 
@@ -33,7 +34,8 @@ module.exports = {
 			template: path.resolve(__dirname, "src", "html", "modeSelect.ejs"),
 			filename: path.resolve(outputPath, "index.html"),
 			chunks: ["modeSelect", "shared"]
-		})
+		}),
+		new MiniCssExtractPlugin()
 	],
 	devtool: "inline-source-map",
 	experiments: {
@@ -43,7 +45,7 @@ module.exports = {
 		rules: [
 			{
 				test: /\.css$/i,
-				use: ["style-loader", "css-loader"]
+				use: [ MiniCssExtractPlugin.loader, "css-loader"]
 			},
 			{
 				test: /.(png|svg|jpg|jpeg|gif)$/i,
@@ -54,12 +56,12 @@ module.exports = {
 				type: "asset/resource"
 			},
 			{
-				test: /\.tsx?$/,
+				test: /\.tsx?$/i,
 				use: "ts-loader",
 				exclude: /node-modules/
 			},
 			{
-				test: /\.(c|cpp)$/,
+				test: /\.(c|cpp)$/i,
 				use: {
 					loader: "cpp-wasm-loader",
 					options: {
