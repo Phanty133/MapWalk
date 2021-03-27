@@ -8,10 +8,11 @@ import SVGIconOptions from "./SVGIconOptions";
 export class SVGIcon extends L.DivIcon {
 	options: SVGIconOptions = {
 		color: "rgb(255,255,255)",
-		iconAnchor: null,
+		iconAnchor: new L.Point(0, 0),
+		tooltipAnchor: new L.Point(0, 0),
 		iconSize: new L.Point(32, 48),
 		opacity: 1,
-		popupAnchor: null,
+		popupAnchor: new L.Point(0, 0),
 		shadowAngle: 45,
 		shadowBlur: 1,
 		shadowColor: "rgb(0,0,10)",
@@ -34,14 +35,14 @@ export class SVGIcon extends L.DivIcon {
 
 	private _createSVG(): HTMLObjectElement {
 		// const className = this.options.className + "-svg";
-		let width = this.options.iconSize.x;
+		/* let width = this.options.iconSize.x;
 		let height = this.options.iconSize.y;
 
 		if (this.options.shadowEnable) {
 			width += this.options.iconSize.y * this.options.shadowLength - (this.options.iconSize.x / 2);
 			width = Math.max(width, 32);
 			height += this.options.iconSize.y * this.options.shadowLength;
-		}
+		} */
 
 		const resEl = document.createElement("object") as HTMLObjectElement;
 		// resEl.setAttribute("style", "fill:" + this.options.color + ";");
@@ -50,18 +51,19 @@ export class SVGIcon extends L.DivIcon {
 		resEl.addEventListener("load", (ev) => {
 			const innerSVAG = resEl.getSVGDocument();
 			const pathAr = innerSVAG.getElementsByTagNameNS("http://www.w3.org/2000/svg", "path");
+			resEl.style.setProperty("pointer-events", "none");
 
 			for (const path of Object.values(pathAr)) {
-				if(path.hasAttribute("iconColorIgnore")) continue;
+				if (path.hasAttribute("iconColorIgnore")) continue;
 
 				let colorStr: string;
 				let strokeColor: Color.RGB;
 
-				if(typeof(this.options.color) === "string"){
+				if (typeof (this.options.color) === "string") {
 					colorStr = this.options.color;
 					strokeColor = Color.rgbStringToRGB(this.options.color);
 				}
-				else{
+				else {
 					strokeColor = this.options.color;
 					colorStr = Color.rgbToRGBString(this.options.color);
 				}
