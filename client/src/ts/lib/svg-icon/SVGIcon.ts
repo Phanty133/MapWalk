@@ -32,7 +32,7 @@ export class SVGIcon extends L.DivIcon {
 		this.options.html = this._createSVG();
 	}
 
-	private _createSVG() {
+	private _createSVG(): HTMLObjectElement {
 		// const className = this.options.className + "-svg";
 		let width = this.options.iconSize.x;
 		let height = this.options.iconSize.y;
@@ -80,5 +80,40 @@ export class SVGIcon extends L.DivIcon {
 		});
 
 		return resEl;
+	}
+
+	setColor(newColor: string | Color.RGB){
+		this.options.color = newColor;
+
+		const innerSVAG = (this.options.html as HTMLObjectElement).getSVGDocument();
+		const pathAr = innerSVAG.getElementsByTagNameNS("http://www.w3.org/2000/svg", "path");
+		const paths: SVGElement[] = Object.values(pathAr);
+
+		for (const path of paths) {
+			if(path.hasAttribute("iconColorIgnore")) continue;
+
+			let colorStr: string;
+			let strokeColor: Color.RGB;
+
+			if(typeof(this.options.color) === "string"){
+				colorStr = this.options.color;
+				strokeColor = Color.rgbStringToRGB(this.options.color);
+			}
+			else{
+				strokeColor = this.options.color;
+				colorStr = Color.rgbToRGBString(this.options.color);
+			}
+
+			strokeColor.r /= 2;
+			// strokeColour.r = Math.max(0, strokeColour.r);
+			strokeColor.g /= 2;
+			// strokeColour.g = Math.max(0, strokeColour.g);
+			strokeColor.b /= 2;
+			// strokeColour.b = Math.max(0, strokeColour.b);
+
+			path.style.setProperty("stroke", Color.rgbToRGBString(strokeColor));
+			path.style.setProperty("opacity", this.options.opacity.toString());
+			path.style.setProperty("fill", colorStr);
+		}
 	}
 }

@@ -19,7 +19,16 @@ export interface MapObjectData {
 	answered?: boolean;
 };
 
+export enum MapObjectState{
+	Default,
+	Active,
+	Highlighted
+};
+
 export default class MapObject {
+	static colorUnanswered = "#D3BF0E";
+	static colorAnswered = "#11D30E";
+
 	data: MapObjectData;
 	private marker: L.Marker;
 	private game: Game;
@@ -30,6 +39,7 @@ export default class MapObject {
 	private fadeInTimeSinceStart: number = 0; // ms since fade started
 	private timeLossOnIncorrectAnswer: number = 1;
 	private fadeInTime = 500; // In ms
+	private state: MapObjectState;
 
 	public get answered(){
 		return this.data.answered ? this.data.answered : false;
@@ -47,23 +57,27 @@ export default class MapObject {
 		return this.data.id;
 	}
 
-	private iconUnanswered = new SVGIcon({
-		iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
-		svgLink: objectUnansweredSVG,
-		color: Color.hexToRGB("#D3BF0E")
-	});
-
-	private iconAnswered = new SVGIcon({
-		iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
-		svgLink: objectAnsweredSVG,
-		color: Color.hexToRGB("#11D30E")
-	});
+	private iconUnanswered: SVGIcon;
+	private iconAnswered: SVGIcon;
 
 	constructor(game: Game, data: MapObjectData) {
 		this.data = data;
 		this.game = game;
 		this.map = game.map;
 
+		this.iconUnanswered = new SVGIcon({
+			iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
+			svgLink: objectUnansweredSVG,
+			color: MapObject.colorUnanswered
+		});
+
+		this.iconAnswered = new SVGIcon({
+			iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
+			svgLink: objectAnsweredSVG,
+			color: MapObject.colorAnswered
+		});
+
+		this.state = MapObjectState.Default;
 		this.answered = data.answered ? data.answered : false;
 
 		this.initMarker();
@@ -125,9 +139,32 @@ export default class MapObject {
 		}
 	}
 
+	setState(newState: MapObjectState){
+		this.state = newState;
+		const activeIcon = this.answered ? this.iconAnswered : this.iconUnanswered;
+
+		switch(this.state){
+			case MapObjectState.Default:
+				if(this.answered){
+					this.iconAnswered.setColor(Color.hexToRGB(MapObject.colorAnswered))
+				}
+				else{
+					this.iconUnanswered.setColor(Color.hexToRGB(MapObject.colorUnanswered))
+				}
+				break;
+			case MapObjectState.Active:
+				activeIcon.setColor(Color.hexToRGB("#FF0000"));
+				break;
+			case MapObjectState.Highlighted:
+				activeIcon.setColor(Color.hexToRGB("#0000FF"));
+				break;
+		}
+	}
+
 	toggleState(deactivate = false) { // The argument determines whether the marker should be forcefully deactivated (no matter the current state)
 		if (this.active || deactivate) {
-			this.marker.setIcon(this.answered ? this.iconAnswered : this.iconUnanswered);
+			// this.marker.setIcon(this.answered ? this.iconAnswered : this.iconUnanswered);
+			this.setState(MapObjectState.Active);
 			this.map.activeObject = null;
 			return;
 		}

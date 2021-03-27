@@ -1,7 +1,7 @@
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import MarkerMoveTarget from "img/MarkerMoveTarget.svg";
-import MapObject, { MapObjectData } from "ts/map/MapObject";
+import MapObject, { MapObjectData, MapObjectState } from "ts/map/MapObject";
 import { EventEmitter } from "events";
 import createElement from "ts/lib/createElement";
 import Game from "ts/game/Game";
@@ -21,6 +21,11 @@ export default class GameMap {
 
 	activeObject: MapObject = null;
 	objectsByID: Record<number, MapObject> = {};
+	private _objectsHighlighted = false;
+
+	public get objectsHighlighted(){
+		return this._objectsHighlighted;
+	}
 
 	private posMarkerIcon: SVGIcon = new SVGIcon({
 		iconAnchor: [16, 16],
@@ -245,14 +250,24 @@ export default class GameMap {
 
 	highlightObjects(objects: MapObject[]) {
 		for(const obj of objects){
-			Log.log(obj);
+			obj.setState(MapObjectState.Highlighted);
 		}
+
+		this._objectsHighlighted = true;
 
 	/*	if (!this.activeObject) return;
 
 		if (GameMap.nonMetricDistanceTo(this.activeObject.pos, this.game.localPlayer.marker.getLatLng()) < this.EPSILON) {
 			this.popOpenQuestion();
 		} */
+	}
+
+	unhighlightObjects(objects: MapObject[]) {
+		for(const obj of objects){
+			obj.setState(MapObjectState.Highlighted);
+		}
+
+		this._objectsHighlighted = false;
 	}
 
 	popOpenQuestion() {
