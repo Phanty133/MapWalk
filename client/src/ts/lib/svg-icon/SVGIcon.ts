@@ -51,6 +51,7 @@ export class SVGIcon extends L.DivIcon {
 		resEl.addEventListener("load", (ev) => {
 			const innerSVAG = resEl.getSVGDocument();
 			const pathAr = innerSVAG.getElementsByTagNameNS("http://www.w3.org/2000/svg", "path");
+			resEl.style.setProperty("pointer-events", "none");
 
 			for (const path of Object.values(pathAr)) {
 				if (path.hasAttribute("iconColorIgnore")) continue;

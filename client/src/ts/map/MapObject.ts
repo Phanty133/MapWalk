@@ -31,11 +31,11 @@ export default class MapObject {
 	private timeLossOnIncorrectAnswer: number = 1;
 	private fadeInTime = 500; // In ms
 
-	public get answered(){
+	public get answered() {
 		return this.data.answered ? this.data.answered : false;
 	}
 
-	public set answered(ans: boolean){
+	public set answered(ans: boolean) {
 		this.data.answered = ans;
 	}
 
@@ -43,7 +43,7 @@ export default class MapObject {
 		return this.data.location;
 	}
 
-	public get id(): number{
+	public get id(): number {
 		return this.data.id;
 	}
 
@@ -77,12 +77,12 @@ export default class MapObject {
 		this.marker.bindTooltip(this.data.name, { offset: new L.Point(0, -30) });
 		this.marker.addEventListener("click", e => { this.toggleState(); });
 
-		if(this.visible) this.showMarker();
+		if (this.visible) this.showMarker();
 
-		for(const plyr of this.game.players){
-			if(plyr.isPosVisible(this.pos)) {
-				if(plyr.isLocalPlayer && !this.visible) this.showMarker();
-				if(!plyr.info.visibleMarkers.includes(this.id)) plyr.info.visibleMarkers.push(this.id);
+		for (const plyr of this.game.players) {
+			if (plyr.isPosVisible(this.pos)) {
+				if (plyr.isLocalPlayer && !this.visible) this.showMarker();
+				if (!plyr.info.visibleMarkers.includes(this.id)) plyr.info.visibleMarkers.push(this.id);
 			}
 		}
 	}
@@ -108,19 +108,19 @@ export default class MapObject {
 			}
 		}
 
-		for(const plyr of this.game.players){
-			if(!plyr.moving) continue;
-			if((plyr.isLocalPlayer && this.visible) || plyr.info.visibleMarkers.includes(this.id)) continue;
+		for (const plyr of this.game.players) {
+			if (!plyr.moving) continue;
+			if ((plyr.isLocalPlayer && this.visible) || plyr.info.visibleMarkers.includes(this.id)) continue;
 
-			if(plyr.isPosVisible(this.pos)){
-				if(plyr.isLocalPlayer) this.showMarker();
+			if (plyr.isPosVisible(this.pos)) {
+				if (plyr.isLocalPlayer) this.showMarker();
 				plyr.info.visibleMarkers.push(this.id);
 			}
 		}
 
 		if (!this.game.localPlayer.moving) return;
 
-		if(this.game.localPlayer.isPosVisible(this.pos)){
+		if (this.game.localPlayer.isPosVisible(this.pos)) {
 			this.showMarker();
 		}
 	}
@@ -139,7 +139,7 @@ export default class MapObject {
 
 		// this.marker.setIcon(this.iconActive);
 
-		if(GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) < MathExtras.EPSILON){
+		if (GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) < MathExtras.EPSILON) {
 			this.map.popOpenQuestion();
 		}
 	}
@@ -150,10 +150,10 @@ export default class MapObject {
 		this.answered = true;
 		this.marker.setIcon(this.iconAnswered);
 
-		if(origin){
+		if (origin) {
 			this.game.playersByID[origin].incrementScore();
 		}
-		else{
+		else {
 			this.game.localPlayer.incrementScore();
 		}
 	}
@@ -163,12 +163,12 @@ export default class MapObject {
 
 		Log.log("u stupid");
 
-		if(!this.game.isMultiplayer){
+		if (!this.game.isMultiplayer) {
 			this.game.clock.addTime(this.timeLossOnIncorrectAnswer);
 		}
 	}
 
-	remove(){
+	remove() {
 		this.map.map.removeLayer(this.marker);
 		this.visible = false;
 		this.active = false;
