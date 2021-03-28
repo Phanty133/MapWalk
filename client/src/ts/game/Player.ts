@@ -202,8 +202,8 @@ export default class Player {
 			this.moveToTarget(targetPos);
 		});
 
-		this.game.eventHandler.on("PlayerMove", (res: GameEventData) => { this.onMoveEvent(res); });
-		this.game.eventHandler.on("PlayerRest", (res: GameEventData) => { this.onRestEvent(res); });
+		this.game.eventHandler.on("PlayerMove", async (res: GameEventData) => { this.onMoveEvent(res); });
+		this.game.eventHandler.on("PlayerRest", async (res: GameEventData) => { this.onRestEvent(res); });
 
 		this.game.events.on("GameStateChanged", (newState: GameState, prevState: GameState) => {
 			if(newState !== GameState.PlayerInteracting && this.nearbyObjects){

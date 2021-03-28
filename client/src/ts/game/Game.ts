@@ -181,7 +181,7 @@ export default class Game {
 	}
 
 	private bindEvents(){
-		this.eventHandler.on("GameState", (e: GameEventData) => {
+		this.eventHandler.on("GameState", async (e: GameEventData) => {
 			this._state = e.event.data.state;
 			this.turnMan.update();
 
