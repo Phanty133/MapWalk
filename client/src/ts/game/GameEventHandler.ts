@@ -4,7 +4,7 @@ import Game from "./Game";
 import GameEvent from "./GameEvent";
 import P2PGameEventHandler from "./P2PGameEventHandler";
 
-type GameEventCallback = (eventData: GameEventData) => void;
+type GameEventCallback = (eventData: GameEventData) => Promise<void>;
 
 export interface GameEventData{
 	args?: any[],
@@ -28,15 +28,15 @@ export default class GameEventHandler{
 			this.game.p2pEventHandler = this.p2pHandler;
 
 			this.p2pHandler.onEventAccepted = (e: GameEvent) => {
-				this.fireEventCallbacks(e.type, { event: e, success: true, foreign: false, origin: this.game.socket.id });
+				return this.fireEventCallbacks(e.type, { event: e, success: true, foreign: false, origin: this.game.socket.id });
 			};
 
 			this.p2pHandler.onEventEffect = (e: GameEvent, origin: string) => {
-				this.fireEventCallbacks(e.type, { event: e, success: true, foreign: true, origin });
+				return this.fireEventCallbacks(e.type, { event: e, success: true, foreign: true, origin });
 			};
 
 			this.p2pHandler.onEventDeclined = (e: GameEvent) => {
-				this.fireEventCallbacks(e.type, { event: e, success: false, foreign: false, origin: this.game.socket.id });
+				return this.fireEventCallbacks(e.type, { event: e, success: false, foreign: false, origin: this.game.socket.id });
 			}
 		}
 	}
@@ -57,10 +57,14 @@ export default class GameEventHandler{
 		}
 	}
 
-	private fireEventCallbacks(event: string, cbData?: GameEventData){
+	private async fireEventCallbacks(event: string, cbData?: GameEventData): Promise<void>{
+		const promiseArr = [];
+
 		for(const cb of this.eventCallbacks[event]){
-			cb(cbData);
+			promiseArr.push(cb(cbData));
 		}
+
+		await Promise.all(promiseArr);
 	}
 
 	on(event: string, cb: GameEventCallback): string{

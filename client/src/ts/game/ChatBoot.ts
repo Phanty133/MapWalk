@@ -28,7 +28,7 @@ export default class ChatBoot {
 		this.game.socket.events.addListener("ChatbotVerifyAnswerResponse", (res: string) => { this.onAnswerVerified(res) });
 
 		if(this.game.isMultiplayer){
-			this.game.eventHandler.on("QuestionAnswer", (e: GameEventData) => {
+			this.game.eventHandler.on("QuestionAnswer", async (e: GameEventData) => {
 				if(e.success){
 					if(!e.foreign){
 						this.curVerificationResolveCb(this.interpretReply(e.event.data.response));

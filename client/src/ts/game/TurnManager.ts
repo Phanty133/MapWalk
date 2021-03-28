@@ -27,7 +27,7 @@ export default class TurnManager{
 	}
 
 	private bindToEvents(){
-		this.game.eventHandler.on("NextTurn", (data: GameEventData) => { this.onNextTurn(data); });
+		this.game.eventHandler.on("NextTurn", async (data: GameEventData) => { this.onNextTurn(data); });
 	}
 
 	private onNextTurn(data: GameEventData){
@@ -37,13 +37,13 @@ export default class TurnManager{
 			this.activeIndex = 0;
 		}
 
-		if(this.activePlayer === this.game.localPlayer){
-			this.game.setGameState(GameState.PlayerAction);
-		}
-
 		if(this.game.isMultiplayer) {
 			this.turnDisplay.update();
 			this.game.clock.addTime(10);
+		}
+
+		if(this.activePlayer === this.game.localPlayer){
+			this.game.setGameState(GameState.PlayerAction);
 		}
 	}
 

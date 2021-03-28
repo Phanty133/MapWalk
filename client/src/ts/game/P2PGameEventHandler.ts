@@ -4,8 +4,8 @@ import Game from "./Game";
 import GameEvent, { GameEventResponse } from "./GameEvent";
 import GameManifest from "./GameManifest";
 
-type EventVerificationCallback = (event: GameEvent) => void;
-type EventEffectCallback = (event: GameEvent, origin: string) => void;
+type EventVerificationCallback = (event: GameEvent) => Promise<void>;
+type EventEffectCallback = (event: GameEvent, origin: string) => Promise<void>;
 type EventVerifier = (event: GameEvent, game?: Game) => Promise<boolean>;
 
 export default class P2PGameEventHandler{
@@ -21,9 +21,9 @@ export default class P2PGameEventHandler{
 	private eventSignatures: Record<string, ArrayBuffer> = {}; // Event hash : GameEvent
 	private eventResponse: Record<string, MessageData.EventResponse[]> = {};
 	private activeEvents: Record<string, GameEvent> = {}; // Event hash : GameEvent
-	public onEventAccepted: EventVerificationCallback = () => {};
-	public onEventDeclined: EventVerificationCallback = () => {};
-	public onEventEffect: EventEffectCallback = () => {};
+	public onEventAccepted: EventVerificationCallback = () => { return new Promise((res, rej) => { res(); }); };
+	public onEventDeclined: EventVerificationCallback = () => { return new Promise((res, rej) => { res(); }); };
+	public onEventEffect: EventEffectCallback = () => { return new Promise((res, rej) => { res(); }); };
 	public eventVerifiers: Record<string, EventVerifier> = {};
 	private eventCache: string[] = []; // IDs of cached events. Used to give process responses only when all previous events have been applied
 	private eventEffectQueue: MessageData.EventEffect[] = []; // A queue for event effects. Used to apply them in order
@@ -108,11 +108,10 @@ export default class P2PGameEventHandler{
 				return;
 			}
 
-			if(Object.values(this.eventSignatures).length > 1){
-				this.eventEffectQueue.push(data);
-			}
-			else{
-				this.processEventEffect(data);
+			this.eventEffectQueue.push(data);
+
+			if(this.eventEffectQueue.length === 1){
+				this.processEventEffect(this.eventEffectQueue[0]);
 			}
 		});
 	}
@@ -198,6 +197,8 @@ export default class P2PGameEventHandler{
 	}
 
 	private async processEventEffect(data: MessageData.EventEffect){
+		Log.log("effect!");
+
 		const signature = this.eventSignatures[data.event.hash];
 		const dataToBeVerified = new TextEncoder().encode(data.event.hash);
 		const publicKey = await crypto.subtle.importKey("jwk", data.key, P2PGameEventHandler.encryptionAlgorithm, false, ["verify"]);
@@ -212,11 +213,11 @@ export default class P2PGameEventHandler{
 		}
 
 		delete this.eventSignatures[data.event.hash];
+		this.eventEffectQueue.shift();
 		// delete this.activeEvents[data.event.hash];
 
 		if(this.eventEffectQueue.length > 0){
 			this.processEventEffect(this.eventEffectQueue[0]);
-			this.eventEffectQueue.splice(0, 1);
 		}
 	}
 
