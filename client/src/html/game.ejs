@@ -59,22 +59,21 @@
 				</div>
 			</div>
 
-			<div id="gameEndContainer">
-				<span id="gameEndMessage">You suck lol</span>
-
-				<div id="gameEndStats">
-					<span>Score: <span id="gameEndScore">420</span></span>
-					<span>Time taken: <span id="gameEndTimeTaken">6hrs 9min</span></span>
-					<span>Time: <span id="gameEndTime"></span></span>
+			<div id="gameEndOverlay">
+				<div id="gameEndContainer">
+					<span id="gameEndMessage">All objects visited!</span>
+					<span gameEnd-time>Time: <span id="gameEndTimeTaken">6hrs 9min</span></span><br><br>
+					<span gameEnd-score>Score</span>
+		
+					<div id="gameEndLeaderboard">
+						<!-- <div><span>Plyr1</span><span>420</span></div> -->
+					</div>
+		
+					<div id="gameEndControls">
+						<button id="gamePlayAgain" class="button">Play again</button>
+						<button id="gameEndExit" class="button">Exit to main menu</button>
+					</div>
 				</div>
-
-				<div id="gameEndControls">
-					<button id="gameEndExit" class="button">Exit to main menu</button>
-				</div>
-			</div>
-
-			<div id="leaderboardContainer">
-				todo lol
 			</div>
 		</div>
 	</div>

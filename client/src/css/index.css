@@ -12,6 +12,8 @@ body{
 	height: 100vh;
 	width: 100vw;
 	overflow: hidden;
+
+	background-color: #888;
 }
 
 #map{
@@ -600,6 +602,7 @@ body{
 	left: 30vw;
 	bottom: 20vh;
 	font-size: 14pt;
+	top: 0;
 }
 
 #chatMessageContainer{
@@ -648,51 +651,80 @@ body{
 	color: paleturquoise; /* mmmmmm posh colour :) */
 }
 
+#gameEndOverlay{
+	position: absolute;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(0,0,0,0.75);
+	pointer-events: all;
+	display: none;
+	top: 0;
+}
+
 #gameEndContainer{
 	position: absolute;
 	width: 15vw;
 	left: 42.5vw;
-	height: -moz-fit-content;
-	height: fit-content;
-	top: 30vh;
+	/* height: -moz-fit-content; */
+	/* height: fit-content; */
+	top: 20vh;
 	background-color: white;
 	border: 3px solid grey;
 	color: black;
 	padding: 0.5em;
 	pointer-events: auto;
 	text-align: center;
-	display: none;
+}
+
+#gameEndContainer [gameEnd-score]{
+	font-size: 16pt;
+	display: block;
+	margin-bottom: 0.5em;
+}
+
+#gameEndLeaderboard{
+	display: grid;
+	grid-auto-flow: row;
+	border: 1px solid grey;
+}
+
+#gameEndLeaderboard > div{
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	border-bottom: 1px solid lightgrey;
+	padding: 0.25em;
+}
+
+#gameEndLeaderboard > div:last-child{
+	border: none;
 }
 
 #gameEndMessage{
 	font-size: 18pt;
-	margin-bottom: 1em;
+	margin-bottom: 0.5em;
 	display: block;
 }
 
-#gameEndStats{
-	display: grid;
-	grid-auto-flow: row;
-	margin-bottom: 3em;
-}
-
-#gameEndStats > span{
-	font-size: 12pt
-}
-
-#gameEndStats > span > span{
-	font-size: 16pt;
-}
-
 #gameEndControls{
-	position: absolute;
-	bottom: 0.5em;
+	/* position: absolute; */
+	/* bottom: 0.5em; */
 	display: grid;
 	text-align: center;
-	width: calc(100% - 1em); /* account for padding */
+	row-gap: 0.25em;
+	width: 100%; /* account for padding */
+	margin-top: 1em;
 }
 
 #gameEndControls button{
-	background:red;
 	color: white;
+	padding: 0.25em;
+	font-size: 1em;
+}
+
+#gameEndExit{
+	background-color: #d32f2f;
+}
+
+#gamePlayAgain{
+	background-color: #00b8cc;
 }

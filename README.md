@@ -36,3 +36,6 @@ the map do be walkin' doe
 * `PlayerMove`
 * `PlayerRest`
 * `NextTurn`
+* `QuestionAnswer`
+* `GameState`
+* `GameEnd`

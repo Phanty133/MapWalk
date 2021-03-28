@@ -22,6 +22,7 @@ export default class Routes {
 		this.router.get("/game", (req, res) => { this.game(req, res); })
 		this.router.get("/join", (req, res) => { this.join(req, res); });
 		this.router.get("/createLobby", (req, res) => { this.createLobby(req, res); });
+		this.router.get("/playagain", (req, res) => { this.playAgain(req, res); });
 		this.router.post("/objects", (req, res) => { this.objects(req, res); });
 		this.router.post("/restobjects", (req, res) => { this.restobjects(req, res); });
 
@@ -79,5 +80,23 @@ export default class Routes {
 		}
 
 		res.json(mapObjectLoader.getRandomRestObjects(objCount));
+	}
+
+	private playAgain(req: Request, res: Response){
+		const isMP = req.query.mode === "mp";
+
+		if(isMP){
+			const lobbyID = req.query.id.toString();
+
+			if(!Object.keys(LobbyManager.lobbies).includes(lobbyID)){
+				LobbyManager.createLobby(lobbyID);
+			}
+
+			res.cookie("lobby", lobbyID);
+			res.redirect("/game?mode=mp");
+		}
+		else{
+			res.redirect("/game?mode=sp");
+		}
 	}
 }

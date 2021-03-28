@@ -20,9 +20,15 @@ export default class Lobby{
 	players: PlayerData[] = [];
 	playersBySocket: Record<string, PlayerData> = {};
 
-	constructor(socketServer: SocketServer, idLen: number = 6){
-		// this.id = genHexString(idLen);
-		this.id = "aaaaaa";
+	constructor(socketServer: SocketServer, id?: string, idLen: number = 6){
+		if(id){
+			this.id = id;
+		}
+		else{
+			// this.id = genHexString(idLen);
+			this.id = "aaaaaa";
+		}
+
 		this.socketServer = socketServer;
 	}
 
@@ -142,6 +148,8 @@ export default class Lobby{
 			playerOrder: randomizedPlayerOrderData,
 			playerSettings: this.playersBySocket
 		}, data));
+
+		LobbyManager.removeLobby(this.id);
 	}
 
 	serverLobbySettingsChanged(origin: string, data: ServerLobbySettingsChangedData){

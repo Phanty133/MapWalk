@@ -187,6 +187,12 @@ export default class Game {
 
 			this.events.emit("GameStateChanged", this.state, this.prevState);
 		});
+
+		this.eventHandler.on("GameEnd", async (e: GameEventData) => {
+			this.gameEnd = true;
+			Time.paused = true;
+			this.gameEndUI.show();
+		});
 	}
 
 	private bindP2PEvents(){
@@ -287,29 +293,32 @@ export default class Game {
 	}
 
 	checkGameEndCondition() {
+		if(this.verifyGameEndCondition()) this.onGameEnd();
+	}
+
+	verifyGameEndCondition(): boolean{
 		switch (this.settings.gamemode) {
 			case GameMode.TimeAttack:
 				if (this.clock.curTime >= this.settings.timeLimit) {
-					this.onGameEnd();
-					return;
+					return true;
 				}
 				break;
 			case GameMode.HundredPercent:
-				if (this.localPlayer.stats.score === this.mapObjectData.length) {
-					this.onGameEnd();
-					return;
+				if (this.map.countAnsweredObjects() === 1) { // this.mapObjectData.length
+					return true;
 				}
 				break;
 			case GameMode.HundredPercentClock:
 				// this is something
+
 				break;
 		}
+
+		return false;
 	}
 
 	onGameEnd() {
-		this.gameEnd = true;
-		Time.paused = true;
-		this.gameEndUI.show();
+		this.eventHandler.dispatchEvent(new GameEvent("GameEnd"));
 	}
 
 	setGameState(newState: GameState){

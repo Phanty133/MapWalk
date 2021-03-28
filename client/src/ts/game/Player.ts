@@ -358,9 +358,11 @@ export default class Player {
 
 	incrementScore() {
 		this.stats.score++;
-		if (this.isLocalPlayer) this.scoreDisplay.update();
+		if (this.isLocalPlayer) {
+			this.scoreDisplay.update();
+			this.game.checkGameEndCondition();
 
-		this.game.checkGameEndCondition();
+		}
 	}
 
 	updateInfo(newInfo: PlayerInfo) {

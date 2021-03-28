@@ -5,8 +5,8 @@ import { logger, socketServer } from "./index";
 export default class LobbyManager{
 	static lobbies: Record<string, Lobby> = {};
 
-	static createLobby(): Lobby{
-		const newLobby: Lobby = new Lobby(socketServer);
+	static createLobby(id?: string): Lobby{
+		const newLobby: Lobby = new Lobby(socketServer, id);
 		LobbyManager.lobbies[newLobby.id] = newLobby;
 
 		return newLobby;

@@ -255,7 +255,7 @@ export default class GameMap {
 		this._objectsHighlighted = true;
 
 		/*	if (!this.activeObject) return;
-	
+
 			if (GameMap.nonMetricDistanceTo(this.activeObject.pos, this.game.localPlayer.marker.getLatLng()) < this.EPSILON) {
 				this.popOpenQuestion();
 			} */
@@ -318,5 +318,9 @@ export default class GameMap {
 		else {
 			this.openObjectInfo(obj);
 		}
+	}
+
+	countAnsweredObjects(): number{
+		return Object.values(this.objectsByID).filter(obj => obj.answered).length;
 	}
 }

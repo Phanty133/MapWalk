@@ -28,4 +28,8 @@ export default function bindEventVerifiers(p2p: P2PGameEventHandler){
 	p2p.eventVerifiers.GameState = async (e: GameEvent, game: Game) => {
 		return game.turnMan.doesSocketHaveTurn(e.origin);
 	};
+
+	p2p.eventVerifiers.GameEnd = async (e: GameEvent, game: Game) => {
+		return true;
+	};
 }
