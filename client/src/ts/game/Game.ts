@@ -304,7 +304,7 @@ export default class Game {
 				}
 				break;
 			case GameMode.HundredPercent:
-				if (this.map.countAnsweredObjects() === 1) { // this.mapObjectData.length
+				if (this.map.countAnsweredObjects() === this.mapObjectData.length) {
 					return true;
 				}
 				break;
