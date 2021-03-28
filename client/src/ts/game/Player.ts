@@ -41,6 +41,7 @@ export interface PlayerInfo {
 	plyrData: PlayerData;
 	visibleMarkers: number[];
 	metersToVisibilityEnd: number;
+	markerInteractionRange: number;
 }
 
 export default class Player {
@@ -115,7 +116,8 @@ export default class Player {
 			hasPerformedAction: false, // Whether the player has performed an action during the current turn
 			plyrData,
 			visibleMarkers: [],
-			metersToVisibilityEnd: startingPos.distanceTo(new L.LatLng(startingPos.lat + this.stats.visibility, startingPos.lng))
+			metersToVisibilityEnd: startingPos.distanceTo(new L.LatLng(startingPos.lat + this.stats.visibility, startingPos.lng)),
+			markerInteractionRange: 0.001
 		};
 
 		this.isLocalPlayer = socket === this.game.socket.id || socket === undefined;
@@ -175,8 +177,12 @@ export default class Player {
 		return true;
 	}
 
+	isPosInRange(pos: L.LatLng, range: number) {
+		return GameMap.nonMetricDistanceTo(pos, this.pos) <= range;
+	}
+
 	isPosVisible(pos: L.LatLng) { // Whether the given position is within visibility range
-		return GameMap.nonMetricDistanceTo(pos, this.pos) <= this.stats.visibility / 1.5
+		return GameMap.nonMetricDistanceTo(pos, this.pos) <= this.stats.visibility / 1.5;
 	}
 
 	createFogOfWar() {
@@ -202,7 +208,12 @@ export default class Player {
 		this.game.events.on("GameStateChanged", (newState: GameState) => {
 			if(newState !== GameState.PlayerInteracting) return;
 
-			this.map.highlightObjects(this.nearbyObjects);
+			if(this.map.activeObject){
+				this.map.popOpenQuestion();
+			}
+			else{
+				this.map.highlightObjects(this.nearbyObjects);
+			}
 		});
 	}
 
@@ -327,7 +338,7 @@ export default class Player {
 	}
 
 	hasTurn(): boolean {
-		if (this.game.state !== GameState.PlayerAction) return false;
+		if (this.game.state !== GameState.PlayerAction && this.game.state !== GameState.PlayerInteracting) return false;
 		if (this.game.turnMan.activePlayer !== this) return false;
 
 		return true;
@@ -366,11 +377,11 @@ export default class Player {
 		}
 	}
 
-	getVisibleMapObjects(): MapObject[]{
+	getMapObjectsInRange(range: number = this.stats.visibility): MapObject[]{
 		const nearbyObjects: MapObject[] = [];
 
 		for(const obj of Object.values(this.map.objectsByID)){
-			if(this.isPosVisible(obj.pos)) nearbyObjects.push(obj); // Perhaps there's a more efficient way of implementing this?
+			if(this.isPosInRange(obj.pos, range)) nearbyObjects.push(obj); // Perhaps there's a more efficient way of implementing this?
 		}
 
 		return nearbyObjects;
@@ -382,7 +393,7 @@ export default class Player {
 		this.router.clearRoute();
 		this.map.map.dragging.enable();
 
-		this.nearbyObjects = this.getVisibleMapObjects();
+		this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange);
 
 		if(this.nearbyObjects.length > 0) {
 			this.game.setGameState(GameState.PlayerInteracting);

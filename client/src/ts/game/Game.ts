@@ -49,6 +49,7 @@ export default class Game {
 	gameEndUI: GameEndUI;
 	isMultiplayer: boolean = false;
 	private _state: GameState = GameState.Loading;
+	private _prevState: GameState = GameState.Idle;
 	turnMan: TurnManager;
 	localPlayer: Player;
 	otherPlayers: Player[] = [];
@@ -64,6 +65,10 @@ export default class Game {
 
 	public get state(): GameState{
 		return this._state;
+	}
+
+	public get prevState(): GameState{
+		return this._prevState;
 	}
 
 	constructor(settings: GameSettings, socket: Socket, lobby?: Lobby){
@@ -180,7 +185,7 @@ export default class Game {
 			this._state = e.event.data.state;
 			this.turnMan.update();
 
-			this.events.emit("GameStateChanged", this.state);
+			this.events.emit("GameStateChanged", this.state, this.prevState);
 		});
 	}
 
@@ -314,6 +319,7 @@ export default class Game {
 	}
 
 	loadGameState(loadedState: GameState){
+		this._prevState = this._state;
 		this._state = loadedState;
 		this.turnMan.update();
 	}

@@ -1,5 +1,5 @@
 import Log from "ts/lib/log";
-import { displayMsg, persons } from "ts/ui/gameui/ChatbotUI";
+import ChatBotUI, { displayMsg, persons } from "ts/ui/gameui/ChatBotUI";
 import Game from "./Game";
 import GameEvent, { QuestionAnswerEventData } from "./GameEvent";
 import { GameEventData } from "./GameEventHandler";
@@ -20,9 +20,11 @@ export default class ChatBoot {
 	private currentQ: string;
 	private currentAnswer: string = null;
 	private checkForeignAnswer: boolean = false;
+	ui: ChatBotUI;
 
 	constructor(game: Game) {
 		this.game = game;
+		this.ui = new ChatBotUI(game);
 		this.game.socket.events.addListener("ChatbotVerifyAnswerResponse", (res: string) => { this.onAnswerVerified(res) });
 
 		if(this.game.isMultiplayer){
@@ -63,6 +65,7 @@ export default class ChatBoot {
 
 	askQuestion(q: string) {
 		this.currentQ = q;
+		this.ui.open();
 		displayMsg(q, persons.BOT);
 	}
 
@@ -79,6 +82,8 @@ export default class ChatBoot {
 		else{
 			this.game.map.activeObject.onCorrectAnswer();
 		}
+
+		setTimeout(() => { this.ui.close(); }, 2500);
 	}
 
 	private incorrectQuestion(id?: number) {
@@ -90,6 +95,8 @@ export default class ChatBoot {
 		else{
 			this.game.map.activeObject.onIncorrectAnswer();
 		}
+
+		setTimeout(() => { this.ui.close(); }, 2500);
 	}
 
 	private requestAnswerVerification(msg: string) {

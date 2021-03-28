@@ -4,7 +4,7 @@ import MarkerMoveTarget from "img/MarkerMoveTarget.svg";
 import MapObject, { MapObjectData, MapObjectState } from "ts/map/MapObject";
 import { EventEmitter } from "events";
 import createElement from "ts/lib/createElement";
-import Game from "ts/game/Game";
+import Game, { GameState } from "ts/game/Game";
 import { randInt } from "ts/lib/util";
 import Log from "ts/lib/log";
 import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
@@ -22,6 +22,7 @@ export default class GameMap {
 	activeObject: MapObject = null;
 	objectsByID: Record<number, MapObject> = {};
 	private _objectsHighlighted = false;
+	private infoPopup: L.Popup = null;
 
 	public get objectsHighlighted(){
 		return this._objectsHighlighted;
@@ -149,51 +150,14 @@ export default class GameMap {
 		});
 	}
 
-	/*activate(marker: L.Marker) {
-		if (this.currentlyActive.includes(marker)) {
-			if (this.currentlyActive.length > 0) {
-				this.currentlyActive[0].setIcon(this.iconInactive);
-				this.currentlyActive.shift();
-			}
-			return;
-		}
-		if (this.currentlyActive.length > 0) {
-			// Log.log(this.lines);
-			let find = false;
-			this.lines.forEach(line => {
-				const latLngs: L.LatLng[] = line.getLatLngs() as L.LatLng[];
-				// Log.log(latLngs);
-				if ((this.currentlyActive[0].getLatLng().equals(latLngs[0]) || this.currentlyActive[0].getLatLng().equals(latLngs[1]))
-					&& (marker.getLatLng().equals(latLngs[0]) || marker.getLatLng().equals(latLngs[1]))) {
-					find = true;
-				}
-			});
-			if (find)
-				return;
-		}
-		if (this.currentlyActive.length === 2) {
-			this.currentlyActive[0].setIcon(this.iconInactive);
-			this.currentlyActive.shift();
-		}
-		marker.setIcon(this.iconActive);
-		this.currentlyActive.push(marker);
-		if (this.currentlyActive.length === 2) {
-			if (this.link) {
-				this.link.remove();
-			}
-			this.link = new L.Polyline([this.currentlyActive[0].getLatLng(), this.currentlyActive[1].getLatLng()], {
-				color: "red"
-			}).addTo(this.map);
-		}
-	}*/
-
 	onMarkerActivate() {
 		this.game.localPlayer.traceRoute(this.activeObject.pos);
 	}
 
 	cancelCurrentOrder(clearMarker = true) {
 		if (this.activeObject && clearMarker) {
-			this.activeObject.toggleState(true);
+			this.activeObject.setState(MapObjectState.Default);
+			this.activeObject = null;
 		}
 
 		if (this.posMarker) {
@@ -201,15 +165,14 @@ export default class GameMap {
 			this.posMarker = null;
 		}
 
-		if (this.link) {
-			this.link.remove();
-			this.link = null;
-		}
+		this.game.localPlayer.killRoute();
 	}
 
 	onDoubleClick(ev: L.LeafletMouseEvent) {
 		if (!this.selectBounds.contains(ev.latlng)) return;
 		if (ev.originalEvent.button !== 0) return;
+		if (!this.game.localPlayer.hasTurn()) return;
+		if (this.game.state !== GameState.PlayerAction) return;
 
 		this.cancelCurrentOrder();
 
@@ -273,49 +236,6 @@ export default class GameMap {
 	popOpenQuestion() {
 		if (!this.game.localPlayer.hasTurn()) return;
 
-		document.getElementById("qotd")!.innerHTML = ""; // fuck children
-		document.getElementById("qotd")!.hidden = false;
-
-		const bruh = createElement("p", {
-			class: "thatThingInsideTheQuestionBoxShouldBeLeftIgnoredTbh"
-		}) as HTMLElement;
-
-		// Log.log(place);
-		bruh.innerHTML = `
-			<b>${this.activeObject.data.name}</b>
-			<br/>
-			${this.activeObject.data.description}
-			<br/>
-			<div id="questionImageContainer">
-				<img src="${this.activeObject.data.image}" alt="fuck you"/>
-			</div>
-			<div id="objAnswerBtnContainer"></div>
-		`; // + this;
-
-		document.getElementById("qotd")!.append(bruh);
-
-		const btnContainer = document.getElementById("objAnswerBtnContainer");
-
-		/*createElement("button", {
-			textContent: "Answer question correctly",
-			parent: btnContainer,
-			events: {
-				click: () => {
-					this.activeObject.onCorrectAnswer();
-				}
-			}
-		});
-
-		createElement("button", {
-			textContent: "Answer question incorrectly like a dipshit",
-			parent: btnContainer,
-			events: {
-				click: () => {
-					this.activeObject.onIncorrectAnswer();
-				}
-			}
-		});*/
-
 		if (this.activeObject.data.questions.length > 0) {
 			this.game.chatBot.askQuestion(this.activeObject.data.questions[randInt(0, this.activeObject.data.questions.length)]);
 		} else {
@@ -324,8 +244,34 @@ export default class GameMap {
 	}
 
 	popClosedQuestion() {
-		document.getElementById("qotd")!.hidden = true;
-
 		this.game.chatBot.invalidateQuestion();
+	}
+
+	openObjectInfo(mapObj: MapObject){
+		if(this.infoPopup) {
+			this.infoPopup.remove();
+		}
+
+		this.infoPopup = L.popup().setLatLng(mapObj.pos);
+
+		const lazyHTMLTemplate = `
+			<span data-title>${mapObj.data.name}</span>
+			<div id="questionImageContainer">
+				<img src="${this.activeObject.data.image}" alt="no support no respect"/>
+			</div>
+			<span data-desc>${mapObj.data.description}</span>
+		`;
+
+		const containerEl = createElement("div", { class: "objectInfoContainer" });
+		containerEl.innerHTML = lazyHTMLTemplate;
+
+		this.infoPopup.setContent(containerEl).openOn(this.map);
+	}
+
+	closeObjectInfo(){
+		if(!this.infoPopup) return;
+
+		this.infoPopup.remove();
+		this.infoPopup = null;
 	}
 }

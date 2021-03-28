@@ -32,6 +32,7 @@ export default class Chat{
 		document.addEventListener("keydown", (e: KeyboardEvent) => {
 			if(e.key !== "Enter") return;
 			if(this.aiInput === document.activeElement) return;
+			if(this.game.chatBot.ui.active) return;
 			if(this.inputStateCooldown) return;
 
 			if(this.inputVisible){

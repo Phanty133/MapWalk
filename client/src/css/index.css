@@ -11,6 +11,7 @@ body{
 	font-family: sans-serif;
 	height: 100vh;
 	width: 100vw;
+	overflow: hidden;
 }
 
 #map{
@@ -349,50 +350,89 @@ body{
 	overflow: auto;
 }
 
-#mapButtons{
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	column-gap: 10px;
-	
+#mapButtonsContainer{
 	position: absolute;
 	pointer-events: all;
 	width: 20%;
 	left: 40%;
-	height: 5%;
-	top: 90%;
+	height: 10%;
+	top: 85%;
+
+	display: grid;
+	grid-template-rows: 1fr 1fr;
+	row-gap: 5px;
+	grid-template-areas: "skipBtn" "otherBtns";
 }
 
-#mapButtons button{
+#mapButtonsContainer button{
 	border-style: solid;
 	border-radius: 10px;
 	color: white;
 	border-radius: 25px;
 }
+
+#mapButtons{
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 10px;
+
+	grid-area: otherBtns;
+}
+
+#playerSkip{
+	display: none;
+	width: 50%;
+	position: relative;
+	left: 25%;
+	background-color: #008a99;
+	color: white;
+	border-color: #00b8cc;
+
+	grid-area: skipBtn;
+}
+
+#chatZoneContainer{
+	display: none;
+	position: absolute;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(0, 0, 0, 0.75);
+	pointer-events: all;
+	z-index: 1000;
+}
+
 #chatZone {
 	position: absolute;
-	width: 20%;
-	height: 30%;
+	width: 40%;
+	height: 20%;
 	background-color: #FFFFFF66;
-	border: 0.5vw solid gainsboro;
-	border-left: none;
 	pointer-events: all;
 	padding: 10px;
-	top: 10%;
+	top: 15%;
+	overflow: auto;
 	color: black;
-	overflow: ignore;
+
+	border: 5px solid gainsboro;
+	border-radius: 5px;
+	left: 30%;
+	font-size: 16pt;
 }
+
 #messages {
 	width: 100%;
-	height: 93%;
+	height: calc(95% - 1.5em);
 	display: flex;
 	align-items: flex-start;
 	flex-direction: column-reverse;
 	overflow: hidden;
 }
+
 #speech {
-	height: 5%;
+	width: calc(100% - 10px - 0.75em);
+	height: 1em;
+	font-size: 1em;
+	bottom: 0.25em;
 	position: absolute;
-	top: 90%;
 }
 
 #playerMove {

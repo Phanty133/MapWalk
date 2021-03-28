@@ -17,4 +17,5 @@ export default interface SVGIconOptions extends L.DivIconOptions {
 	weight: number;
 	svgLink: string;
 	className: string;
+	interactable: boolean;
 }

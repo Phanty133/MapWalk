@@ -22,7 +22,8 @@ export interface MapObjectData {
 export enum MapObjectState{
 	Default,
 	Active,
-	Highlighted
+	Highlighted,
+	Targeted
 };
 
 export default class MapObject {
@@ -68,13 +69,15 @@ export default class MapObject {
 		this.iconUnanswered = new SVGIcon({
 			iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
 			svgLink: objectUnansweredSVG,
-			color: MapObject.colorUnanswered
+			color: MapObject.colorUnanswered,
+			interactable: true
 		});
 
 		this.iconAnswered = new SVGIcon({
 			iconAnchor: L.Icon.Default.prototype.options.iconAnchor,
 			svgLink: objectAnsweredSVG,
-			color: MapObject.colorAnswered
+			color: MapObject.colorAnswered,
+			interactable: true
 		});
 
 		this.state = MapObjectState.Default;
@@ -89,7 +92,7 @@ export default class MapObject {
 		this.marker.setOpacity(0);
 
 		this.marker.bindTooltip(this.data.name, { offset: new L.Point(0, -30) });
-		this.marker.addEventListener("click", e => { this.toggleState(); });
+		this.marker.addEventListener("click", e => { this.clickHandler(); });
 
 		if (this.visible) this.showMarker();
 
@@ -108,9 +111,6 @@ export default class MapObject {
 	}
 
 	private onFrame() {
-		// Check if the player is in visibility range of the marker
-		// TODO: make it a tad more efficient
-
 		if (this.fadeIn) {
 			if (this.fadeInTimeSinceStart >= this.fadeInTime) {
 				this.fadeIn = false;
@@ -122,6 +122,8 @@ export default class MapObject {
 			}
 		}
 
+		// Check if a player is in visibility range of the marker
+		// TODO: make it a tad more efficient
 		for (const plyr of this.game.players) {
 			if (!plyr.moving) continue;
 			if ((plyr.isLocalPlayer && this.visible) || plyr.info.visibleMarkers.includes(this.id)) continue;
@@ -131,12 +133,6 @@ export default class MapObject {
 				plyr.info.visibleMarkers.push(this.id);
 			}
 		}
-
-		if (!this.game.localPlayer.moving) return;
-
-		if (this.game.localPlayer.isPosVisible(this.pos)) {
-			this.showMarker();
-		}
 	}
 
 	setState(newState: MapObjectState){
@@ -145,40 +141,41 @@ export default class MapObject {
 
 		switch(this.state){
 			case MapObjectState.Default:
-				if(this.answered){
-					this.iconAnswered.setColor(Color.hexToRGB(MapObject.colorAnswered))
-				}
-				else{
-					this.iconUnanswered.setColor(Color.hexToRGB(MapObject.colorUnanswered))
-				}
+				activeIcon.setColor(this.answered ? MapObject.colorAnswered : MapObject.colorUnanswered);
 				break;
 			case MapObjectState.Active:
-				activeIcon.setColor(Color.hexToRGB("#FF0000"));
+				activeIcon.setColor("#FF0000");
 				break;
 			case MapObjectState.Highlighted:
-				activeIcon.setColor(Color.hexToRGB("#0000FF"));
+				activeIcon.setColor("#0000FF");
+				break;
+			case MapObjectState.Targeted:
+				activeIcon.setColor("#00FF00");
 				break;
 		}
 	}
 
-	toggleState(deactivate = false) { // The argument determines whether the marker should be forcefully deactivated (no matter the current state)
-		if (this.active || deactivate) {
-			// this.marker.setIcon(this.answered ? this.iconAnswered : this.iconUnanswered);
-			this.setState(MapObjectState.Active);
-			this.map.activeObject = null;
+	private clickHandler(){
+		if(!this.game.localPlayer.hasTurn()) return;
+		if(this.state === MapObjectState.Active) return;
+
+		if(this.state !== MapObjectState.Highlighted) { // If this hasn't been selected yet, make it the new target
+			if(this.state === MapObjectState.Targeted){
+				this.map.cancelCurrentOrder(); // In the if statement because cancelCurrentOrder() resets the object state
+				return;
+			}
+
+			this.map.cancelCurrentOrder();
+
+			this.map.activeObject = this;
+			this.map.onMarkerActivate();
+			this.setState(MapObjectState.Targeted);
+
 			return;
 		}
 
-		this.map.cancelCurrentOrder();
-
-		this.map.activeObject = this;
-		this.map.onMarkerActivate();
-
-		// this.marker.setIcon(this.iconActive);
-
-		if (GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos) < MathExtras.EPSILON) {
-			this.map.popOpenQuestion();
-		}
+		Log.log("question time");
+		this.map.popOpenQuestion();
 	}
 
 	onCorrectAnswer(origin?: string) {
@@ -193,6 +190,9 @@ export default class MapObject {
 		else {
 			this.game.localPlayer.incrementScore();
 		}
+
+		this.setState(MapObjectState.Default);
+		this.game.localPlayer.events.emit("ActionDone");
 	}
 
 	onIncorrectAnswer(origin?: string) {
@@ -203,6 +203,9 @@ export default class MapObject {
 		if (!this.game.isMultiplayer) {
 			this.game.clock.addTime(this.timeLossOnIncorrectAnswer);
 		}
+
+		this.setState(MapObjectState.Default);
+		this.game.localPlayer.events.emit("ActionDone");
 	}
 
 	remove() {

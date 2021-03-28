@@ -14,19 +14,24 @@
 			<div id="qotd" hidden></div>
 			<h1 id="gameTurnInfo">derp</h1>
 
-			<div id="chatZone">
-				<div id="messages">
-					<div class="serverMsg">welcome to the ai chat zone</div>
+			<div id="chatZoneContainer">
+				<div id="chatZone">
+					<div id="messages">
+						<div class="serverMsg">welcome to the ai chat zone</div>
+					</div>
+					<input id="speech" type="text" placeholder="Your AD here 1.99$/h" autocomplete="off"/>
 				</div>
-				<input id="speech" type="text" placeholder="Your AD here 1.99$/h" autocomplete="off"/>
 			</div>
 
-			<div id="mapButtons">
-				<div id="movePar">	
-					<button id="playerMove" class="button"><div id="moveTip">Moves the player to the selected destination</div>Move</button>
-				</div>
-				<div id="restPar">
-					<button id="playerRest" class="button"><div id="restTip">Spends the turn resting</div>Rest</button>
+			<div id="mapButtonsContainer">
+				<button id="playerSkip" class="button">Skip</button>
+				<div id="mapButtons">
+					<div id="movePar">	
+						<button id="playerMove" class="button"><div id="moveTip">Move to the selected destination</div>Move</button>
+					</div>
+					<div id="restPar">
+						<button id="playerRest" class="button"><div id="restTip">Rest for the turn</div>Rest</button>
+					</div>
 				</div>
 			</div>
 

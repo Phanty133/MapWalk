@@ -10,7 +10,6 @@ import randomizeActionButtons from "ts/ui/forthememe"
 import { randInt } from "ts/lib/util"
 import { bindGameUI } from "ts/ui/gameui/BindGameUI"
 import ChatBoot from "ts/game/ChatBoot"
-import { bindChatBoot } from "ts/ui/gameui/ChatbotUI"
 import Socket, { ServerLobbyStartGameData } from "ts/networking/Socket"
 import * as L from "leaflet";
 import Log from "ts/lib/log"
@@ -96,7 +95,6 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	const chatBoot = new ChatBoot(game);
 	game.chatBot = chatBoot;
 
-	bindChatBoot(chatBoot);
 	bindGameUI(game);
 }
 
@@ -135,7 +133,6 @@ function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, socket:
 	const chatBoot = new ChatBoot(game);
 	game.chatBot = chatBoot;
 
-	bindChatBoot(chatBoot);
 	bindGameUI(game);
 	bindEventVerifiers(game.p2pEventHandler);
 
