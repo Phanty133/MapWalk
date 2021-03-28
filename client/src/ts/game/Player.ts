@@ -67,6 +67,7 @@ export default class Player {
 	fow: FogOfWar;
 
 	events: EventEmitter = new EventEmitter();
+	private routeEndPromieResolve: () => void;
 
 	public get pos() {
 		return this.info.pos;
@@ -202,7 +203,7 @@ export default class Player {
 			this.moveToTarget(targetPos);
 		});
 
-		this.game.eventHandler.on("PlayerMove", async (res: GameEventData) => { this.onMoveEvent(res); });
+		this.game.eventHandler.on("PlayerMove", async (res: GameEventData) => { return this.onMoveEvent(res); });
 		this.game.eventHandler.on("PlayerRest", async (res: GameEventData) => { this.onRestEvent(res); });
 
 		this.game.events.on("GameStateChanged", (newState: GameState, prevState: GameState) => {
@@ -251,6 +252,8 @@ export default class Player {
 		}
 
 		if (this.isLocalPlayer) this.map.map.dragging.disable();
+
+		return new Promise<void>((res, rej) => { this.routeEndPromieResolve = res; });
 	}
 
 	moveToPoint(p: L.LatLng) {
@@ -268,7 +271,7 @@ export default class Player {
 		this.moveFractionPerSecond = this.speed / this.distanceToTarget;
 	}
 
-	private onMoveEvent(e: GameEventData) {
+	private async onMoveEvent(e: GameEventData) {
 		if (this.game.isMultiplayer && e.origin !== this.info.socketID) return;
 
 		this.activeRoute = e.event.data.route;
@@ -277,14 +280,14 @@ export default class Player {
 		this.stats.walkedDistance += distance;
 		this.drainEnergy(distance / this.metersPerEnergyUnit);
 
-		this.moveAlongRoute(this.activeRoute);
-
 		// If the game isn't multiplayer, update the time
 
 		if (!this.game.isMultiplayer) {
 			const visibilityFraction = GameMap.nonMetricDistanceTo(this.pos, e.event.data.targetPos) / this.stats.visibility;
 			this.game.clock.addTime(visibilityFraction * this.info.timeToVisibilityEnd);
 		}
+
+		return this.moveAlongRoute(this.activeRoute);
 	}
 
 	private onRestEvent(e: GameEventData) {
@@ -410,6 +413,9 @@ export default class Player {
 		else{
 			this.events.emit("ActionDone");
 		}
+
+		this.routeEndPromieResolve();
+		this.routeEndPromieResolve = null;
 	}
 
 	private onFrame() {
