@@ -26,6 +26,7 @@ export default class P2PGameEventHandler{
 	public onEventEffect: EventEffectCallback = () => {};
 	public eventVerifiers: Record<string, EventVerifier> = {};
 	private eventCache: string[] = []; // IDs of cached events. Used to give process responses only when all previous events have been applied
+	private eventEffectQueue: MessageData.EventEffect[] = []; // A queue for event effects. Used to apply them in order
 
 	constructor(game: Game){
 		this.game = game;
@@ -107,22 +108,12 @@ export default class P2PGameEventHandler{
 				return;
 			}
 
-			Log.log(this.eventSignatures);
-			const signature = this.eventSignatures[data.event.hash];
-			const dataToBeVerified = new TextEncoder().encode(data.event.hash);
-			const publicKey = await crypto.subtle.importKey("jwk", data.key, P2PGameEventHandler.encryptionAlgorithm, false, ["verify"]);
-			const result = await crypto.subtle.verify(P2PGameEventHandler.encryptionAlgorithm, publicKey, signature, dataToBeVerified);
-
-			if(result){
-				Log.log(`Event (${data.event.type}) effect authorized!`);
-				this.onEventEffect(data.event, data.peer);
+			if(Object.values(this.eventSignatures).length > 1){
+				this.eventEffectQueue.push(data);
 			}
 			else{
-				Log.log(`Event (${data.event.type}) effect unauthorized!`);
+				this.processEventEffect(data);
 			}
-
-			delete this.eventSignatures[data.event.hash];
-			// delete this.activeEvents[data.event.hash];
 		});
 	}
 
@@ -204,6 +195,29 @@ export default class P2PGameEventHandler{
 
 		delete this.activeEvents[eventHash];
 		delete this.eventResponse[eventHash];
+	}
+
+	private async processEventEffect(data: MessageData.EventEffect){
+		const signature = this.eventSignatures[data.event.hash];
+		const dataToBeVerified = new TextEncoder().encode(data.event.hash);
+		const publicKey = await crypto.subtle.importKey("jwk", data.key, P2PGameEventHandler.encryptionAlgorithm, false, ["verify"]);
+		const result = await crypto.subtle.verify(P2PGameEventHandler.encryptionAlgorithm, publicKey, signature, dataToBeVerified);
+
+		if(result){
+			Log.log(`Event (${data.event.type}) effect authorized!`);
+			this.onEventEffect(data.event, data.peer);
+		}
+		else{
+			Log.log(`Event (${data.event.type}) effect unauthorized!`);
+		}
+
+		delete this.eventSignatures[data.event.hash];
+		// delete this.activeEvents[data.event.hash];
+
+		if(this.eventEffectQueue.length > 0){
+			this.processEventEffect(this.eventEffectQueue[0]);
+			this.eventEffectQueue.splice(0, 1);
+		}
 	}
 
 	private async genEventKeypair(): Promise<CryptoKeyPair>{

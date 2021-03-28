@@ -37,6 +37,7 @@ export default class GameManifest{ // Mainly of use only in multiplayer for game
 			playerData[id] = { info: plyr.info, stats: plyr.stats };
 		}
 
+		Log.log(this.game.clock.curTime);
 		this.data = {
 			players: playerData,
 			curTime: this.game.clock.curTime,
