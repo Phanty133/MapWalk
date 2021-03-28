@@ -227,7 +227,7 @@ export default class GameMap {
 
 	unhighlightObjects(objects: MapObject[]) {
 		for(const obj of objects){
-			obj.setState(MapObjectState.Highlighted);
+			obj.setState(MapObjectState.Default);
 		}
 
 		this._objectsHighlighted = false;
@@ -273,5 +273,14 @@ export default class GameMap {
 
 		this.infoPopup.remove();
 		this.infoPopup = null;
+	}
+
+	toggleObjectInfo(obj: MapObject){
+		if(this.infoPopup){
+			this.closeObjectInfo();
+		}
+		else{
+			this.openObjectInfo(obj);
+		}
 	}
 }

@@ -205,7 +205,14 @@ export default class Player {
 		this.game.eventHandler.on("PlayerMove", (res: GameEventData) => { this.onMoveEvent(res); });
 		this.game.eventHandler.on("PlayerRest", (res: GameEventData) => { this.onRestEvent(res); });
 
-		this.game.events.on("GameStateChanged", (newState: GameState) => {
+		this.game.events.on("GameStateChanged", (newState: GameState, prevState: GameState) => {
+			if(newState !== GameState.PlayerInteracting && this.nearbyObjects){
+				this.map.unhighlightObjects(this.nearbyObjects);
+				this.nearbyObjects = null;
+				return;
+			}
+
+			if(!this.hasTurn()) return;
 			if(newState !== GameState.PlayerInteracting) return;
 
 			if(this.map.activeObject){
@@ -393,7 +400,7 @@ export default class Player {
 		this.router.clearRoute();
 		this.map.map.dragging.enable();
 
-		this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange);
+		this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
 
 		if(this.nearbyObjects.length > 0) {
 			this.game.setGameState(GameState.PlayerInteracting);

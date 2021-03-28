@@ -43,7 +43,7 @@ export default class TurnManager{
 
 		if(this.game.isMultiplayer) {
 			this.turnDisplay.update();
-			this.game.clock.addTime(10);
+			// this.game.clock.addTime(10);
 		}
 	}
 

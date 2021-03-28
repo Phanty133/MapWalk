@@ -156,6 +156,11 @@ export default class MapObject {
 	}
 
 	private clickHandler(){
+		if(this.answered){
+			this.map.toggleObjectInfo(this);
+			return;
+		}
+
 		if(!this.game.localPlayer.hasTurn()) return;
 		if(this.state === MapObjectState.Active) return;
 
@@ -174,7 +179,7 @@ export default class MapObject {
 			return;
 		}
 
-		Log.log("question time");
+		this.map.activeObject = this;
 		this.map.popOpenQuestion();
 	}
 
