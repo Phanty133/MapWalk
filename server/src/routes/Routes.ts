@@ -23,6 +23,7 @@ export default class Routes {
 		this.router.get("/join", (req, res) => { this.join(req, res); });
 		this.router.get("/createLobby", (req, res) => { this.createLobby(req, res); });
 		this.router.post("/objects", (req, res) => { this.objects(req, res); });
+		this.router.post("/restobjects", (req, res) => { this.objects(req, res); });
 
 		// Add the static file middleware, so custom routes have priority over the middleware
 		this.router.use(express.static(this.baseDir));
@@ -55,6 +56,19 @@ export default class Routes {
 	}
 
 	private objects(req: Request, res: Response) {
+		let objCount: number;
+
+		if (!req.body.count) {
+			objCount = 1;
+		}
+		else {
+			objCount = parseInt(req.body.count.toString(), 10);
+		}
+
+		res.json(mapObjectLoader.getRandomObjects(objCount));
+	}
+
+	private restobjects(req: Request, res: Response) {
 		let objCount: number;
 
 		if (!req.body.count) {

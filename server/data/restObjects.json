@@ -1,0 +1,74 @@
+[
+	{
+		"name": "Hesburger",
+		"location": {
+			"lat": 56.5052824,
+			"lng": 21.0201282
+		},
+		"image": "https://lh5.googleusercontent.com/p/AF1QipO3kmXU9cmZzy8UgkUdVjA8BSacdqir0Jm_1M2I=w408-h306-k-no"
+	},
+	{
+		"name": "Pakistānas kebabs",
+		"location": {
+			"lat": 56.5062734,
+			"lng": 21.0088298
+		},
+		"image": "https://lh5.googleusercontent.com/p/AF1QipM8KlsynLGi_r1znpdApynPa8lZnLcdHjMVKdCS=w408-h384-k-no"
+	},
+	{
+		"name": "PAVILLON de ROZE",
+		"location": {
+			"lat": 56.5105149,
+			"lng": 20.9987434
+		},
+		"image": "https://lh5.googleusercontent.com/p/AF1QipMEAxPtHC2zbtk3HPb5PhdyT88GhVFAXF8p-qaS=w408-h271-k-no"
+	},
+	{
+		"name": "Hesburger",
+		"location": {
+			"lat": 56.5052824,
+			"lng": 21.0201282
+		},
+		"image": "https://lh5.googleusercontent.com/p/AF1QipOkJfAS1FVUS2p4m7fsgQdDi9100Ck_U8WeW5a-=w408-h306-k-no"
+	},
+	{
+		"name": "Čili Pica",
+		"location": {
+			"lat": 56.4917069,
+			"lng": 21.0041003
+		},
+		"image": "https://lh5.googleusercontent.com/p/AF1QipO3kmXU9cmZzy8UgkUdVjA8BSacdqir0Jm_1M2I=w408-h306-k-no"
+	},
+	{
+		"name": "Restaurant Olive",
+		"location": {
+			"lat": 56.4871825,
+			"lng": 21.0058274
+		},
+		"image": "https://lh5.googleusercontent.com/p/AF1QipOdk4Mw-RsnfTMBrQBHqSL45T0pBVmn-HrtslzG=w408-h543-k-no"
+	},
+	{
+		"name": "Cepelini",
+		"location": {
+			"lat": 56.5218199,
+			"lng": 21.0169581
+		},
+		"image": "https://lh5.googleusercontent.com/p/AF1QipOoKV2X-sW5L8d8iBgHEqy3_D8Zk1IFhRIEDfiN=w408-h272-k-no"
+	},
+	{
+		"name": "Trīs sivēni",
+		"location": {
+			"lat": 56.5423152,
+			"lng": 21.0550669
+		},
+		"image": "https://lh5.googleusercontent.com/p/AF1QipMmt2xJZxiF4zADbIscBwGZBM2ElF0WO8_lTeDB=w408-h305-k-no"
+	},
+	{
+		"name": "Bel Cibo",
+		"location": {
+			"lat": 56.5126179,
+			"lng": 21.0058845
+		},
+		"image": "https://lh5.googleusercontent.com/p/AF1QipOek5bpij5Bs_oN1ZmPr5uUQZ5WLfDnku4KNsX1=w408-h305-k-no"
+	}
+]
