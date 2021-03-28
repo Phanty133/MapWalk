@@ -9,6 +9,7 @@ import { randInt } from "ts/lib/util";
 import Log from "ts/lib/log";
 import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
 import { Color } from "ts/lib/Color";
+import RestObject, { RestObjectData } from "./RestObject";
 
 export default class GameMap {
 	EPSILON = 0.001;
@@ -21,10 +22,11 @@ export default class GameMap {
 
 	activeObject: MapObject = null;
 	objectsByID: Record<number, MapObject> = {};
+	restObjs: RestObject[] = [];
 	private _objectsHighlighted = false;
 	private infoPopup: L.Popup = null;
 
-	public get objectsHighlighted(){
+	public get objectsHighlighted() {
 		return this._objectsHighlighted;
 	}
 
@@ -72,10 +74,10 @@ export default class GameMap {
 		L.control.scale().addTo(this.map);
 	}
 
-	clearObjects(){
+	clearObjects() {
 		this.clearSelection();
 
-		for(const objIDStr of Object.keys(this.objectsByID)){
+		for (const objIDStr of Object.keys(this.objectsByID)) {
 			const id = parseInt(objIDStr, 10);
 			this.objectsByID[id].remove();
 			delete this.objectsByID[id];
@@ -115,9 +117,40 @@ export default class GameMap {
 			]
 		}
 
-		for(const obj of objects){
+		for (const obj of objects) {
 			const mapObj = new MapObject(this.game, obj);
 			this.objectsByID[mapObj.id] = mapObj;
+		}
+	}
+
+	createRestObjects(_objects?: RestObjectData[]) {
+		let objects = _objects;
+
+		if (!_objects) {
+			objects = [{
+				name: "This is a river of cum, click if you dare.",
+				location: new L.LatLng(56.512922, 21.012326),
+				image: null,
+				id: 0
+			},
+			{
+				name: "The fish zone",
+				location: new L.LatLng(56.512519, 21.028135),
+				image: null,
+				id: 1
+			},
+			{
+				name: "Plce 3 with no joke!!!",
+				location: new L.LatLng(56.5189124, 20.98500),
+				image: null,
+				id: 2
+			}
+			]
+		}
+
+		for (const obj of objects) {
+			const mapObj = new RestObject(this.game, obj);
+			this.restObjs.push(mapObj);
 		}
 	}
 
@@ -212,21 +245,21 @@ export default class GameMap {
 	}
 
 	highlightObjects(objects: MapObject[]) {
-		for(const obj of objects){
+		for (const obj of objects) {
 			obj.setState(MapObjectState.Highlighted);
 		}
 
 		this._objectsHighlighted = true;
 
-	/*	if (!this.activeObject) return;
-
-		if (GameMap.nonMetricDistanceTo(this.activeObject.pos, this.game.localPlayer.marker.getLatLng()) < this.EPSILON) {
-			this.popOpenQuestion();
-		} */
+		/*	if (!this.activeObject) return;
+	
+			if (GameMap.nonMetricDistanceTo(this.activeObject.pos, this.game.localPlayer.marker.getLatLng()) < this.EPSILON) {
+				this.popOpenQuestion();
+			} */
 	}
 
 	unhighlightObjects(objects: MapObject[]) {
-		for(const obj of objects){
+		for (const obj of objects) {
 			obj.setState(MapObjectState.Default);
 		}
 
@@ -247,8 +280,8 @@ export default class GameMap {
 		this.game.chatBot.invalidateQuestion();
 	}
 
-	openObjectInfo(mapObj: MapObject){
-		if(this.infoPopup) {
+	openObjectInfo(mapObj: MapObject) {
+		if (this.infoPopup) {
 			this.infoPopup.remove();
 		}
 
@@ -268,18 +301,18 @@ export default class GameMap {
 		this.infoPopup.setContent(containerEl).openOn(this.map);
 	}
 
-	closeObjectInfo(){
-		if(!this.infoPopup) return;
+	closeObjectInfo() {
+		if (!this.infoPopup) return;
 
 		this.infoPopup.remove();
 		this.infoPopup = null;
 	}
 
-	toggleObjectInfo(obj: MapObject){
-		if(this.infoPopup){
+	toggleObjectInfo(obj: MapObject) {
+		if (this.infoPopup) {
 			this.closeObjectInfo();
 		}
-		else{
+		else {
 			this.openObjectInfo(obj);
 		}
 	}

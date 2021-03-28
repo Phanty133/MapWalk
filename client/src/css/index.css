@@ -387,6 +387,7 @@ body{
 	background-color: #008a99;
 	color: white;
 	border-color: #00b8cc;
+	height: 100%;
 
 	grid-area: skipBtn;
 }

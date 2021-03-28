@@ -15,7 +15,7 @@ export default class MapObjectLoader {
 
 	async loadObjects() {
 		this.objectData = await fse.readJSON(path.join(__dirname, "..", "data", "objects-full.json"));
-		this.objectData = await fse.readJSON(path.join(__dirname, "..", "data", "restObjects.json"));
+		this.restData = await fse.readJSON(path.join(__dirname, "..", "data", "restObjects.json"));
 	}
 
 	getRandomObjects(count: number): ObjectData[] {

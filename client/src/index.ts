@@ -14,6 +14,7 @@ import Socket, { ServerLobbyStartGameData } from "ts/networking/Socket"
 import * as L from "leaflet";
 import Log from "ts/lib/log"
 import bindEventVerifiers from "ts/game/EventVerifiers"
+import { RestObjectData } from "ts/map/RestObject"
 
 document.body.onload = () => {
 	loadPreGame();
@@ -33,7 +34,7 @@ function loadPreGame() {
 		const lobbyUI = new LobbyUI(socket);
 		const lobbyCookie = Cookies.get("lobby");
 
-		if(!lobbyCookie){
+		if (!lobbyCookie) {
 			window.location.href = "/";
 			return;
 		}
@@ -68,7 +69,17 @@ async function loadObjects(count: number): Promise<MapObjectData[]> {
 	return await req.json();
 }
 
-function openGameView(){
+async function loadRestObjects(count: number): Promise<RestObjectData[]> {
+	const req = await fetch(`/restobjects`, {
+		method: "POST",
+		body: `count=${count}`,
+		headers: { "Content-type": "application/x-www-form-urlencoded" }
+	});
+
+	return await req.json();
+}
+
+function openGameView() {
 	document.getElementById("gamentContainer").style.display = "none";
 	document.getElementById("game").style.display = "block";
 
@@ -80,6 +91,7 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 
 	const game = new Game(settings, socket);
 	const objects = await loadObjects(settings.objectCount);
+	const restObjects = await loadRestObjects(8);
 
 	game.createMap(objects);
 	game.localPlayer = game.createPlayer(settings.location.pos);
@@ -87,7 +99,9 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 
 	Log.log(settings);
 	Log.log(objects);
+	Log.log(restObjects);
 	game.map.createObjects(objects);
+	game.map.createRestObjects(restObjects);
 
 	const time = new Time();
 	game.setGameState(GameState.PlayerAction);
@@ -98,7 +112,7 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	bindGameUI(game);
 }
 
-function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, socket: Socket){
+function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, socket: Socket) {
 	openGameView();
 	Log.log("multiplayer");
 
@@ -109,16 +123,16 @@ function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, socket:
 
 	// Load the players
 
-	for(const plyrSocket of gameData.playerOrder){
+	for (const plyrSocket of gameData.playerOrder) {
 		const coordObj = gameData.playerCoords[plyrSocket];
 		const coord = new L.LatLng(coordObj.lat, coordObj.lng);
 		const plyr = game.createPlayer(coord, plyrSocket, gameData.playerSettings[plyrSocket]);
 
-		if(plyrSocket === socket.id){
+		if (plyrSocket === socket.id) {
 			game.localPlayer = plyr
 			game.map.map.panTo(coord);
 		}
-		else{
+		else {
 			game.otherPlayers.push(plyr);
 		}
 	}
@@ -139,10 +153,10 @@ function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, socket:
 	lobby.p2p.joinLobby();
 
 	lobby.p2p.events.on("Connection", () => {
-		if(Object.values(lobby.p2p.channels).length === gameData.playerOrder.length - 1){
+		if (Object.values(lobby.p2p.channels).length === gameData.playerOrder.length - 1) {
 			Log.log("All players connected!");
 
-			if(game.turnMan.activePlayer === game.localPlayer){
+			if (game.turnMan.activePlayer === game.localPlayer) {
 				game.setGameState(GameState.PlayerAction);
 			}
 		}
