@@ -14,6 +14,7 @@ export interface RestObjectData {
 	image: string;
 	location: L.LatLng;
 	id: number;
+	questions: string[];
 };
 
 export default class RestObject {
@@ -43,6 +44,7 @@ export default class RestObject {
 
 	constructor(game: Game, data: RestObjectData) {
 		this.data = data;
+		this.data.questions = [];
 		this.game = game;
 		this.map = game.map;
 
@@ -140,19 +142,27 @@ export default class RestObject {
 
 			this.map.cancelCurrentOrder();
 
-			//this.map.activeObject = this;
+			this.map.activeObject = this;
 			this.map.onMarkerActivate();
 			this.setState(MapObjectState.Targeted);
 
 			return;
 		}
 
-		//this.map.activeObject = this;
+		this.map.activeObject = this;
 	}
 
 	remove() {
 		this.map.map.removeLayer(this.marker);
 		this.visible = false;
 		this.active = false;
+	}
+
+	onCorrectAnswer() {
+		throw "What the actual fuck.";
+	}
+
+	onIncorrectAnswer() {
+		throw "What the actual fuck.";
 	}
 }

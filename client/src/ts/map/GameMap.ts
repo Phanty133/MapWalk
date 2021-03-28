@@ -20,7 +20,7 @@ export default class GameMap {
 	posMarker: L.Marker = null;
 	link: L.Polyline;
 
-	activeObject: MapObject = null;
+	activeObject: MapObject | RestObject = null;
 	objectsByID: Record<number, MapObject> = {};
 	restObjs: RestObject[] = [];
 	private _objectsHighlighted = false;
@@ -131,19 +131,22 @@ export default class GameMap {
 				name: "This is a river of cum, click if you dare.",
 				location: new L.LatLng(56.512922, 21.012326),
 				image: null,
-				id: 0
+				id: 0,
+				questions: []
 			},
 			{
 				name: "The fish zone",
 				location: new L.LatLng(56.512519, 21.028135),
 				image: null,
-				id: 1
+				id: 1,
+				questions: []
 			},
 			{
 				name: "Plce 3 with no joke!!!",
 				location: new L.LatLng(56.5189124, 20.98500),
 				image: null,
-				id: 2
+				id: 2,
+				questions: []
 			}
 			]
 		}
