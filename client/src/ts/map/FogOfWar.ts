@@ -6,7 +6,7 @@ import "leaflet-customlayer";
 import MultiCanvas from "./MultiCanvas";
 import Vector2 from "ts/lib/Vector2";
 
-export default class FogOfWar{
+export default class FogOfWar {
 	player: Player;
 	map: GameMap;
 	private ctx: CanvasRenderingContext2D;
@@ -18,14 +18,14 @@ export default class FogOfWar{
 	private multiCanvas: MultiCanvas;
 	private relativeCanvasReferencePoint: L.Point;
 
-	constructor(map: GameMap, player: Player){
+	constructor(map: GameMap, player: Player) {
 		this.player = player;
 		this.map = map;
 
 		this.drawOverlay();
 	}
 
-	drawOverlay(){
+	drawOverlay() {
 		// Absolut Jank TM
 
 		const screenCoefX = 8;
@@ -76,13 +76,13 @@ export default class FogOfWar{
 			const regexp = /translate3d\((?<x>-?\d+)px, (?<y>-?\d+)px, (-?\d+)px\)/;
 			const match = cssTransform.match(regexp);
 
-			if(initial){
+			if (initial) {
 				initial = false;
 
 				this.multiCanvas.fillRect(0, 0, this.canvasSize.x, this.canvasSize.y, "rgba(0, 0, 0, 0.95)");
 			}
 
-			if(!match) return;
+			if (!match) return;
 
 			this.panOffset = new L.Point(parseInt(match.groups.x, 10), parseInt(match.groups.y, 10));
 			canvasContainer.style.transform = `translate3d(${-this.panOffset.x}px, ${-this.panOffset.y}px, 0px)`;
@@ -91,22 +91,22 @@ export default class FogOfWar{
 		customLayer.addTo(this.map.map);
 	}
 
-	layerPointToCanvasPoint(p: L.Point){
+	layerPointToCanvasPoint(p: L.Point) {
 		return new L.Point(
 			this.canvasOffset.x + p.x - this.relativeCanvasReferencePoint.x,
 			this.canvasOffset.y + p.y - this.relativeCanvasReferencePoint.y
 		);
 	}
 
-	latLngToCanvasPoint(p: L.LatLng){
+	latLngToCanvasPoint(p: L.LatLng) {
 		return this.layerPointToCanvasPoint(this.map.map.latLngToLayerPoint(p));
 	}
 
-	setVisibilityPos(worldPoint: L.LatLng){
+	setVisibilityPos(worldPoint: L.LatLng) {
 		window.requestAnimationFrame(() => {
 			const p = this.latLngToCanvasPoint(worldPoint);
 
-			if(this.prevCanvasPos){
+			if (this.prevCanvasPos) {
 				this.multiCanvas.fillCircle(this.prevCanvasPos.x, this.prevCanvasPos.y, this.canvasRadius, "rgba(0, 0, 0, 0.3)");
 			}
 
@@ -116,7 +116,11 @@ export default class FogOfWar{
 		});
 	}
 
-	setVisibilityRadius(geoRadius: number){
+	setVisibilityRadius(geoRadius: number) {
+		if (this.prevCanvasPos) {
+			this.multiCanvas.fillCircle(this.prevCanvasPos.x, this.prevCanvasPos.y, this.canvasRadius, "rgba(0, 0, 0, 0.3)"); // high velocity fixes
+		}
+
 		const latLngBounds: L.LatLngBounds = this.map.map.getBounds();
 		const pixelBounds = this.map.map.getPixelBounds();
 
@@ -133,7 +137,7 @@ export default class FogOfWar{
 		this.canvasRadius = avgRatio * geoRadius / 2;
 	}
 
-	revealAll(){
+	revealAll() {
 		this.multiCanvas.clearRect(0, 0, this.canvasSize.x, this.canvasSize.y);
 	}
 

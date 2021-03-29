@@ -17,6 +17,7 @@ import { PlayerData } from "ts/networking/Socket";
 import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
 import { Color } from "ts/lib/Color";
 import MapObject from "ts/map/MapObject";
+import RestObject from "ts/map/RestObject";
 
 type TracingCallback = (route: L.Routing.IRoute) => void;
 
@@ -25,6 +26,7 @@ export interface PlayerStats {
 	maxEnergy: number;
 	score: number;
 	visibility: number;
+	originalVisibility: number;
 	walkedDistance: number;
 }
 
@@ -42,6 +44,7 @@ export interface PlayerInfo {
 	visibleMarkers: number[];
 	metersToVisibilityEnd: number;
 	markerInteractionRange: number;
+	restTimer: number;
 }
 
 export default class Player {
@@ -58,7 +61,7 @@ export default class Player {
 	private scoreDisplay: ScoreDisplay;
 	private targetPos: L.LatLng;
 	private activeRoute: L.Routing.IRoute;
-	private nearbyObjects: MapObject[] = null;
+	private nearbyObjects: (MapObject | RestObject)[] = null;
 
 	isLocalPlayer: boolean = true;
 	marker: L.Marker;
@@ -101,6 +104,7 @@ export default class Player {
 			maxEnergy: 10100000,
 			score: 0,
 			visibility: 0.005, // The radius of visible area in coord units
+			originalVisibility: 0.005,
 			walkedDistance: 0
 		};
 
@@ -117,7 +121,8 @@ export default class Player {
 			plyrData,
 			visibleMarkers: [],
 			metersToVisibilityEnd: startingPos.distanceTo(new L.LatLng(startingPos.lat + this.stats.visibility, startingPos.lng)),
-			markerInteractionRange: 0.001
+			markerInteractionRange: 0.001,
+			restTimer: 0
 		};
 
 		this.isLocalPlayer = socket === this.game.socket.id || socket === undefined;
@@ -206,19 +211,23 @@ export default class Player {
 		this.game.eventHandler.on("PlayerRest", async (res: GameEventData) => { this.onRestEvent(res); });
 
 		this.game.events.on("GameStateChanged", (newState: GameState, prevState: GameState) => {
-			if(newState !== GameState.PlayerInteracting && this.nearbyObjects){
+			if (newState !== GameState.PlayerInteracting && this.nearbyObjects) {
 				this.map.unhighlightObjects(this.nearbyObjects);
 				this.nearbyObjects = null;
 				return;
 			}
 
-			if(!this.hasTurn()) return;
-			if(newState !== GameState.PlayerInteracting) return;
+			if (!this.hasTurn()) return;
+			if (newState !== GameState.PlayerInteracting) return;
 
-			if(this.map.activeObject){
+			if (this.map.activeObject) {
+				if (this.map.activeObject instanceof RestObject) {
+					this.setTired(false);
+					return;
+				}
 				this.map.popOpenQuestion();
 			}
-			else{
+			else {
 				this.map.highlightObjects(this.nearbyObjects);
 			}
 		});
@@ -386,28 +395,53 @@ export default class Player {
 		}
 	}
 
-	getMapObjectsInRange(range: number = this.stats.visibility): MapObject[]{
-		const nearbyObjects: MapObject[] = [];
+	setTired(tired: boolean) {
+		if (tired && this.stats.originalVisibility / 2 !== this.stats.visibility) {
+			this.stats.visibility /= 2;
+			this.fow.setVisibilityRadius(this.stats.visibility);
+		} else if (!tired) {
+			this.stats.visibility = this.stats.originalVisibility;
+			this.info.restTimer = 0;
+			this.fow.setVisibilityRadius(this.stats.visibility);
+		}
+	}
 
-		for(const obj of Object.values(this.map.objectsByID)){
-			if(this.isPosInRange(obj.pos, range)) nearbyObjects.push(obj); // Perhaps there's a more efficient way of implementing this?
+	addTired() {
+		this.info.restTimer++;
+		const sleepyThreshold = 15;
+		Log.log("Epic counter" + this.info.restTimer);
+		if (this.info.restTimer > sleepyThreshold) {
+			this.setTired(true);
+		}
+	}
+
+	getMapObjectsInRange(range: number = this.stats.visibility): (MapObject | RestObject)[] {
+		const nearbyObjects: (MapObject | RestObject)[] = [];
+
+		for (const obj of Object.values(this.map.objectsByID)) {
+			if (this.isPosInRange(obj.pos, range)) nearbyObjects.push(obj); // Perhaps there's a more efficient way of implementing this?
+		}
+
+		for (const obj of Object.values(this.map.restObjs)) {
+			if (this.isPosInRange(obj.pos, range)) nearbyObjects.push(obj); // No there is not, deal with it.
 		}
 
 		return nearbyObjects;
 	}
 
 	private onRouteEnd() {
-		if(!this.isLocalPlayer) return;
+		if (!this.isLocalPlayer) return;
 
 		this.router.clearRoute();
 		this.map.map.dragging.enable();
 
 		this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
+		// Log.log(this.nearbyObjects);
 
-		if(this.nearbyObjects.length > 0) {
+		if (this.nearbyObjects.length > 0) {
 			this.game.setGameState(GameState.PlayerInteracting);
 		}
-		else{
+		else {
 			this.events.emit("ActionDone");
 		}
 	}
