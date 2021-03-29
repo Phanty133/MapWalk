@@ -197,6 +197,9 @@ export default class P2PGameEventHandler{
 		if(this.dispatchQueue.length > 0){
 			this.processEventDispatch(this.dispatchQueue.shift());
 		}
+		else{
+			this.waitingOnEvent = false;
+		}
 	}
 
 	private async processEventEffect(data: MessageData.EventEffect){
@@ -249,5 +252,7 @@ export default class P2PGameEventHandler{
 		Log.log(`Sending event (${event.type})`);
 		Log.log(event);
 		this.p2p.broadcast({ cmd: "event", event });
+
+		this.waitingOnEvent = true;
 	}
 }
