@@ -27,6 +27,8 @@ export default class P2PGameEventHandler{
 	public eventVerifiers: Record<string, EventVerifier> = {};
 	private eventCache: string[] = []; // IDs of cached events. Used to give process responses only when all previous events have been applied
 	private eventEffectQueue: MessageData.EventEffect[] = []; // A queue for event effects. Used to apply them in order
+	private waitingOnEvent: boolean = false;
+	private dispatchQueue: GameEvent[] = [];
 
 	constructor(game: Game){
 		this.game = game;
@@ -144,53 +146,57 @@ export default class P2PGameEventHandler{
 		if(selfManifestHash !== consensusHash){
 			Log.log("Own hash doesn't match the consensus hash!");
 			this.game.checkManifest(this.activeEvents[eventHash]);
-			return;
-		}
-
-		// Review event responses
-
-		let eventOKCount = 0;
-
-		for(const res of this.eventResponse[eventHash]){
-			if(res.manifestHash !== consensusHash){
-				Log.log("--------");
-				Log.log(`Peer's (${res.peer}) hash doesn't match the consensus hash!`);
-				Log.log(`Consensus hash: ${consensusHash}`);
-				Log.log(`Peer's hash: ${res.manifestHash}`);
-				Log.log(`Local manifest`);
-				Log.log(this.game.manifest.data);
-				Log.log("--------");
-				P2PLobby.send(this.p2p.channels[res.peer], { cmd: "checkManifest", triggerEvent: this.activeEvents[eventHash] });
-				continue;
-			}
-
-			if(res.response === GameEventResponse.Ok) eventOKCount++;
-		}
-
-		if(eventOKCount >= Math.ceil(this.eventResponse[eventHash].length / 2)){
-			Log.log(`Event (${this.activeEvents[eventHash].type}) was valid!`);
-
-			for(const res of this.eventResponse[eventHash]){
-				const targetChannel = this.p2p.channels[res.peer];
-
-				P2PLobby.send(targetChannel, { cmd: "eventEffect", event: this.activeEvents[eventHash], key: res.key });
-			}
-
-			await this.onEventAccepted(this.activeEvents[eventHash]);
 		}
 		else{
-			Log.log("Event was invalid!");
-			this.onEventDeclined(this.activeEvents[eventHash]);
-		}
+			// Review event responses
 
-		if(this.eventCache.length > 0){
-			const nextEvHash: string = this.eventCache[0];
-			this.processEventResponses(nextEvHash);
-			this.eventCache.splice(0, 1);
+			let eventOKCount = 0;
+
+			for(const res of this.eventResponse[eventHash]){
+				if(res.manifestHash !== consensusHash){
+					Log.log("--------");
+					Log.log(`Peer's (${res.peer}) hash doesn't match the consensus hash!`);
+					Log.log(`Consensus hash: ${consensusHash}`);
+					Log.log(`Peer's hash: ${res.manifestHash}`);
+					Log.log(`Local manifest`);
+					Log.log(this.game.manifest.data);
+					Log.log("--------");
+					P2PLobby.send(this.p2p.channels[res.peer], { cmd: "checkManifest", triggerEvent: this.activeEvents[eventHash] });
+					continue;
+				}
+
+				if(res.response === GameEventResponse.Ok) eventOKCount++;
+			}
+
+			if(eventOKCount >= Math.ceil(this.eventResponse[eventHash].length / 2)){
+				Log.log(`Event (${this.activeEvents[eventHash].type}) was valid!`);
+
+				for(const res of this.eventResponse[eventHash]){
+					const targetChannel = this.p2p.channels[res.peer];
+
+					P2PLobby.send(targetChannel, { cmd: "eventEffect", event: this.activeEvents[eventHash], key: res.key });
+				}
+
+				await this.onEventAccepted(this.activeEvents[eventHash]);
+			}
+			else{
+				Log.log("Event was invalid!");
+				this.onEventDeclined(this.activeEvents[eventHash]);
+			}
+
+			if(this.eventCache.length > 0){
+				const nextEvHash: string = this.eventCache[0];
+				this.processEventResponses(nextEvHash);
+				this.eventCache.splice(0, 1);
+			}
 		}
 
 		delete this.activeEvents[eventHash];
 		delete this.eventResponse[eventHash];
+
+		if(this.dispatchQueue.length > 0){
+			this.processEventDispatch(this.dispatchQueue.shift());
+		}
 	}
 
 	private async processEventEffect(data: MessageData.EventEffect){
@@ -225,9 +231,18 @@ export default class P2PGameEventHandler{
 	}
 
 	async dispatchEvent(event: GameEvent){
+		if(this.waitingOnEvent){
+			this.dispatchQueue.push(event);
+			return;
+		}
+
+		this.processEventDispatch(event);
+	}
+
+	private processEventDispatch(event: GameEvent){
 		this.activeEvents[event.hash] = event;
 
-		const hash = await this.manifest.getHash();
+		const hash = this.manifest.getHash();
 		event.manifestHash = hash;
 		event.origin = this.game.socket.id;
 
