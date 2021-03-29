@@ -135,6 +135,7 @@ export default class Game {
 
 			this.onManifestCheckComplete = () => {
 				Log.log("Manifest check complete!");
+				this.manifest.events = [];
 			};
 
 			this.bindP2PEvents();
@@ -162,7 +163,9 @@ export default class Game {
 		return plyr;
 	}
 
-	checkManifest() {
+	checkManifest(triggerEvent: GameEvent) {
+		this.manifest.eventQueue.push(triggerEvent);
+
 		if (this.manifestCheckActive) return;
 
 		// this._state = GameState.Sync;
@@ -197,7 +200,7 @@ export default class Game {
 
 	private bindP2PEvents(){
 		this.p2p.bindToChannel("checkManifest", (data: MessageData.CheckManifest) => {
-			this.checkManifest();
+			this.checkManifest(data.triggerEvent);
 		});
 
 		this.p2p.bindToChannel("getManifestHash", async (data: MessageData.GetManifestHash, channel: RTCDataChannel) => {
@@ -269,22 +272,27 @@ export default class Game {
 
 			let curManifestHash: string = await this.manifest.getHash();
 
-			while (this.manifest.eventQueue.length > 0) {
-				const nextEventIndex = this.manifest.eventQueue.findIndex(e => e.manifestHash === curManifestHash);
+			Log.log("Event queue");
+			Log.log([...this.manifest.eventQueue]);
 
-				if (nextEventIndex === null) {
+			while (this.manifest.eventQueue.length > 0) {
+				/* const nextEventIndex = this.manifest.eventQueue.findIndex(e => e.manifestHash === curManifestHash);
+
+				if (nextEventIndex === -1) {
 					Log.error("uh oh - unable to find an event with given manifest hash - desync error!");
-				}
+				} */
 
 				// Apply the event
-				this.manifest.events.push(this.manifest.eventQueue[nextEventIndex]);
-				// TODO: do something else
+				const ev = this.manifest.eventQueue.shift();
 
-				delete this.manifest.eventQueue[nextEventIndex];
+				if(this.manifest.events.includes(ev.hash)) continue;
+
+				this.manifest.events.push(ev.hash);
+				await this.eventHandler.eventEffectHandler(ev);
 
 				if (this.manifest.eventQueue.length > 0) {
 					// Recalculate hash if there are events in queue
-					curManifestHash = await this.manifest.getHash();
+					curManifestHash = this.manifest.getHash();
 				}
 			}
 

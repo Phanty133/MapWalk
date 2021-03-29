@@ -28,17 +28,47 @@ export default class GameEventHandler{
 			this.game.p2pEventHandler = this.p2pHandler;
 
 			this.p2pHandler.onEventAccepted = (e: GameEvent) => {
-				return this.fireEventCallbacks(e.type, { event: e, success: true, foreign: false, origin: this.game.socket.id });
+				if(this.game.manifestCheckActive){
+					this.game.manifest.eventQueue.push(e);
+					return;
+				}
+
+				return this.eventAcceptedHandler(e);
 			};
 
 			this.p2pHandler.onEventEffect = (e: GameEvent, origin: string) => {
-				return this.fireEventCallbacks(e.type, { event: e, success: true, foreign: true, origin });
+				if(this.game.manifestCheckActive){
+					this.game.manifest.eventQueue.push(e);
+					return;
+				}
+
+				return this.eventEffectHandler(e);
 			};
 
 			this.p2pHandler.onEventDeclined = (e: GameEvent) => {
-				return this.fireEventCallbacks(e.type, { event: e, success: false, foreign: false, origin: this.game.socket.id });
+				if(this.game.manifestCheckActive){
+					this.game.manifest.eventQueue.push(e);
+					return;
+				}
+
+				return this.eventDeclinedHandler(e);
 			}
 		}
+	}
+
+	eventAcceptedHandler(e: GameEvent){
+		this.game.manifest.events.push(e.hash);
+		return this.fireEventCallbacks(e.type, { event: e, success: true, foreign: false, origin: this.game.socket.id });
+	}
+
+	eventEffectHandler(e: GameEvent){
+		this.game.manifest.events.push(e.hash);
+		return this.fireEventCallbacks(e.type, { event: e, success: true, foreign: true, origin: e.origin });
+	}
+
+	eventDeclinedHandler(e: GameEvent){
+		this.game.manifest.events.push(e.hash);
+		return this.fireEventCallbacks(e.type, { event: e, success: false, foreign: false, origin: this.game.socket.id });
 	}
 
 	dispatchEvent(event: GameEvent){

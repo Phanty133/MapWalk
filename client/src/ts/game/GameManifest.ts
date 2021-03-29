@@ -8,15 +8,17 @@ import Log from "ts/lib/log";
 
 export interface GameManifestData{
 	players: Record<string, { info: PlayerInfo, stats: PlayerStats }>;
+	turnIndex: number;
 	curTime: number;
 	gameSettings: GameSettings;
 	state: GameState;
 	mapObjectData: MapObjectData[];
+	turnOrder: string[];
 }
 
 export default class GameManifest{ // Mainly of use only in multiplayer for game synchronization
 	data: GameManifestData;
-	events: GameEvent[] = [];
+	events: string[] = []; // Hashes of applied events
 	eventQueue: GameEvent[] = [];
 	private game: Game;
 
@@ -37,13 +39,14 @@ export default class GameManifest{ // Mainly of use only in multiplayer for game
 			playerData[id] = { info: plyr.info, stats: plyr.stats };
 		}
 
-		Log.log(this.game.clock.curTime);
 		this.data = {
 			players: playerData,
 			curTime: this.game.clock.curTime,
 			gameSettings: this.game.settings,
 			state: this.game.state,
-			mapObjectData: this.game.mapObjectData
+			mapObjectData: this.game.mapObjectData,
+			turnIndex: this.game.turnMan.activeIndex,
+			turnOrder: this.game.turnMan.playerOrder.map(plyr => plyr.info.socketID)
 		};
 	}
 
@@ -62,5 +65,7 @@ export default class GameManifest{ // Mainly of use only in multiplayer for game
 			this.game.playersByID[plyrID].updateInfo(this.data.players[plyrID].info)
 			this.game.playersByID[plyrID].updateStats(this.data.players[plyrID].stats);
 		}
+
+		this.game.turnMan.setTurn(this.data.turnIndex, this.data.turnOrder);
 	}
 }

@@ -70,6 +70,7 @@ export default class Player {
 	fow: FogOfWar;
 
 	events: EventEmitter = new EventEmitter();
+	private routeEndPromieResolve: () => void;
 
 	public get pos() {
 		return this.info.pos;
@@ -207,7 +208,7 @@ export default class Player {
 			this.moveToTarget(targetPos);
 		});
 
-		this.game.eventHandler.on("PlayerMove", async (res: GameEventData) => { this.onMoveEvent(res); });
+		this.game.eventHandler.on("PlayerMove", async (res: GameEventData) => { return this.onMoveEvent(res); });
 		this.game.eventHandler.on("PlayerRest", async (res: GameEventData) => { this.onRestEvent(res); });
 
 		this.game.events.on("GameStateChanged", (newState: GameState, prevState: GameState) => {
@@ -228,6 +229,8 @@ export default class Player {
 				this.map.popOpenQuestion();
 			}
 			else {
+				if (!this.nearbyObjects) this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);;
+
 				this.map.highlightObjects(this.nearbyObjects);
 			}
 		});
@@ -260,6 +263,8 @@ export default class Player {
 		}
 
 		if (this.isLocalPlayer) this.map.map.dragging.disable();
+
+		return new Promise<void>((res, rej) => { this.routeEndPromieResolve = res; });
 	}
 
 	moveToPoint(p: L.LatLng) {
@@ -277,7 +282,7 @@ export default class Player {
 		this.moveFractionPerSecond = this.speed / this.distanceToTarget;
 	}
 
-	private onMoveEvent(e: GameEventData) {
+	private async onMoveEvent(e: GameEventData) {
 		if (this.game.isMultiplayer && e.origin !== this.info.socketID) return;
 
 		this.activeRoute = e.event.data.route;
@@ -286,14 +291,14 @@ export default class Player {
 		this.stats.walkedDistance += distance;
 		this.drainEnergy(distance / this.metersPerEnergyUnit);
 
-		this.moveAlongRoute(this.activeRoute);
-
 		// If the game isn't multiplayer, update the time
 
 		if (!this.game.isMultiplayer) {
 			const visibilityFraction = GameMap.nonMetricDistanceTo(this.pos, e.event.data.targetPos) / this.stats.visibility;
 			this.game.clock.addTime(visibilityFraction * this.info.timeToVisibilityEnd);
 		}
+
+		return this.moveAlongRoute(this.activeRoute);
 	}
 
 	private onRestEvent(e: GameEventData) {
@@ -361,12 +366,17 @@ export default class Player {
 	}
 
 	rest() {
+		if (this.map.posMarker) {
+			this.map.cancelCurrentOrder();
+		}
+
 		const restEvent = new GameEvent("PlayerRest");
 		this.game.eventHandler.dispatchEvent(restEvent);
 	}
 
 	incrementScore() {
 		this.stats.score++;
+
 		if (this.isLocalPlayer) {
 			this.scoreDisplay.update();
 			this.game.checkGameEndCondition();
@@ -430,20 +440,22 @@ export default class Player {
 	}
 
 	private onRouteEnd() {
-		if (!this.isLocalPlayer) return;
+		if (this.isLocalPlayer) {
+			this.router.clearRoute();
+			this.map.map.dragging.enable();
 
-		this.router.clearRoute();
-		this.map.map.dragging.enable();
+			this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
 
-		this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
-		// Log.log(this.nearbyObjects);
-
-		if (this.nearbyObjects.length > 0) {
-			this.game.setGameState(GameState.PlayerInteracting);
+			if (this.nearbyObjects.length > 0) {
+				this.game.setGameState(GameState.PlayerInteracting);
+			}
+			else {
+				this.events.emit("ActionDone");
+			}
 		}
-		else {
-			this.events.emit("ActionDone");
-		}
+
+		this.routeEndPromieResolve();
+		this.routeEndPromieResolve = null;
 	}
 
 	private onFrame() {
