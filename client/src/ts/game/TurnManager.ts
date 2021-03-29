@@ -75,4 +75,13 @@ export default class TurnManager{
 	update(){
 		this.turnDisplay?.update();
 	}
+
+	setTurn(index: number, order?: string[]){
+		if(order){
+			this.playerOrder = order.map(id => this.game.playersByID[id]);
+		}
+
+		this.activeIndex = index;
+		this.update();
+	}
 }

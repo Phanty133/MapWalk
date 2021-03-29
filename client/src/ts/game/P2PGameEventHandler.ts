@@ -61,7 +61,7 @@ export default class P2PGameEventHandler{
 			if(eventValid){
 				response = GameEventResponse.Ok;
 
-				this.manifest.events.push(data.event);
+				this.manifest.events.push(data.event.hash);
 
 				const keypair = await this.genEventKeypair();
 				publicKey = await crypto.subtle.exportKey("jwk", keypair.publicKey);
@@ -72,8 +72,6 @@ export default class P2PGameEventHandler{
 					keypair.privateKey,
 					textEncoder.encode(data.event.hash)
 				);
-
-				Log.log(data.event.hash);
 			}
 
 			// Send the event origin the response with authorization for further action
@@ -145,7 +143,7 @@ export default class P2PGameEventHandler{
 
 		if(selfManifestHash !== consensusHash){
 			Log.log("Own hash doesn't match the consensus hash!");
-			this.game.checkManifest();
+			this.game.checkManifest(this.activeEvents[eventHash]);
 			return;
 		}
 
@@ -162,7 +160,7 @@ export default class P2PGameEventHandler{
 				Log.log(`Local manifest`);
 				Log.log(this.game.manifest.data);
 				Log.log("--------");
-				P2PLobby.send(this.p2p.channels[res.peer], { cmd: "checkManifest" });
+				P2PLobby.send(this.p2p.channels[res.peer], { cmd: "checkManifest", triggerEvent: this.activeEvents[eventHash] });
 				continue;
 			}
 
@@ -178,7 +176,7 @@ export default class P2PGameEventHandler{
 				P2PLobby.send(targetChannel, { cmd: "eventEffect", event: this.activeEvents[eventHash], key: res.key });
 			}
 
-			this.onEventAccepted(this.activeEvents[eventHash]);
+			await this.onEventAccepted(this.activeEvents[eventHash]);
 		}
 		else{
 			Log.log("Event was invalid!");
@@ -187,7 +185,6 @@ export default class P2PGameEventHandler{
 
 		if(this.eventCache.length > 0){
 			const nextEvHash: string = this.eventCache[0];
-			Log.log("indeed");
 			this.processEventResponses(nextEvHash);
 			this.eventCache.splice(0, 1);
 		}
@@ -206,7 +203,9 @@ export default class P2PGameEventHandler{
 
 		if(result){
 			Log.log(`Event (${data.event.type}) effect authorized!`);
-			this.onEventEffect(data.event, data.peer);
+			Log.log("effect1");
+			await this.onEventEffect(data.event, data.peer);
+			Log.log("effect2");
 		}
 		else{
 			Log.log(`Event (${data.event.type}) effect unauthorized!`);

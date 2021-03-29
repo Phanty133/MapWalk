@@ -220,6 +220,8 @@ export default class Player {
 				this.map.popOpenQuestion();
 			}
 			else{
+				if(!this.nearbyObjects) this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);;
+
 				this.map.highlightObjects(this.nearbyObjects);
 			}
 		});
@@ -355,12 +357,17 @@ export default class Player {
 	}
 
 	rest() {
+		if(this.map.posMarker){
+			this.map.cancelCurrentOrder();
+		}
+
 		const restEvent = new GameEvent("PlayerRest");
 		this.game.eventHandler.dispatchEvent(restEvent);
 	}
 
 	incrementScore() {
 		this.stats.score++;
+
 		if (this.isLocalPlayer) {
 			this.scoreDisplay.update();
 			this.game.checkGameEndCondition();
@@ -400,18 +407,18 @@ export default class Player {
 	}
 
 	private onRouteEnd() {
-		if(!this.isLocalPlayer) return;
+		if(this.isLocalPlayer) {
+			this.router.clearRoute();
+			this.map.map.dragging.enable();
 
-		this.router.clearRoute();
-		this.map.map.dragging.enable();
+			this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
 
-		this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
-
-		if(this.nearbyObjects.length > 0) {
-			this.game.setGameState(GameState.PlayerInteracting);
-		}
-		else{
-			this.events.emit("ActionDone");
+			if(this.nearbyObjects.length > 0) {
+				this.game.setGameState(GameState.PlayerInteracting);
+			}
+			else{
+				this.events.emit("ActionDone");
+			}
 		}
 
 		this.routeEndPromieResolve();

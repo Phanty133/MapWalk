@@ -65,7 +65,9 @@ export namespace MessageData{
 		manifestData: GameManifestData;
 	}
 
-	export interface  CheckManifest extends MessageDataBase{}
+	export interface  CheckManifest extends MessageDataBase{
+		triggerEvent: GameEvent
+	}
 
 	export interface ChatMessage extends MessageDataBase{
 		content: string;
