@@ -247,7 +247,7 @@ export default class GameMap {
 		this.popClosedQuestion();
 	}
 
-	highlightObjects(objects: MapObject[]) {
+	highlightObjects(objects: (MapObject | RestObject)[]) {
 		for (const obj of objects) {
 			obj.setState(MapObjectState.Highlighted);
 		}
@@ -261,7 +261,7 @@ export default class GameMap {
 			} */
 	}
 
-	unhighlightObjects(objects: MapObject[]) {
+	unhighlightObjects(objects: (MapObject | RestObject)[]) {
 		for (const obj of objects) {
 			obj.setState(MapObjectState.Default);
 		}
@@ -320,7 +320,7 @@ export default class GameMap {
 		}
 	}
 
-	countAnsweredObjects(): number{
+	countAnsweredObjects(): number {
 		return Object.values(this.objectsByID).filter(obj => obj.answered).length;
 	}
 }

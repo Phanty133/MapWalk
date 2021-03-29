@@ -32,6 +32,10 @@ export default class RestObject {
 	private fadeInTime = 500; // In ms
 	private state: MapObjectState;
 
+	public get answered() {
+		return false; // A rest object will never be answered.
+	}
+
 	public get pos() {
 		return this.data.location;
 	}
@@ -150,6 +154,7 @@ export default class RestObject {
 		}
 
 		this.map.activeObject = this;
+		this.game.localPlayer.setTired(false);
 	}
 
 	remove() {
