@@ -102,6 +102,7 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	game.createMap(objects, restObjects);
 	game.localPlayer = game.createPlayer(settings.location.pos);
 	game.localPlayer.createFogOfWar();
+	// game.localPlayer.fow.revealAll();
 
 	Log.log(settings);
 	Log.log(objects);
