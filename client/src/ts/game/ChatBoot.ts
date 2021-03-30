@@ -87,7 +87,7 @@ export default class ChatBoot {
 	}
 
 	private incorrectQuestion(id?: number) {
-		// this.invalidateQuestion(); -- Actually, I am unsure if I am supposed to discard the question on an incorrect answer
+		this.invalidateQuestion(); // -- Actually, I am unsure if I am supposed to discard the question on an incorrect answer
 
 		if (id) {
 			this.game.map.objectsByID[id].onIncorrectAnswer();
@@ -134,6 +134,9 @@ export default class ChatBoot {
 				if (rep === "correct" && DEBUG) {
 					this.correctQuestion();
 					return "Pareizi!";
+				} else {
+					this.incorrectQuestion();
+					return "Tas bija nepareizi.";
 				}
 			}
 
