@@ -36,7 +36,7 @@ export default class ChatBoot {
 					else {
 						const targetObj = this.game.map.objectsByID[e.event.data.objectID];
 
-						if (e.event.data.response === "correct") {
+						if (e.event.data.response === e.event.data.question) {
 							targetObj.onCorrectAnswer(e.origin);
 						}
 						else {
@@ -114,7 +114,8 @@ export default class ChatBoot {
 				const ansEvData: QuestionAnswerEventData = {
 					response: msg,
 					answer: this.currentAnswer,
-					objectID: this.game.map.activeObject.id
+					objectID: this.game.map.activeObject.id,
+					question: this.currentQ
 				};
 
 				this.game.eventHandler.dispatchEvent(new GameEvent("QuestionAnswer", ansEvData));

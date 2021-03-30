@@ -131,7 +131,7 @@ export default class Player {
 			restaurantTimeMin: 0, // Time (In minutes past 8AM) before which if a player visits a restaurant, it doesnt count
 			restaurantTimeMax: 20, // Time (in minutes past 8AM) after which the player gets a visibility debuff if he hasn't visited a restaurant
 			hungry: false,
-			spRestaurantTime: 30 // How long the player spends in a restaurant (SINGLEPLAYER ONLY)
+			spRestaurantTime: 360 // How long the player spends in a restaurant (SINGLEPLAYER ONLY)
 		};
 
 		this.isLocalPlayer = socket === this.game.socket.id || socket === undefined;
