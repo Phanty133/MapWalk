@@ -212,6 +212,10 @@ export default class Player {
 		this.game.eventHandler.on("PlayerRest", async (res: GameEventData) => { this.onRestEvent(res); });
 
 		this.game.events.on("GameStateChanged", (newState: GameState, prevState: GameState) => {
+			if(newState === GameState.PlayerAction && this.hasTurn()){
+				this.addTired();
+			}
+
 			if (newState !== GameState.PlayerInteracting && this.nearbyObjects) {
 				this.map.unhighlightObjects(this.nearbyObjects);
 				this.nearbyObjects = null;
@@ -223,9 +227,11 @@ export default class Player {
 
 			if (this.map.activeObject) {
 				if (this.map.activeObject instanceof RestObject) {
+					Log.log("Clear tired");
 					this.setTired(false);
 					return;
 				}
+
 				this.map.popOpenQuestion();
 			}
 			else {
@@ -236,8 +242,6 @@ export default class Player {
 		});
 
 		this.events.on("PlayerActionDone", () => {
-			this.addTired();
-
 			if(this.routeEndPromiseResolve){
 				this.routeEndPromiseResolve();
 				this.routeEndPromiseResolve = null;
@@ -247,6 +251,8 @@ export default class Player {
 				this.events.emit("PlayerPass");
 			}
 		});
+
+		this.game.eventHandler.on("Tired", (e: GameEventData) => { return this.onTiredEvent(e); });
 	}
 
 	moveToTarget(target: L.LatLng) {
@@ -377,7 +383,7 @@ export default class Player {
 	}
 
 	rest() {
-		if (this.map.posMarker) {
+		if (this.map.posMarker || this.router.activeRoute) {
 			this.map.cancelCurrentOrder();
 		}
 
@@ -416,18 +422,28 @@ export default class Player {
 		}
 	}
 
-	setTired(tired: boolean) {
-		if (tired && this.stats.originalVisibility / 2 !== this.stats.visibility) {
+	private async onTiredEvent(e: GameEventData){
+		if(!e.success || e.origin !== this.info.socketID) return;
+
+		if (e.event.data.tired && this.stats.originalVisibility / 2 !== this.stats.visibility) {
 			this.stats.visibility /= 2;
 			// Log.log("Zzzzzzzz");
-			this.fow.setVisibilityRadius(this.stats.visibility);
-		} else if (!tired) {
+			if(this.isLocalPlayer) this.fow.setVisibilityRadius(this.stats.visibility);
+		} else if (!e.event.data.tired) {
 			this.stats.visibility = this.stats.originalVisibility;
 			this.info.restTimer = 0;
 			// Log.log("No more being tired!");
-			this.fow.setVisibilityRadius(this.stats.visibility);
-			this.game.localPlayer.events.emit("ActionDone");
+			if(this.isLocalPlayer) this.fow.setVisibilityRadius(this.stats.visibility);
+			// this.events.emit("PlayerActionDone");
 		}
+
+		if(this.isLocalPlayer){
+			this.events.emit("PlayerActionDone");
+		}
+	}
+
+	setTired(tired: boolean) {
+		this.game.eventHandler.dispatchEvent(new GameEvent("Tired", { tired }));
 	}
 
 	addTired() {
@@ -455,11 +471,11 @@ export default class Player {
 	}
 
 	private onRouteEnd() {
+		this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
+
 		if (this.isLocalPlayer) {
 			this.router.clearRoute();
 			this.map.map.dragging.enable();
-
-			this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
 
 			if (this.nearbyObjects.length > 0) {
 				this.routeEndPromiseResolve();
@@ -471,8 +487,12 @@ export default class Player {
 				this.events.emit("PlayerActionDone");
 			}
 		}
-		else{
+		else if(this.nearbyObjects.length === 0){
 			this.events.emit("PlayerActionDone");
+		}
+		else{
+			this.routeEndPromiseResolve();
+			this.routeEndPromiseResolve = null;
 		}
 	}
 

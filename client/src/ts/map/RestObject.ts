@@ -134,7 +134,6 @@ export default class RestObject {
 	}
 
 	private clickHandler() {
-
 		if (!this.game.localPlayer.hasTurn()) return;
 		if (this.state === MapObjectState.Active) return;
 
@@ -153,8 +152,8 @@ export default class RestObject {
 			return;
 		}
 
-		this.map.activeObject = this;
-		this.game.localPlayer.setTired(false);
+		// this.map.activeObject = this;
+		this.game.turnMan.activePlayer.setTired(false);
 	}
 
 	remove() {

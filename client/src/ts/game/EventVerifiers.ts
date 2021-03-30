@@ -32,4 +32,8 @@ export default function bindEventVerifiers(p2p: P2PGameEventHandler){
 	p2p.eventVerifiers.GameEnd = async (e: GameEvent, game: Game) => {
 		return true;
 	};
+
+	p2p.eventVerifiers.Tired = async (e: GameEvent, game: Game) => {
+		return true;
+	}
 }

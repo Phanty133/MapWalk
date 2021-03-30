@@ -178,10 +178,17 @@ export default class P2PGameEventHandler{
 	private async processEventEffect(data: MessageData.EventEffect){
 		Log.log("effect!");
 
-		const signature = this.eventSignatures[data.event.hash];
-		const dataToBeVerified = new TextEncoder().encode(data.event.hash);
-		const publicKey = await crypto.subtle.importKey("jwk", data.key, P2PGameEventHandler.encryptionAlgorithm, false, ["verify"]);
-		const result = await crypto.subtle.verify(P2PGameEventHandler.encryptionAlgorithm, publicKey, signature, dataToBeVerified);
+		let result = false;
+
+		if(data.key){
+			const signature = this.eventSignatures[data.event.hash];
+			const dataToBeVerified = new TextEncoder().encode(data.event.hash);
+			const publicKey = await crypto.subtle.importKey("jwk", data.key, P2PGameEventHandler.encryptionAlgorithm, false, ["verify"]);
+			result = await crypto.subtle.verify(P2PGameEventHandler.encryptionAlgorithm, publicKey, signature, dataToBeVerified);
+		}
+		else{
+			result = true; // :(
+		}
 
 		if(result){
 			Log.log(`Event (${data.event.type}) effect authorized!`);

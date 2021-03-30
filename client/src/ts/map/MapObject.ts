@@ -197,7 +197,13 @@ export default class MapObject {
 		}
 
 		this.setState(MapObjectState.Default);
-		this.game.localPlayer.events.emit("PlayerActionDone");
+
+		if(origin){
+			this.game.playersByID[origin].events.emit("PlayerActionDone");
+		}
+		else{
+			this.game.localPlayer.events.emit("PlayerActionDone");
+		}
 	}
 
 	onIncorrectAnswer(origin?: string) {
