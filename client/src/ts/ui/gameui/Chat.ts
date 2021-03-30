@@ -61,6 +61,10 @@ export default class Chat{
 
 				this.addMessage(chatMsgData);
 			});
+
+			this.game.p2p.events.on("PlayerDisconnected", (peer: string) => {
+				this.addSystemMessage(`${this.game.playersByID[peer].info.plyrData.username} has disconnected!`);
+			});
 		}
 	}
 
@@ -87,6 +91,16 @@ export default class Chat{
 				authorColor: "#FFAA00"
 			});
 		}
+	}
+
+	addSystemMessage(text: string){
+		this.messages.push(new ChatMessage(this.chatMessageContainer, { content: text, author: null, authorColor: "#FFAA00" }));
+		const i = this.messages.length - 1;
+
+		setTimeout(() => {
+			this.messages[i].kill();
+			delete this.messages[i];
+		}, ChatMessage.timeTillFade + ChatMessage.fadeTime);
 	}
 
 	addMessage(data: ChatMessageData){

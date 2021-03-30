@@ -481,8 +481,6 @@ export default class Player {
 	private setLocalHungryState(hungry: boolean){
 		this.info.hungry = hungry;
 
-		Log.log("local hungry state: " + this.info.plyrData.username);
-
 		if(hungry){
 			this.stats.visibility /= 2;
 		}

@@ -156,6 +156,8 @@ export default class P2PLobby{
 					this.channels[data.peer].close();
 					this.peers[data.peer].close();
 
+					this.events.emit("PlayerDisconnected", data.peer);
+
 					delete this.peers[data.peer];
 					delete this.channels[data.peer];
 					break;
