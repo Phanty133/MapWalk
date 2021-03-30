@@ -153,7 +153,8 @@ export default class RestObject {
 		}
 
 		// this.map.activeObject = this;
-		this.game.turnMan.activePlayer.setTired(false);
+		// this.game.turnMan.activePlayer.setTired(false);
+		this.game.turnMan.activePlayer.setRestaurantVisited(true);
 	}
 
 	remove() {

@@ -45,6 +45,8 @@ export default class TurnManager {
 		if (this.activePlayer === this.game.localPlayer) {
 			this.game.setGameState(GameState.PlayerAction);
 		}
+
+		this.game.events.emit("NextTurn");
 	}
 
 	addPlayer(plyr: Player) {

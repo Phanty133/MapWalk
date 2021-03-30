@@ -44,7 +44,11 @@ export interface PlayerInfo {
 	visibleMarkers: number[];
 	metersToVisibilityEnd: number;
 	markerInteractionRange: number;
-	restTimer: number;
+	hasVisitedRestaurant: boolean;
+	restaurantTimeMax: number;
+	restaurantTimeMin: number;
+	hungry: boolean;
+	spRestaurantTime: number;
 }
 
 export default class Player {
@@ -123,7 +127,11 @@ export default class Player {
 			visibleMarkers: [],
 			metersToVisibilityEnd: startingPos.distanceTo(new L.LatLng(startingPos.lat + this.stats.visibility, startingPos.lng)),
 			markerInteractionRange: 0.001,
-			restTimer: 0
+			hasVisitedRestaurant: false,
+			restaurantTimeMin: 0, // Time (In minutes past 8AM) before which if a player visits a restaurant, it doesnt count
+			restaurantTimeMax: 20, // Time (in minutes past 8AM) after which the player gets a visibility debuff if he hasn't visited a restaurant
+			hungry: false,
+			spRestaurantTime: 30 // How long the player spends in a restaurant (SINGLEPLAYER ONLY)
 		};
 
 		this.isLocalPlayer = socket === this.game.socket.id || socket === undefined;
@@ -212,10 +220,6 @@ export default class Player {
 		this.game.eventHandler.on("PlayerRest", async (res: GameEventData) => { this.onRestEvent(res); });
 
 		this.game.events.on("GameStateChanged", (newState: GameState, prevState: GameState) => {
-			if(newState === GameState.PlayerAction && this.hasTurn()){
-				this.addTired();
-			}
-
 			if (newState !== GameState.PlayerInteracting && this.nearbyObjects) {
 				this.map.unhighlightObjects(this.nearbyObjects);
 				this.nearbyObjects = null;
@@ -226,9 +230,14 @@ export default class Player {
 			if (newState !== GameState.PlayerInteracting) return;
 
 			if (this.map.activeObject) {
-				if (this.map.activeObject instanceof RestObject) {
-					Log.log("Clear tired");
-					this.setTired(false);
+				// if (this.map.activeObject instanceof RestObject) {
+				// 	Log.log("Clear tired");
+				// 	this.setTired(false);
+				// 	return;
+				// }
+
+				if(this.map.activeObject instanceof RestObject){
+					this.setRestaurantVisited(true);
 					return;
 				}
 
@@ -252,7 +261,19 @@ export default class Player {
 			}
 		});
 
-		this.game.eventHandler.on("Tired", (e: GameEventData) => { return this.onTiredEvent(e); });
+		this.game.eventHandler.on("RestaurantVisited", (e: GameEventData) => { return this.onRestaurantEvent(e); });
+
+		this.game.clock.events.on("NewDay", () => { this.info.hasVisitedRestaurant = false; });
+		this.game.events.on("NextTurn", () => {
+			if(this.game.turnMan.activePlayer !== this) return;
+			if(!this.info.hasVisitedRestaurant && !this.info.hungry && this.game.clock.dayTime >= this.info.restaurantTimeMax){
+				this.game.eventHandler.dispatchEvent(new GameEvent("PlayerHungry"));
+			}
+		});
+
+		this.game.eventHandler.on("PlayerHungry", (e: GameEventData) => { return this.onHungryEvent(e); })
+
+		// this.game.eventHandler.on("Tired", (e: GameEventData) => { return this.onTiredEvent(e); });
 	}
 
 	moveToTarget(target: L.LatLng) {
@@ -422,38 +443,46 @@ export default class Player {
 		}
 	}
 
-	private async onTiredEvent(e: GameEventData){
-		if(!e.success || e.origin !== this.info.socketID) return;
-
-		if (e.event.data.tired && this.stats.originalVisibility / 2 !== this.stats.visibility) {
-			this.stats.visibility /= 2;
-			// Log.log("Zzzzzzzz");
-			if(this.isLocalPlayer) this.fow.setVisibilityRadius(this.stats.visibility);
-		} else if (!e.event.data.tired) {
-			this.stats.visibility = this.stats.originalVisibility;
-			this.info.restTimer = 0;
-			// Log.log("No more being tired!");
-			if(this.isLocalPlayer) this.fow.setVisibilityRadius(this.stats.visibility);
-			// this.events.emit("PlayerActionDone");
+	setRestaurantVisited(visited: boolean){
+		if(this.game.clock.dayTime >= this.info.restaurantTimeMin){
+			this.game.eventHandler.dispatchEvent(new GameEvent("RestaurantVisited", { visited }));
 		}
-
-		if(this.isLocalPlayer){
+		else{
 			this.events.emit("PlayerActionDone");
 		}
 	}
 
-	setTired(tired: boolean) {
-		this.game.eventHandler.dispatchEvent(new GameEvent("Tired", { tired }));
+	private async onRestaurantEvent(e: GameEventData){
+		if(e.origin !== this.info.socketID && this.game.isMultiplayer) return;
+
+		this.info.hasVisitedRestaurant = e.event.data.visited;
+
+		if(e.event.data.visited && this.info.hungry){
+			this.setLocalHungryState(false);
+		}
+
+		if(!this.game.isMultiplayer) this.game.clock.addTime(this.info.spRestaurantTime);
+
+		this.events.emit("PlayerActionDone");
 	}
 
-	addTired() {
-		this.info.restTimer++;
-		const sleepyThreshold = 15;
-		Log.log("Epic counter" + this.info.restTimer);
+	private async onHungryEvent(e: GameEventData){
+		if(e.origin !== this.info.socketID && this.game.isMultiplayer) return;
 
-		if (this.info.restTimer > sleepyThreshold) {
-			this.setTired(true);
+		this.setLocalHungryState(true);
+	}
+
+	private setLocalHungryState(hungry: boolean){
+		this.info.hungry = hungry;
+
+		if(hungry){
+			this.stats.visibility /= 2;
 		}
+		else{
+			this.stats.visibility = this.stats.originalVisibility;
+		}
+
+		if(this.isLocalPlayer) this.fow.setVisibilityRadius(this.stats.visibility);
 	}
 
 	getMapObjectsInRange(range: number = this.stats.visibility): (MapObject | RestObject)[] {

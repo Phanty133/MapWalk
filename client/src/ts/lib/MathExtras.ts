@@ -29,4 +29,12 @@ export default class MathExtras{
 		if(x > max) return max;
 		return x;
 	}
+
+	static inRangeInclusive(x: number, min: number, max: number){
+		return x >= min && x <= max;
+	}
+
+	static inRangeExclusive(x: number, min: number, max: number){
+		return x > min && x < max;
+	}
 }

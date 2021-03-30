@@ -1,4 +1,5 @@
 import Game, { GameState } from "ts/game/Game";
+import Log from "ts/lib/log";
 
 export class SkipButton{
 	private btnEl: HTMLButtonElement;
@@ -13,7 +14,7 @@ export class SkipButton{
 	}
 
 	private onGameState(newState: GameState){
-		if(newState === GameState.PlayerInteracting && this.game.localPlayer.hasTurn()){
+		if(newState === GameState.PlayerInteracting && this.game.localPlayer.hasTurn() && this.game.isMultiplayer){
 			this.btnEl.style.display = "block";
 		}
 		else{

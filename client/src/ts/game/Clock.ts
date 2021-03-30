@@ -1,8 +1,11 @@
+import { EventEmitter } from "events";
+
 export default class Clock{
 	private static startTime: number = 480; // How many minutes to append to the curTime
 
 	curTime: number = 0; // Cur game time in minutes
 	private timeEl: HTMLSpanElement;
+	events: EventEmitter = new EventEmitter();
 
 	public get timeString(): string{
 		const offsetTime = this.curTime + Clock.startTime;
@@ -20,6 +23,10 @@ export default class Clock{
 		return this.timeStringFromTime(hours, min);
 	}
 
+	public get dayTime(): number{
+		return this.curTime % 1440;
+	}
+
 	constructor(){
 		this.timeEl = document.getElementById("gameTime");
 		this.updateTimeEl();
@@ -33,8 +40,14 @@ export default class Clock{
 	}
 
 	addTime(n: number){ // Add minutes
+		const prevTime = this.curTime;
+
 		this.curTime += Math.floor(n);
 		this.updateTimeEl();
+
+		if(prevTime % 1440 > prevTime % 1440){ // New day
+			this.events.emit("NewDay");
+		}
 	}
 
 	private updateTimeEl(){
