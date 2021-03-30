@@ -1,4 +1,8 @@
 import "css/index.css"
+
+import iconEnergy from "img/IconEnergy.svg"
+import iconScore from "img/IconScore.svg"
+
 import { MapObjectData } from "ts/map/MapObject"
 import Lobby from "ts/networking/Lobby"
 import * as Cookies from "js-cookie"
@@ -25,6 +29,8 @@ document.body.onload = () => {
 	};
 
 	cb();
+
+	loadIcons();
 };
 
 function loadPreGame() {
@@ -163,4 +169,15 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 			}
 		}
 	});
+}
+
+function loadIcons(){ // jank
+	document.getElementById("iconEnergy").setAttribute("src", iconEnergy);
+	document.getElementById("iconScore").setAttribute("src", iconScore);
+
+	/* const colonSpan = document.getElementById("gameTimeColon") as HTMLSpanElement;
+
+	setInterval(() => {
+		colonSpan.style.visibility = colonSpan.style.visibility === "hidden" ? "visible" : "hidden";
+	}, 1000); */
 }

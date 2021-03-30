@@ -187,7 +187,7 @@ body{
 	display: none;
 	grid-template-areas: "header header" "settings users" "chat users" "chat buttons";
 	grid-template-columns: 25vw 50vw;
-	grid-template-rows: auto 32.5vh 27.5vh auto;
+	grid-template-rows: auto 32.5vh 27.5vh 7vh;
 	gap: 5px;
 
 	width: 75vw;
@@ -229,6 +229,7 @@ body{
 	display: grid;
 	grid-auto-flow: row;
 	overflow-y: auto;
+	row-gap: 5px;
 
 	grid-template-rows: auto 1fr auto;
 }
@@ -558,10 +559,6 @@ body{
 	visibility: visible;
 }
 
-#gameEnergyContainer{
-	color: orange;
-}
-
 #questionImageContainer{
 	max-width: 100%;
 	max-height: 100%;
@@ -570,26 +567,6 @@ body{
 #questionImageContainer img{
 	width: 100%;
 	height: auto;
-}
-
-#gameStatsUI{
-	position: absolute;
-	display: grid;
-	grid-auto-flow: row;
-	bottom: 5%;
-	left: 2.5%;
-	row-gap: 10px;
-}
-
-#gameStatsUI > div{
-	background-color: grey;
-	border: 5px solid black;
-	font-size: 3vw;
-	padding: 0.25em 0.5em 0.25em 0.5em;
-}
-
-#gameScoreContainer{
-	color: green;
 }
 
 #gameTurnInfo{
@@ -616,6 +593,8 @@ body{
 
 #chatMessageContainer > span{
 	width: 100%;
+	/* font-weight: bold; */
+	/* -webkit-text-stroke: 1px black; */
 }
 
 #chatInput{
@@ -727,4 +706,70 @@ body{
 
 #gamePlayAgain{
 	background-color: #00b8cc;
+}
+
+#gameStatsUI{
+	position: absolute;
+	display: grid;
+	grid-auto-flow: column;
+	top: 0;
+	right: 5%;
+	row-gap: 10px;
+	column-gap: 1.5em;
+	/* background-color: grey; */
+	font-size: 4vh;
+	padding: 0.25em 0.5em 0.25em 0.5em;
+}
+
+.gameStatContainer{
+	display:grid;
+	grid-template-columns: 1fr auto;
+	column-gap: 0.5em;
+	padding: 0.1em 0.2em 0.1em 0.2em;
+	/* background-color: rgba(50, 50, 50, 0.5); */
+	border-radius: 5px;
+}
+
+.gameStatIconContainer{
+	width: 0.9em;
+	height: 0.9em;
+
+	display: flex;
+	align-self: center;
+	justify-self: left;
+}
+
+.gameStatIconContainer img{
+	max-width: 100%;
+	max-height: 100%;
+	/* -webkit-text-stroke: 1px black; */
+}
+
+.gameStatContainer span{
+	-webkit-text-stroke: 1px black;
+	color: white;
+}
+
+#gameScoreContainer{
+	color: #328035;
+}
+
+#gameEnergyContainer{
+	color: #ff7d00;
+}
+
+#gameTimeContainer{
+	position: absolute;
+	right: 1em;
+	bottom: 0.75em;
+	-webkit-text-stroke: 1px black;
+	background-color: #33333388;
+	font-size: 6vh;
+	padding: 0.1em 0.2em 0.1em 0.2em;
+	border-radius: 5px;
+}
+
+#gameTimeColon{
+	position: relative;
+	bottom: 5px;
 }

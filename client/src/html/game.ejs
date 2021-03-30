@@ -4,15 +4,15 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>M4pW4lk</title>
+	<title>M4pW4lk.js</title>
 </head>
 <body>
 	<div id="game">
 		<div id="map"></div>
 		<div id="ui">
-			<h1>The chungus is now real</h1>
+			<!-- <h1>The chungus is now real</h1> -->
 			<div id="qotd" hidden></div>
-			<h1 id="gameTurnInfo">derp</h1>
+			<h1 id="gameTurnInfo"></h1>
 
 			<div id="chatZoneContainer">
 				<div id="chatZone">
@@ -38,17 +38,19 @@
 			</div>
 
 			<div id="gameStatsUI">
-				<div id="gameEnergyContainer">
+				<div id="gameEnergyContainer" class="gameStatContainer">
+					<div class="gameStatIconContainer"><img src="img/IconEnergy.svg" alt="Energy" id="iconEnergy"></div>
 					<span id="gameEnergy">100</span>
 				</div>
 	
-				<div id="gameScoreContainer">
+				<div id="gameScoreContainer" class="gameStatContainer">
+					<div class="gameStatIconContainer"><img src="img/IconScore.svg" alt="Score" id="iconScore"></div>
 					<span id="gameScore">0</span>
 				</div>
-				
-				<div id="gameTimeContainer">
-					<span id="gameTime">00:00</span>
-				</div>
+			</div>
+
+			<div id="gameTimeContainer">
+				<span id="gameTime">00<span id="gameTimeColon">:</span>00</span>
 			</div>
 
 			<div id="chatOverlay">

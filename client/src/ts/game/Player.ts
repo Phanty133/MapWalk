@@ -1,7 +1,7 @@
 import * as L from "leaflet";
 import Log from "ts/lib/log";
 import PlayerRouter from "ts/map/PlayerRouter";
-import playerSVG from "img/MarkerPlayer.svg";
+import playerSVG from "img/MarkerPlayer_opaque.svg";
 import "leaflet-routing-machine";
 import GameMap from "ts/map/GameMap";
 import Game, { GameState } from "./Game";
@@ -105,8 +105,8 @@ export default class Player {
 		this.game = game;
 
 		this.stats = {
-			energy: 10100000,
-			maxEnergy: 10100000,
+			energy: 100,
+			maxEnergy: 100,
 			score: 0,
 			visibility: 0.005, // The radius of visible area in coord units
 			originalVisibility: 0.005,
@@ -120,7 +120,7 @@ export default class Player {
 			speed: 0.005, // Units/sec
 			active: false, // Whether the player can perform an action
 			moving: false,
-			metersPerEnergyUnit: 10,
+			metersPerEnergyUnit: 20,
 			socketID: socket,
 			hasPerformedAction: false, // Whether the player has performed an action during the current turn
 			plyrData,
