@@ -35,5 +35,335 @@
 			"indeed"
 		],
 		"answer": "correct"
+	},
+	"q1": {
+		"questions": [
+			"2007. gadā"
+		],
+		"answer": "Kad Spīķeris piedzīvoja atdzimšanu?"
+	},
+	"q2": {
+		"questions": [
+			"18. gadsimtā"
+		],
+		"answer": "Kad spīķeri tika uzcelti?"
+	},
+	"q3": {
+		"questions": [
+			"zirgkasteņu un melnalkšņu alejas"
+		],
+		"answer": "Kas norobežo parku no ielām?"
+	},
+	"q4": {
+		"questions": [
+			"galveniem gājēju virzieniem"
+		],
+		"answer": "Kādiem virzieniem atbilst starpceliņi?"
+	},
+	"q5": {
+		"questions": [
+			"klinšu kāpšanā"
+		],
+		"answer": "Kur var izmēģināt spēkus LOC Alpīnisma Sienā?"
+	},
+	"q6": {
+		"questions": [
+			"hk liepāja"
+		],
+		"answer": "Kāda kommanda ir pataisījusi šo halli par savu mājvietu?"
+	},
+	"q7": {
+		"questions": [
+			"150"
+		],
+		"answer": "Cik jauno hokejistu trennējas šajā hallē?"
+	},
+	"q8": {
+		"questions": [
+			"mūzikas"
+		],
+		"answer": "Kā galvaspilsēta ir Liepāja?"
+	},
+	"q9": {
+		"questions": [
+			"vides"
+		],
+		"answer": "Kā dizaina objekts ir šīs bungas?"
+	},
+	"q10": {
+		"questions": [
+			"1920. gadā"
+		],
+		"answer": "Kad pilsētas dome atļāva iekārtot futbola laukumu stadionā?"
+	},
+	"q11": {
+		"questions": [
+			"motokrosi un autosacīkstes"
+		],
+		"answer": "Kas tika rīkots deviņdesmitajos?"
+	},
+	"q12": {
+		"questions": [
+			"bez būtiskām pārmaiņām"
+		],
+		"answer": "Kā Liepājas bāka ir saglabājusies līdz mūsdienām?"
+	},
+	"q13": {
+		"questions": [
+			"tirdzniecības kanāla dienvidu krastā"
+		],
+		"answer": "Kur atrodas Liepājas bāka?"
+	},
+	"q14": {
+		"questions": [
+			"bmx braucēji, skrituļslidotāji, skrituļdēļu entuziasti"
+		],
+		"answer": "Kas pulcējas šajā parkā?"
+	},
+	"q15": {
+		"questions": [
+			"4.2 metri"
+		],
+		"answer": "Cik augsts ir augstākais stīgu punkts?"
+	},
+	"q16": {
+		"questions": [
+			"3 metri"
+		],
+		"answer": "Cik augsts ir zemākais stīgu punkts?"
+	},
+	"q17": {
+		"questions": [
+			"otrais"
+		],
+		"answer": "Kurš pēc kārtas ir šis viedais luksofors?"
+	},
+	"q18": {
+		"questions": [
+			"lmt"
+		],
+		"answer": "Kas uzstādija šo luksoforu?"
+	},
+	"q19": {
+		"questions": [
+			"uliha un robežu ielas krustojumā"
+		],
+		"answer": "Kur atrodas šis luksofors?"
+	},
+	"q20": {
+		"questions": [
+			"nolasa un fiksē automašīnas numuru, ja automašīna šķērsojusi zem sarkanā"
+		],
+		"answer": "Ko dara šis luksofors?"
+	},
+	"q21": {
+		"questions": [
+			"4022 skatītājus"
+		],
+		"answer": "Cik skatītājus var uzņemt stadions?"
+	},
+	"q22": {
+		"questions": [
+			"futbola čempionātiem liepājā"
+		],
+		"answer": "Kam tiek šis stadions izmantots?"
+	},
+	"q23": {
+		"questions": [
+			"divas"
+		],
+		"answer": "Cik ērģeles ir baznīcā?"
+	},
+	"q24": {
+		"questions": [
+			"1790. gadā"
+		],
+		"answer": "Kad Liepājā pirmo reizi tika iespiests Kanta darbs “Spriešanas Spēles Kritika”?"
+	},
+	"q25": {
+		"questions": [
+			"700 metri"
+		],
+		"answer": "Cik garš ir mols?"
+	},
+	"q26": {
+		"questions": [
+			"1997. gadam"
+		],
+		"answer": "Līdz kuram gadam tika izmantots šis cietums?"
+	},
+	"q27": {
+		"questions": [
+			"1906. gadā"
+		],
+		"answer": "Kad šis tilts tika atklāts?"
+	},
+	"q28": {
+		"questions": [
+			"liepājnieki"
+		],
+		"answer": "Kas sarūpēja dzintaru pulkstenim?"
+	},
+	"q29": {
+		"questions": [
+			"pilsētā, kurā piedzimst vējš"
+		],
+		"answer": "Kāda ir Liepākas himna?"
+	},
+	"q30": {
+		"questions": [
+			"34"
+		],
+		"answer": "Cik studiju programmas ir Liepājas Universitātē?"
+	},
+	"q31": {
+		"questions": [
+			"bmx, frīstaila, inline braucēju"
+		],
+		"answer": "Kas par trasi šī trase ir?"
+	},
+	"q32": {
+		"questions": [
+			"4km"
+		],
+		"answer": "Cik gara ir šī taka?"
+	},
+	"q33": {
+		"questions": [
+			"laivinieks"
+		],
+		"answer": "Kāds ir viens no Liepājas simboliem?"
+	},
+	"q34": {
+		"questions": [
+			"loc baseins spa"
+		],
+		"answer": "Kas ir lielākais baseinu un SPA centrs Kurzemē?"
+	},
+	"q35": {
+		"questions": [
+			"pieci"
+		],
+		"answer": "Cik slēgti tenisa korti ir hallē?"
+	},
+	"q36": {
+		"questions": [
+			"kristaps porzinģis"
+		],
+		"answer": "Kurš uzdāvināja basketbola kortu rotaļu laukumam?"
+	},
+	"q37": {
+		"questions": [
+			"izmēģināt tehnoloģijas un piedāvāt dabas likumus"
+		],
+		"answer": "Ko centrs piedāvā?"
+	},
+	"q38": {
+		"questions": [
+			"koncertus un pasākumus"
+		],
+		"answer": "Izņemot izstādes, ko vēl var apskatīt Latviešu biedrības namā?"
+	},
+	"q39": {
+		"questions": [
+			"audio ierakstiem un mēģinājumiem"
+		],
+		"answer": "Kam radošie kolektīvi izmanto šo namu?"
+	},
+	"q40": {
+		"questions": [
+			"latviešu un krievu"
+		],
+		"answer": "Kādā valodā var redzēt leļļu izrādes teātrī?"
+	},
+	"q41": {
+		"questions": [
+			"no akmens laikmeta līdz 19. gadsimtam"
+		],
+		"answer": "Kāda perioda Liepājas vēsturi var apskatīt muzejā?"
+	},
+	"q42": {
+		"questions": [
+			"ekskursijas"
+		],
+		"answer": "Ko vēl piedāvā teātris izņemot izrādes?"
+	},
+	"q43": {
+		"questions": [
+			"liepājas koncertzāli, tirdzniecības kanāla jahtu piestātnēm, zvejas kuģīšiem, rosīgiem ostas strādniekiem"
+		],
+		"answer": "Uz kurieni paveras skats no promenādes?"
+	},
+	"q44": {
+		"questions": [
+			"bojā gājušiem zvejniekiem un jūrniekiem"
+		],
+		"answer": "Priekš kam tika uzstādīts piemineklis?"
+	},
+	"q45": {
+		"questions": [
+			"strūklaka"
+		],
+		"answer": "Kas laukumā ir īstens bērnu magnēts?"
+	},
+	"q46": {
+		"questions": [
+			"krokusi, narcises, tulpes"
+		],
+		"answer": "Kas pavasarī uzplaukst šajā laukumā?"
+	},
+	"q47": {
+		"questions": [
+			"vasaras vakaros"
+		],
+		"answer": "Kad pagalms ir dzīvības pilns?"
+	},
+	"q48": {
+		"questions": [
+			"39"
+		],
+		"answer": "Cik plāksnes ar mūziķu plaukstām ir atrodamas slavas alejā?"
+	},
+	"q49": {
+		"questions": [
+			"vides zinātni"
+		],
+		"answer": "Ko ir iespējams iepazīt Dabas mājā?"
+	},
+	"q50": {
+		"questions": [
+			"grupai līvi"
+		],
+		"answer": "Kam ir veltīts Spoku koks?"
+	},
+	"q51": {
+		"questions": [
+			"1910. gadā"
+		],
+		"answer": "Kad tika atklāts Tirgus paviljons?"
+	},
+	"q52": {
+		"questions": [
+			"trenažieri un ielu vingrošanas laukums"
+		],
+		"answer": "Kas Jūrmalas parkā ir līdzās laukumam?"
+	},
+	"q53": {
+		"questions": [
+			"kurzemē"
+		],
+		"answer": "Kur šī katedrāle ir lielākā?"
+	},
+	"q54": {
+		"questions": [
+			"rokoko"
+		],
+		"answer": "Kāda stila glezniecība ir raksturīga katedrālei?"
+	},
+	"q55": {
+		"questions": [
+			"viesnīca, biroji , restorāns un veikali"
+		],
+		"answer": "Kas tagad atrodas Romas dārzā?"
 	}
 }
