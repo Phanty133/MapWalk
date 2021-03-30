@@ -3,23 +3,23 @@ import Game from "ts/game/Game";
 import createElement from "ts/lib/createElement";
 import Log from "ts/lib/log";
 
-export default class ChatBotUI{
+export default class ChatBotUI {
 	private game: Game;
 	private container: HTMLElement;
 	private _active: boolean = false;
 
-	public get active(): boolean{
+	public get active(): boolean {
 		return this._active;
 	}
 
-	constructor(game: Game){
+	constructor(game: Game) {
 		this.game = game;
 		this.container = document.getElementById("chatZoneContainer");
 
 		this.bindEvents();
 	}
 
-	private bindEvents(){
+	private bindEvents() {
 		document.getElementById("speech").addEventListener("keydown", (ev) => {
 			if (ev.key === "Enter") {
 				ev.preventDefault();
@@ -46,15 +46,15 @@ export default class ChatBotUI{
 		});
 	}
 
-	open(){
-		if(this.active) return;
+	open() {
+		if (this.active) return;
 
 		this._active = true;
 		this.container.style.display = "block";
 	}
 
-	close(){
-		if(!this.active) return;
+	close() {
+		if (!this.active) return;
 
 		this._active = false;
 		this.container.style.display = "none";

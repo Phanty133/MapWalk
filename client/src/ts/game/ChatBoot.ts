@@ -27,24 +27,24 @@ export default class ChatBoot {
 		this.ui = new ChatBotUI(game);
 		this.game.socket.events.addListener("ChatbotVerifyAnswerResponse", (res: string) => { this.onAnswerVerified(res) });
 
-		if(this.game.isMultiplayer){
+		if (this.game.isMultiplayer) {
 			this.game.eventHandler.on("QuestionAnswer", async (e: GameEventData) => {
-				if(e.success){
-					if(!e.foreign){
+				if (e.success) {
+					if (!e.foreign) {
 						this.curVerificationResolveCb(this.interpretReply(e.event.data.response));
 					}
-					else{
+					else {
 						const targetObj = this.game.map.objectsByID[e.event.data.objectID];
 
-						if(e.event.data.response === "correct"){
+						if (e.event.data.response === "correct") {
 							targetObj.onCorrectAnswer(e.origin);
 						}
-						else{
+						else {
 							targetObj.onIncorrectAnswer(e.origin);
 						}
 					}
 				}
-				else{
+				else {
 					this.curVerificationResolveCb(this.interpretReply(null)); // If the other players don't get the same response, assume the answer as incorrect?
 				}
 			});
@@ -52,7 +52,7 @@ export default class ChatBoot {
 	}
 
 	async processMessage(msg: string, foreign: boolean = false): Promise<string> {
-		if(this.currentAnswer !== null) return;
+		if (this.currentAnswer !== null) return;
 
 		this.checkForeignAnswer = foreign;
 		this.requestAnswerVerification(msg);
@@ -76,10 +76,10 @@ export default class ChatBoot {
 	private correctQuestion(id?: number) {
 		this.invalidateQuestion();
 
-		if(id){
+		if (id) {
 			this.game.map.objectsByID[id].onCorrectAnswer();
 		}
-		else{
+		else {
 			this.game.map.activeObject.onCorrectAnswer();
 		}
 
@@ -89,10 +89,10 @@ export default class ChatBoot {
 	private incorrectQuestion(id?: number) {
 		// this.invalidateQuestion(); -- Actually, I am unsure if I am supposed to discard the question on an incorrect answer
 
-		if(id){
+		if (id) {
 			this.game.map.objectsByID[id].onIncorrectAnswer();
 		}
-		else{
+		else {
 			this.game.map.activeObject.onIncorrectAnswer();
 		}
 
@@ -104,13 +104,13 @@ export default class ChatBoot {
 	}
 
 	private onAnswerVerified(msg: string) {
-		if(this.game.isMultiplayer){
-			if(this.checkForeignAnswer){
+		if (this.game.isMultiplayer) {
+			if (this.checkForeignAnswer) {
 				this.curVerificationResolveCb(msg);
 				this.checkForeignAnswer = false;
 				this.currentAnswer = null;
 			}
-			else{
+			else {
 				const ansEvData: QuestionAnswerEventData = {
 					response: msg,
 					answer: this.currentAnswer,
@@ -120,7 +120,7 @@ export default class ChatBoot {
 				this.game.eventHandler.dispatchEvent(new GameEvent("QuestionAnswer", ansEvData));
 			}
 		}
-		else{
+		else {
 			this.curVerificationResolveCb(this.interpretReply(msg));
 		}
 	}
@@ -130,24 +130,27 @@ export default class ChatBoot {
 
 		if (this.replyBook[rep]) {
 			if (this.currentQ) {
-				if (this.currentQ === this.replyBook[rep] || rep === "correct") {
+				const DEBUG = false;
+				if (rep === "correct" && DEBUG) {
+					this.correctQuestion();
+					return "Correct!";
+				}
+			}
+
+			return this.replyBook[rep];
+		}
+		else if (rep === null) {
+			return "Something went wrong. Try again."
+		}
+		else {
+			if (this.currentQ) {
+				if (this.currentQ === rep) {
 					this.correctQuestion();
 					return "Correct!";
 				} else {
 					this.incorrectQuestion();
 					return "That was wrong.";
 				}
-			}
-
-			return this.replyBook[rep];
-		}
-		else if(rep === null){
-			return "Something went wrong. Try again."
-		}
-		else {
-			if (this.currentQ) {
-				this.incorrectQuestion();
-				return "That was wrong.";
 			}
 			Log.error("Unbound string: " + rep + ", this usually means that someone added it server-side but not client-side.");
 			return "uh oh someond did an oopse";
