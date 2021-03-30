@@ -112,12 +112,13 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	bindGameUI(game);
 }
 
-function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, socket: Socket) {
+async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, socket: Socket) {
 	openGameView();
 	Log.log("multiplayer");
 
 	const lobby = new Lobby(lobbyID, socket);
 	const game = new Game(gameData.settings, socket, lobby);
+	const restObjects = await loadRestObjects(8);
 
 	game.createMap(gameData.objects);
 
@@ -141,6 +142,7 @@ function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, socket:
 	// game.localPlayer.fow.revealAll();
 
 	game.map.createObjects(gameData.objects);
+	game.map.createRestObjects(restObjects);
 
 	const time = new Time();
 

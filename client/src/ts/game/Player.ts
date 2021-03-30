@@ -419,11 +419,14 @@ export default class Player {
 	setTired(tired: boolean) {
 		if (tired && this.stats.originalVisibility / 2 !== this.stats.visibility) {
 			this.stats.visibility /= 2;
+			// Log.log("Zzzzzzzz");
 			this.fow.setVisibilityRadius(this.stats.visibility);
 		} else if (!tired) {
 			this.stats.visibility = this.stats.originalVisibility;
 			this.info.restTimer = 0;
+			// Log.log("No more being tired!");
 			this.fow.setVisibilityRadius(this.stats.visibility);
+			this.game.localPlayer.events.emit("ActionDone");
 		}
 	}
 
