@@ -5,6 +5,7 @@ import Log from "ts/lib/log";
 import * as L from "leaflet";
 import { GameSettings } from "ts/ui/settingsUI/SettingsSelection";
 import { MapObjectData } from "ts/map/MapObject";
+import { RestObjectData } from "ts/map/RestObject";
 
 export interface PlayerData {
 	username: string;
@@ -42,7 +43,8 @@ export interface ServerLobbyStartGameData{
 	objects: MapObjectData[];
 	playerCoords: Record<string, L.LatLng>; // SocketID : Location
 	playerOrder: string[]; // An array of socket ids of the players
-	playerSettings: Record<string, PlayerData>
+	playerSettings: Record<string, PlayerData>;
+	restObjects: RestObjectData[];
 }
 
 export interface ServerLobbyUserDisconnectedData{

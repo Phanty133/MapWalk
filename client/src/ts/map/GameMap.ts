@@ -21,7 +21,7 @@ export default class GameMap {
 	link: L.Polyline;
 
 	activeObject: MapObject | RestObject = null;
-	objectsByID: Record<number, MapObject> = {};
+	objectsByID: Record<number, MapObject | RestObject> = {};
 	restObjs: RestObject[] = [];
 	private _objectsHighlighted = false;
 	private infoPopup: L.Popup = null;
@@ -154,6 +154,7 @@ export default class GameMap {
 		for (const obj of objects) {
 			const mapObj = new RestObject(this.game, obj);
 			this.restObjs.push(mapObj);
+			this.objectsByID[mapObj.id] = mapObj;
 		}
 	}
 

@@ -251,6 +251,10 @@ export default class Player {
 		});
 
 		this.events.on("PlayerActionDone", () => {
+			if(this.isLocalPlayer && !this.info.hasVisitedRestaurant && !this.info.hungry && this.game.clock.dayTime >= this.info.restaurantTimeMax){
+				this.game.eventHandler.dispatchEvent(new GameEvent("PlayerHungry"));
+			}
+
 			if(this.routeEndPromiseResolve){
 				this.routeEndPromiseResolve();
 				this.routeEndPromiseResolve = null;
@@ -264,12 +268,13 @@ export default class Player {
 		this.game.eventHandler.on("RestaurantVisited", (e: GameEventData) => { return this.onRestaurantEvent(e); });
 
 		this.game.clock.events.on("NewDay", () => { this.info.hasVisitedRestaurant = false; });
-		this.game.events.on("NextTurn", () => {
+		/* this.game.events.on("NextTurn", () => {
 			if(this.game.turnMan.activePlayer !== this) return;
+
 			if(!this.info.hasVisitedRestaurant && !this.info.hungry && this.game.clock.dayTime >= this.info.restaurantTimeMax){
 				this.game.eventHandler.dispatchEvent(new GameEvent("PlayerHungry"));
 			}
-		});
+		}); */
 
 		this.game.eventHandler.on("PlayerHungry", (e: GameEventData) => { return this.onHungryEvent(e); })
 
@@ -469,11 +474,14 @@ export default class Player {
 	private async onHungryEvent(e: GameEventData){
 		if(e.origin !== this.info.socketID && this.game.isMultiplayer) return;
 
+		Log.log("SET HUNGRY: " + this.info.plyrData.username);
 		this.setLocalHungryState(true);
 	}
 
 	private setLocalHungryState(hungry: boolean){
 		this.info.hungry = hungry;
+
+		Log.log("local hungry state: " + this.info.plyrData.username);
 
 		if(hungry){
 			this.stats.visibility /= 2;

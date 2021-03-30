@@ -5,6 +5,7 @@ import GameEvent from "./GameEvent";
 import { PlayerInfo, PlayerStats } from "./Player";
 import hash from "object-hash";
 import Log from "ts/lib/log";
+import { RestObjectData } from "ts/map/RestObject";
 
 export interface GameManifestData{
 	players: Record<string, { info: PlayerInfo, stats: PlayerStats }>;
@@ -13,6 +14,7 @@ export interface GameManifestData{
 	gameSettings: GameSettings;
 	state: GameState;
 	mapObjectData: MapObjectData[];
+	restObjectData: RestObjectData[];
 	turnOrder: string[];
 }
 
@@ -45,6 +47,7 @@ export default class GameManifest{ // Mainly of use only in multiplayer for game
 			gameSettings: this.game.settings,
 			state: this.game.state,
 			mapObjectData: this.game.mapObjectData,
+			restObjectData: this.game.restObjectData,
 			turnIndex: this.game.turnMan.activeIndex,
 			turnOrder: this.game.turnMan.playerOrder.map(plyr => plyr.info.socketID)
 		};
@@ -60,6 +63,7 @@ export default class GameManifest{ // Mainly of use only in multiplayer for game
 
 		this.game.map.clearObjects();
 		this.game.map.createObjects(this.data.mapObjectData);
+		this.game.map.createRestObjects(this.data.restObjectData);
 
 		for(const plyrID of Object.keys(this.data.players)){
 			this.game.playersByID[plyrID].updateInfo(this.data.players[plyrID].info)

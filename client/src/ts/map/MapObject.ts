@@ -115,6 +115,7 @@ export default class MapObject {
 			if (this.fadeInTimeSinceStart >= this.fadeInTime) {
 				this.fadeIn = false;
 				this.fadeInTimeSinceStart = 0;
+				this.marker.setOpacity(1);
 			}
 			else {
 				this.marker.setOpacity(this.fadeInTimeSinceStart / this.fadeInTime);
