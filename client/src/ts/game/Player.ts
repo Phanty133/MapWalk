@@ -70,7 +70,7 @@ export default class Player {
 	fow: FogOfWar;
 
 	events: EventEmitter = new EventEmitter();
-	private routeEndPromieResolve: () => void;
+	private routeEndPromiseResolve: () => void;
 
 	public get pos() {
 		return this.info.pos;
@@ -234,6 +234,19 @@ export default class Player {
 				this.map.highlightObjects(this.nearbyObjects);
 			}
 		});
+
+		this.events.on("PlayerActionDone", () => {
+			this.addTired();
+
+			if(this.routeEndPromiseResolve){
+				this.routeEndPromiseResolve();
+				this.routeEndPromiseResolve = null;
+			}
+
+			if(this.isLocalPlayer){
+				this.events.emit("PlayerPass");
+			}
+		});
 	}
 
 	moveToTarget(target: L.LatLng) {
@@ -264,7 +277,7 @@ export default class Player {
 
 		if (this.isLocalPlayer) this.map.map.dragging.disable();
 
-		return new Promise<void>((res, rej) => { this.routeEndPromieResolve = res; });
+		return new Promise<void>((res, rej) => { this.routeEndPromiseResolve = res; });
 	}
 
 	moveToPoint(p: L.LatLng) {
@@ -310,9 +323,7 @@ export default class Player {
 			this.game.clock.addTime(this.info.restTime);
 		}
 
-		if (this.isLocalPlayer) {
-			this.events.emit("ActionDone");
-		}
+		this.events.emit("PlayerActionDone");
 	}
 
 	setPos(newPos: L.LatLng) {
@@ -420,6 +431,7 @@ export default class Player {
 		this.info.restTimer++;
 		const sleepyThreshold = 15;
 		Log.log("Epic counter" + this.info.restTimer);
+
 		if (this.info.restTimer > sleepyThreshold) {
 			this.setTired(true);
 		}
@@ -447,15 +459,18 @@ export default class Player {
 			this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
 
 			if (this.nearbyObjects.length > 0) {
+				this.routeEndPromiseResolve();
+				this.routeEndPromiseResolve = null;
+
 				this.game.setGameState(GameState.PlayerInteracting);
 			}
 			else {
-				this.events.emit("ActionDone");
+				this.events.emit("PlayerActionDone");
 			}
 		}
-
-		this.routeEndPromieResolve();
-		this.routeEndPromieResolve = null;
+		else{
+			this.events.emit("PlayerActionDone");
+		}
 	}
 
 	private onFrame() {

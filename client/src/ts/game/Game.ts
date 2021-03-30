@@ -252,6 +252,8 @@ export default class Game {
 		});
 
 		this.p2p.bindToChannel("getManifestData", (data: MessageData.GetManifest, channel: RTCDataChannel) => {
+			Log.log("Sending manifest data: ");
+			Log.log(Object.assign({}, this.manifest.data));
 			P2PLobby.send(channel, { cmd: "sendManifestData", manifestData: this.manifest.data });
 		});
 

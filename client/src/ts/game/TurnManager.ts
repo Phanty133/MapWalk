@@ -48,10 +48,9 @@ export default class TurnManager {
 	}
 
 	addPlayer(plyr: Player) {
-		plyr.events.on("ActionDone", () => {
+		plyr.events.on("PlayerPass", () => {
 			if (!plyr.hasTurn()) return;
 
-			plyr.addTired();
 			this.next();
 		});
 

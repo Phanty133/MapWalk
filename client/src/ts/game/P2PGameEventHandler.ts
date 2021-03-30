@@ -43,6 +43,7 @@ export default class P2PGameEventHandler{
 
 			if(manifestHash !== data.event.manifestHash){
 				Log.log("Manifests don't match");
+				Log.log(Object.assign({}, this.manifest.data));
 				P2PLobby.send(channel, { cmd: "eventResponse", eventHash: data.event.hash, response: GameEventResponse.InvalidManifest, manifestHash });
 				return;
 			}
@@ -162,6 +163,8 @@ export default class P2PGameEventHandler{
 					Log.log(this.game.manifest.data);
 					Log.log("--------");
 					P2PLobby.send(this.p2p.channels[res.peer], { cmd: "checkManifest", triggerEvent: this.activeEvents[eventHash] });
+
+					eventOKCount++; // Assume they approved it
 					continue;
 				}
 
@@ -191,10 +194,13 @@ export default class P2PGameEventHandler{
 			}
 		}
 
+		Log.log("event complete: " + this.activeEvents[eventHash].type);
+
 		delete this.activeEvents[eventHash];
 		delete this.eventResponse[eventHash];
 
 		if(this.dispatchQueue.length > 0){
+			Log.log("dispatch new");
 			this.processEventDispatch(this.dispatchQueue.shift());
 		}
 		else{
@@ -236,6 +242,8 @@ export default class P2PGameEventHandler{
 	async dispatchEvent(event: GameEvent){
 		if(this.waitingOnEvent){
 			this.dispatchQueue.push(event);
+			Log.log("queue");
+			Log.log([...this.dispatchQueue]);
 			return;
 		}
 

@@ -24,6 +24,6 @@ export class SkipButton{
 	private btnClickHandler(){
 		if(!this.game.localPlayer.hasTurn() && this.game.state !== GameState.PlayerInteracting) return;
 
-		this.game.localPlayer.events.emit("ActionDone");
+		this.game.localPlayer.events.emit("PlayerActionDone");
 	}
 }
