@@ -40,10 +40,14 @@ export default class LobbyChat{
 
 		createElement("span", { parent: msgContainer, textContent: author, style: { color } });
 		createElement("span", { parent: msgContainer, textContent: `: ${content}` });
+
+		this.chatMessageContainer.scrollTo(0, this.chatMessageContainer.scrollHeight);
 	}
 
 	addSystemMessage(content: string, color: string){
 		const msgContainer = createElement("span", { parent: this.chatMessageContainer });
 		createElement("span", { parent: msgContainer, textContent: content, style: { color } });
+
+		this.chatMessageContainer.scrollTo(0, this.chatMessageContainer.scrollHeight);
 	}
 }

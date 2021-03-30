@@ -32,4 +32,12 @@ export default function bindEventVerifiers(p2p: P2PGameEventHandler){
 	p2p.eventVerifiers.GameEnd = async (e: GameEvent, game: Game) => {
 		return true;
 	};
+
+	p2p.eventVerifiers.RestaurantVisited = async (e: GameEvent, game: Game) => {
+		return true;
+	}
+
+	p2p.eventVerifiers.PlayerHungry = async (e: GameEvent, game: Game) => {
+		return true;
+	};
 }

@@ -93,6 +93,7 @@ export default class RestObject {
 			if (this.fadeInTimeSinceStart >= this.fadeInTime) {
 				this.fadeIn = false;
 				this.fadeInTimeSinceStart = 0;
+				this.marker.setOpacity(1);
 			}
 			else {
 				this.marker.setOpacity(this.fadeInTimeSinceStart / this.fadeInTime);
@@ -134,7 +135,6 @@ export default class RestObject {
 	}
 
 	private clickHandler() {
-
 		if (!this.game.localPlayer.hasTurn()) return;
 		if (this.state === MapObjectState.Active) return;
 
@@ -153,8 +153,9 @@ export default class RestObject {
 			return;
 		}
 
-		this.map.activeObject = this;
-		this.game.localPlayer.setTired(false);
+		// this.map.activeObject = this;
+		// this.game.turnMan.activePlayer.setTired(false);
+		this.game.turnMan.activePlayer.setRestaurantVisited(true);
 	}
 
 	remove() {

@@ -1,7 +1,7 @@
 import * as L from "leaflet";
 import Log from "ts/lib/log";
 import PlayerRouter from "ts/map/PlayerRouter";
-import playerSVG from "img/MarkerPlayer.svg";
+import playerSVG from "img/MarkerPlayer_opaque.svg";
 import "leaflet-routing-machine";
 import GameMap from "ts/map/GameMap";
 import Game, { GameState } from "./Game";
@@ -44,7 +44,11 @@ export interface PlayerInfo {
 	visibleMarkers: number[];
 	metersToVisibilityEnd: number;
 	markerInteractionRange: number;
-	restTimer: number;
+	hasVisitedRestaurant: boolean;
+	restaurantTimeMax: number;
+	restaurantTimeMin: number;
+	hungry: boolean;
+	spRestaurantTime: number;
 }
 
 export default class Player {
@@ -70,7 +74,7 @@ export default class Player {
 	fow: FogOfWar;
 
 	events: EventEmitter = new EventEmitter();
-	private routeEndPromieResolve: () => void;
+	private routeEndPromiseResolve: () => void;
 
 	public get pos() {
 		return this.info.pos;
@@ -101,8 +105,8 @@ export default class Player {
 		this.game = game;
 
 		this.stats = {
-			energy: 10100000,
-			maxEnergy: 10100000,
+			energy: 100,
+			maxEnergy: 100,
 			score: 0,
 			visibility: 0.005, // The radius of visible area in coord units
 			originalVisibility: 0.005,
@@ -116,14 +120,18 @@ export default class Player {
 			speed: 0.005, // Units/sec
 			active: false, // Whether the player can perform an action
 			moving: false,
-			metersPerEnergyUnit: 10,
+			metersPerEnergyUnit: 20,
 			socketID: socket,
 			hasPerformedAction: false, // Whether the player has performed an action during the current turn
 			plyrData,
 			visibleMarkers: [],
 			metersToVisibilityEnd: startingPos.distanceTo(new L.LatLng(startingPos.lat + this.stats.visibility, startingPos.lng)),
 			markerInteractionRange: 0.001,
-			restTimer: 0
+			hasVisitedRestaurant: false,
+			restaurantTimeMin: 0, // Time (In minutes past 8AM) before which if a player visits a restaurant, it doesnt count
+			restaurantTimeMax: 20, // Time (in minutes past 8AM) after which the player gets a visibility debuff if he hasn't visited a restaurant
+			hungry: false,
+			spRestaurantTime: 30 // How long the player spends in a restaurant (SINGLEPLAYER ONLY)
 		};
 
 		this.isLocalPlayer = socket === this.game.socket.id || socket === undefined;
@@ -222,10 +230,17 @@ export default class Player {
 			if (newState !== GameState.PlayerInteracting) return;
 
 			if (this.map.activeObject) {
-				if (this.map.activeObject instanceof RestObject) {
-					this.setTired(false);
+				// if (this.map.activeObject instanceof RestObject) {
+				// 	Log.log("Clear tired");
+				// 	this.setTired(false);
+				// 	return;
+				// }
+
+				if(this.map.activeObject instanceof RestObject){
+					this.setRestaurantVisited(true);
 					return;
 				}
+
 				this.map.popOpenQuestion();
 			}
 			else {
@@ -234,6 +249,36 @@ export default class Player {
 				this.map.highlightObjects(this.nearbyObjects);
 			}
 		});
+
+		this.events.on("PlayerActionDone", () => {
+			if(this.isLocalPlayer && !this.info.hasVisitedRestaurant && !this.info.hungry && this.game.clock.dayTime >= this.info.restaurantTimeMax){
+				this.game.eventHandler.dispatchEvent(new GameEvent("PlayerHungry"));
+			}
+
+			if(this.routeEndPromiseResolve){
+				this.routeEndPromiseResolve();
+				this.routeEndPromiseResolve = null;
+			}
+
+			if(this.isLocalPlayer){
+				this.events.emit("PlayerPass");
+			}
+		});
+
+		this.game.eventHandler.on("RestaurantVisited", (e: GameEventData) => { return this.onRestaurantEvent(e); });
+
+		this.game.clock.events.on("NewDay", () => { this.info.hasVisitedRestaurant = false; });
+		/* this.game.events.on("NextTurn", () => {
+			if(this.game.turnMan.activePlayer !== this) return;
+
+			if(!this.info.hasVisitedRestaurant && !this.info.hungry && this.game.clock.dayTime >= this.info.restaurantTimeMax){
+				this.game.eventHandler.dispatchEvent(new GameEvent("PlayerHungry"));
+			}
+		}); */
+
+		this.game.eventHandler.on("PlayerHungry", (e: GameEventData) => { return this.onHungryEvent(e); })
+
+		// this.game.eventHandler.on("Tired", (e: GameEventData) => { return this.onTiredEvent(e); });
 	}
 
 	moveToTarget(target: L.LatLng) {
@@ -264,7 +309,7 @@ export default class Player {
 
 		if (this.isLocalPlayer) this.map.map.dragging.disable();
 
-		return new Promise<void>((res, rej) => { this.routeEndPromieResolve = res; });
+		return new Promise<void>((res, rej) => { this.routeEndPromiseResolve = res; });
 	}
 
 	moveToPoint(p: L.LatLng) {
@@ -310,9 +355,7 @@ export default class Player {
 			this.game.clock.addTime(this.info.restTime);
 		}
 
-		if (this.isLocalPlayer) {
-			this.events.emit("ActionDone");
-		}
+		this.events.emit("PlayerActionDone");
 	}
 
 	setPos(newPos: L.LatLng) {
@@ -366,7 +409,7 @@ export default class Player {
 	}
 
 	rest() {
-		if (this.map.posMarker) {
+		if (this.map.posMarker || this.router.activeRoute) {
 			this.map.cancelCurrentOrder();
 		}
 
@@ -405,27 +448,47 @@ export default class Player {
 		}
 	}
 
-	setTired(tired: boolean) {
-		if (tired && this.stats.originalVisibility / 2 !== this.stats.visibility) {
-			this.stats.visibility /= 2;
-			// Log.log("Zzzzzzzz");
-			this.fow.setVisibilityRadius(this.stats.visibility);
-		} else if (!tired) {
-			this.stats.visibility = this.stats.originalVisibility;
-			this.info.restTimer = 0;
-			// Log.log("No more being tired!");
-			this.fow.setVisibilityRadius(this.stats.visibility);
-			this.game.localPlayer.events.emit("ActionDone");
+	setRestaurantVisited(visited: boolean){
+		if(this.game.clock.dayTime >= this.info.restaurantTimeMin){
+			this.game.eventHandler.dispatchEvent(new GameEvent("RestaurantVisited", { visited }));
+		}
+		else{
+			this.events.emit("PlayerActionDone");
 		}
 	}
 
-	addTired() {
-		this.info.restTimer++;
-		const sleepyThreshold = 15;
-		Log.log("Epic counter" + this.info.restTimer);
-		if (this.info.restTimer > sleepyThreshold) {
-			this.setTired(true);
+	private async onRestaurantEvent(e: GameEventData){
+		if(e.origin !== this.info.socketID && this.game.isMultiplayer) return;
+
+		this.info.hasVisitedRestaurant = e.event.data.visited;
+
+		if(e.event.data.visited && this.info.hungry){
+			this.setLocalHungryState(false);
 		}
+
+		if(!this.game.isMultiplayer) this.game.clock.addTime(this.info.spRestaurantTime);
+
+		this.events.emit("PlayerActionDone");
+	}
+
+	private async onHungryEvent(e: GameEventData){
+		if(e.origin !== this.info.socketID && this.game.isMultiplayer) return;
+
+		Log.log("SET HUNGRY: " + this.info.plyrData.username);
+		this.setLocalHungryState(true);
+	}
+
+	private setLocalHungryState(hungry: boolean){
+		this.info.hungry = hungry;
+
+		if(hungry){
+			this.stats.visibility /= 2;
+		}
+		else{
+			this.stats.visibility = this.stats.originalVisibility;
+		}
+
+		if(this.isLocalPlayer) this.fow.setVisibilityRadius(this.stats.visibility);
 	}
 
 	getMapObjectsInRange(range: number = this.stats.visibility): (MapObject | RestObject)[] {
@@ -443,22 +506,29 @@ export default class Player {
 	}
 
 	private onRouteEnd() {
+		this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
+
 		if (this.isLocalPlayer) {
 			this.router.clearRoute();
 			this.map.map.dragging.enable();
 
-			this.nearbyObjects = this.getMapObjectsInRange(this.info.markerInteractionRange).filter(obj => !obj.answered);
-
 			if (this.nearbyObjects.length > 0) {
+				this.routeEndPromiseResolve();
+				this.routeEndPromiseResolve = null;
+
 				this.game.setGameState(GameState.PlayerInteracting);
 			}
 			else {
-				this.events.emit("ActionDone");
+				this.events.emit("PlayerActionDone");
 			}
 		}
-
-		this.routeEndPromieResolve();
-		this.routeEndPromieResolve = null;
+		else if(this.nearbyObjects.length === 0){
+			this.events.emit("PlayerActionDone");
+		}
+		else{
+			this.routeEndPromiseResolve();
+			this.routeEndPromiseResolve = null;
+		}
 	}
 
 	private onFrame() {

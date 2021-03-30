@@ -16,6 +16,7 @@ import Socket, { PlayerData } from "ts/networking/Socket";
 import GameEventHandler, { GameEventData } from "./GameEventHandler";
 import ChatBoot from "./ChatBoot";
 import { EventEmitter } from "events";
+import { RestObjectData } from "ts/map/RestObject";
 
 type ManifestCheckCompleteCallback = () => void;
 
@@ -62,6 +63,7 @@ export default class Game {
 	eventHandler: GameEventHandler;
 	chatBot: ChatBoot;
 	events: EventEmitter = new EventEmitter();
+	restObjectData: RestObjectData[];
 
 	public get state(): GameState{
 		return this._state;
@@ -144,9 +146,10 @@ export default class Game {
 		this.bindEvents();
 	}
 
-	createMap(objects?: MapObjectData[]){
+	createMap(objects: MapObjectData[], restObjects: RestObjectData[]){
 		this.map = new GameMap("map", this);
-		this.mapObjectData = objects;
+		this.mapObjectData = [...objects];
+		this.restObjectData = [...restObjects];
 	}
 
 	createPlayer(pos: L.LatLng, socketID?: string, plyrData?: PlayerData): Player{
@@ -252,6 +255,8 @@ export default class Game {
 		});
 
 		this.p2p.bindToChannel("getManifestData", (data: MessageData.GetManifest, channel: RTCDataChannel) => {
+			Log.log("Sending manifest data: ");
+			Log.log(Object.assign({}, this.manifest.data));
 			P2PLobby.send(channel, { cmd: "sendManifestData", manifestData: this.manifest.data });
 		});
 

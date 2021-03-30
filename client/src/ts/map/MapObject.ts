@@ -115,6 +115,7 @@ export default class MapObject {
 			if (this.fadeInTimeSinceStart >= this.fadeInTime) {
 				this.fadeIn = false;
 				this.fadeInTimeSinceStart = 0;
+				this.marker.setOpacity(1);
 			}
 			else {
 				this.marker.setOpacity(this.fadeInTimeSinceStart / this.fadeInTime);
@@ -197,7 +198,13 @@ export default class MapObject {
 		}
 
 		this.setState(MapObjectState.Default);
-		this.game.localPlayer.events.emit("ActionDone");
+
+		if(origin){
+			this.game.playersByID[origin].events.emit("PlayerActionDone");
+		}
+		else{
+			this.game.localPlayer.events.emit("PlayerActionDone");
+		}
 	}
 
 	onIncorrectAnswer(origin?: string) {
@@ -210,7 +217,7 @@ export default class MapObject {
 		}
 
 		this.setState(MapObjectState.Default);
-		this.game.localPlayer.events.emit("ActionDone");
+		this.game.localPlayer.events.emit("PlayerActionDone");
 	}
 
 	remove() {

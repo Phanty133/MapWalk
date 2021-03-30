@@ -31,17 +31,20 @@ export default class ChatMessage extends DynamicElement{
 		this.objectContainer = createElement("span");
 		this.mainContainer.appendChild(this.objectContainer);
 
-		createElement("span", {
-			textContent: this.data.author,
-			style: {
-				color: this.data.authorColor
-			},
-			parent: this.objectContainer
-		});
+		if(this.data.author){
+			createElement("span", {
+				textContent: this.data.author,
+				style: {
+					color: this.data.authorColor
+				},
+				parent: this.objectContainer
+			});
+		}
 
 		createElement("span", {
-			textContent: `: ${this.data.content}`,
-			parent: this.objectContainer
+			textContent: `${this.data.author ? ":" : ""} ${this.data.content}`,
+			parent: this.objectContainer,
+			style: this.data.author ? {} : { color: this.data.authorColor }
 		});
 	}
 

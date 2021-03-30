@@ -133,6 +133,8 @@ export default class Lobby{
 		const randomStartingCoordinates = randomStartingObjects.map(obj => obj.location);
 		const playerStartingCoordinates: Record<string, any> = {}; // SocketID: LatLng Location
 
+		const restObjects = mapObjectLoader.getRandomRestObjects(8);
+
 		this.players.forEach((plyr: PlayerData, i: number) => {
 			playerStartingCoordinates[plyr.socketID] = randomStartingCoordinates[i];
 		});
@@ -144,9 +146,10 @@ export default class Lobby{
 
 		this.broadcast("ServerLobbyStartGame", Object.assign({
 			objects,
+			restObjects,
 			playerCoords: playerStartingCoordinates,
 			playerOrder: randomizedPlayerOrderData,
-			playerSettings: this.playersBySocket
+			playerSettings: this.playersBySocket,
 		}, data));
 
 		LobbyManager.removeLobby(this.id);

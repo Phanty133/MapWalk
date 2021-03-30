@@ -1,4 +1,8 @@
 import "css/index.css"
+
+import iconEnergy from "img/IconEnergy.svg"
+import iconScore from "img/IconScore.svg"
+
 import { MapObjectData } from "ts/map/MapObject"
 import Lobby from "ts/networking/Lobby"
 import * as Cookies from "js-cookie"
@@ -25,6 +29,8 @@ document.body.onload = () => {
 	};
 
 	cb();
+
+	loadIcons();
 };
 
 function loadPreGame() {
@@ -93,7 +99,7 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	const objects = await loadObjects(settings.objectCount);
 	const restObjects = await loadRestObjects(8);
 
-	game.createMap(objects);
+	game.createMap(objects, restObjects);
 	game.localPlayer = game.createPlayer(settings.location.pos);
 	game.localPlayer.createFogOfWar();
 
@@ -118,9 +124,9 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 
 	const lobby = new Lobby(lobbyID, socket);
 	const game = new Game(gameData.settings, socket, lobby);
-	const restObjects = await loadRestObjects(8);
+	// const restObjects = await loadRestObjects(8);
 
-	game.createMap(gameData.objects);
+	game.createMap(gameData.objects, gameData.restObjects);
 
 	// Load the players
 
@@ -142,7 +148,7 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 	// game.localPlayer.fow.revealAll();
 
 	game.map.createObjects(gameData.objects);
-	game.map.createRestObjects(restObjects);
+	game.map.createRestObjects(gameData.restObjects);
 
 	const time = new Time();
 
@@ -163,4 +169,15 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 			}
 		}
 	});
+}
+
+function loadIcons(){ // jank
+	document.getElementById("iconEnergy").setAttribute("src", iconEnergy);
+	document.getElementById("iconScore").setAttribute("src", iconScore);
+
+	/* const colonSpan = document.getElementById("gameTimeColon") as HTMLSpanElement;
+
+	setInterval(() => {
+		colonSpan.style.visibility = colonSpan.style.visibility === "hidden" ? "visible" : "hidden";
+	}, 1000); */
 }
