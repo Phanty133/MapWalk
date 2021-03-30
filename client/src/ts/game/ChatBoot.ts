@@ -133,7 +133,7 @@ export default class ChatBoot {
 				const DEBUG = false;
 				if (rep === "correct" && DEBUG) {
 					this.correctQuestion();
-					return "Correct!";
+					return "Pareizi!";
 				}
 			}
 
@@ -146,14 +146,14 @@ export default class ChatBoot {
 			if (this.currentQ) {
 				if (this.currentQ === rep) {
 					this.correctQuestion();
-					return "Correct!";
+					return "Pareizi!";
 				} else {
 					this.incorrectQuestion();
-					return "That was wrong.";
+					return "Tas bija nepareizi.";
 				}
 			}
 			Log.error("Unbound string: " + rep + ", this usually means that someone added it server-side but not client-side.");
-			return "uh oh someond did an oopse";
+			return "uh oh kāds izdarīja oopsie";
 		}
 	}
 }
