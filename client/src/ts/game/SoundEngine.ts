@@ -5,7 +5,7 @@ export default class SoundEngine{
 	audioFX: HTMLAudioElement[] = [];
 
 	constructor(){
-		this.playBG(bgMusic);
+		this.playBG(bgMusic, true);
 	}
 
 	playBG(src: string, loop: boolean = false){

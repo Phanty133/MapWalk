@@ -322,7 +322,7 @@ export default class Game {
 	verifyGameEndCondition(): boolean{
 		switch (this.settings.gamemode) {
 			case GameMode.TimeAttack:
-				if (this.clock.curTime >= this.settings.timeLimit) {
+				if (this.clock.curTime >= this.settings.timeLimit || this.map.countAnsweredObjects() === this.mapObjectData.length) {
 					return true;
 				}
 

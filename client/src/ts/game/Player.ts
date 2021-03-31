@@ -364,7 +364,7 @@ export default class Player {
 	private onRestEvent(e: GameEventData) {
 		if (this.game.isMultiplayer && e.origin !== this.info.socketID) return;
 
-		this.drainEnergy(-(this.info.metersToVisibilityEnd / this.metersPerEnergyUnit));
+		this.drainEnergy(-(this.info.metersToVisibilityEnd / this.metersPerEnergyUnit * 2.5));
 
 		if (!this.game.isMultiplayer) {
 			this.game.clock.addTime(this.info.restTime);
