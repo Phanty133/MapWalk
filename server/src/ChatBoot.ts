@@ -37,7 +37,7 @@ export default class ChatBoot {
 		const guess = guesses.reduce((x, y) => x && x.value > y.value ? x : y);
 		return {
 			probabilities: guesses,
-			guess: guess.value > (0.7) ? guess.label : null
+			guess: guess.value > (0.9) ? guess.label : null
 		};
 	}
 
