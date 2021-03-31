@@ -211,7 +211,7 @@ export default class GameMap {
 		if (!this.selectBounds.contains(ev.latlng)) return;
 		if (ev.originalEvent.button !== 0) return;
 		if (!this.game.localPlayer.hasTurn()) return;
-		if (this.game.state !== GameState.PlayerAction) return;
+		if (this.game.state !== GameState.PlayerAction && !(this.game.state === GameState.PlayerInteracting && !this.game.isMultiplayer)) return;
 
 		this.cancelCurrentOrder();
 

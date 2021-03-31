@@ -70,6 +70,7 @@ export default class Player {
 	private activeRoute: L.Routing.IRoute;
 	private nearbyObjects: (MapObject | RestObject)[] = null;
 	private moveEffectID: number = null;
+	private answerHype: number = -1;
 
 	isLocalPlayer: boolean = true;
 	marker: L.Marker;
@@ -209,6 +210,11 @@ export default class Player {
 		this.fow.setVisibilityPos(this.pos);
 	}
 
+	private setVisibility(visibility: number){
+		this.stats.visibility = visibility;
+		this.fow.setVisibilityRadius(visibility);
+	}
+
 	bindEvents() {
 		// Reminder, you can always double click.
 		/* this.map.map.on("click", (e: L.LeafletMouseEvent) => {
@@ -268,6 +274,13 @@ export default class Player {
 			if(this.routeEndPromiseResolve){
 				this.routeEndPromiseResolve();
 				this.routeEndPromiseResolve = null;
+			}
+
+			if(this.answerHype !== -1){
+				if(this.answerHype++ === 1){
+					this.setVisibility(this.stats.visibility / 2);
+					this.answerHype = -1;
+				}
 			}
 
 			if(this.isLocalPlayer){
@@ -354,8 +367,8 @@ export default class Player {
 		}
 
 		if(this.isLocalPlayer){
-			this.game.soundEngine.playEffect(fxMoveStart);
-			this.moveEffectID = this.game.soundEngine.playEffect(fxMoveMid, true);
+			// this.game.soundEngine.playEffect(fxMoveStart);
+			// this.moveEffectID = this.game.soundEngine.playEffect(fxMoveMid, true);
 		}
 
 		return this.moveAlongRoute(this.activeRoute);
@@ -397,9 +410,13 @@ export default class Player {
 	}
 
 	traceRoute(targetPos: L.LatLng, cb: TracingCallback = () => { }) {
-		if (this.game.state !== GameState.PlayerAction) return;
+		if (this.game.state !== GameState.PlayerAction && !(this.game.state === GameState.PlayerInteracting && !this.game.isMultiplayer)) return;
 		if (this.game.turnMan.activePlayer !== this) return;
 		if (GameMap.nonMetricDistanceTo(this.pos, targetPos) > this.stats.visibility) return;
+
+		if(this.game.state === GameState.PlayerInteracting){
+			this.game.setGameState(GameState.PlayerAction);
+		}
 
 		// let route = null;
 		this.router.routeToPoint(targetPos, (routeEv: L.Routing.RoutingResultEvent) => {
@@ -434,11 +451,12 @@ export default class Player {
 
 	incrementScore() {
 		this.stats.score++;
+		this.answerHype = 0;
+		this.setVisibility(this.stats.visibility * 2);
 
 		if (this.isLocalPlayer) {
 			this.scoreDisplay.update();
 			this.game.checkGameEndCondition();
-
 		}
 	}
 
@@ -527,7 +545,7 @@ export default class Player {
 			this.router.clearRoute();
 			this.map.map.dragging.enable();
 
-			this.game.soundEngine.stopEffect(this.moveEffectID);
+			// this.game.soundEngine.stopEffect(this.moveEffectID);
 			// this.game.soundEngine.playEffect(fxMoveEnd);
 
 			this.moveEffectID = null;
@@ -573,7 +591,6 @@ export default class Player {
 			if(this.isLocalPlayer){
 				for (const plyr of this.game.otherPlayers) {
 					const dist = GameMap.nonMetricDistanceTo(plyr.pos, this.pos) / 1.5;
-					Log.log(dist);
 
 					if (dist <= this.stats.visibility) {
 						plyr.marker.setOpacity(1);

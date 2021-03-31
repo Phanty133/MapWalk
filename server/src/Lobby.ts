@@ -37,8 +37,8 @@ export default class Lobby{
 			this.id = id;
 		}
 		else{
-			// this.id = genHexString(idLen);
-			this.id = "aaaaaa";
+			this.id = genHexString(idLen);
+			// this.id = "aaaaaa";
 		}
 
 		this.socketServer = socketServer;

@@ -23,9 +23,14 @@ import { parseBool } from "./lib/util";
 export const logger = new Logger(process.env.LOG_DIR, parseInt(process.env.LOG_VERBOSITY, 10));
 const port = process.env.SERVER_PORT;
 
-const certPath = `/etc/letsencrypt/live/mapwalk.tk`;
-const key: string = fs.readFileSync(path.join(certPath, "privkey.pem")).toString();
-const cert: string = fs.readFileSync(path.join(certPath, "fullchain.pem")).toString();
+let key: string;
+let cert: string;
+
+if(process.env.NODE_ENV === "production"){
+	const certPath = `/etc/letsencrypt/live/mapwalk.tk`;
+	key = fs.readFileSync(path.join(certPath, "privkey.pem")).toString();
+	cert = fs.readFileSync(path.join(certPath, "fullchain.pem")).toString();
+}
 
 const app = express();
 
@@ -61,11 +66,24 @@ app.use((err: Error, req: Request, res: Response, next: () => void) => {
 	logger.expressHandler(err, req, res, next); // Called in an anonymous function to preserve "this" for the method
 });
 
-const httpsServer: Server = https.createServer({key, cert}, app);
-httpsServer.listen(port, () => {
-	// tslint:disable-next-line: no-console
-	console.log("Running server on port ", port);
-});
+let server: Server;
 
-export const socketServer = new SocketServer(httpsServer);
+if(process.env.NODE_ENV === "production"){
+	server = https.createServer({key, cert}, app);
+
+	server.listen(port, () => {
+		// tslint:disable-next-line: no-console
+		console.log("Running server on port ", port);
+	});
+}
+else{
+	server = http.createServer(app);
+
+	server.listen(port, () => {
+		// tslint:disable-next-line: no-console
+		console.log("Running server on " + port);
+	});
+}
+
+export const socketServer = new SocketServer(server);
 export const chatBoot = new ChatBoot();

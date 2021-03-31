@@ -40,7 +40,7 @@ export default class MapObject {
 	private visible: boolean = false;
 	private fadeIn: boolean = false;
 	private fadeInTimeSinceStart: number = 0; // ms since fade started
-	private timeLossOnIncorrectAnswer: number = 1;
+	private timeLossOnIncorrectAnswer: number = 3;
 	private fadeInTime = 500; // In ms
 	private state: MapObjectState;
 
