@@ -353,8 +353,10 @@ export default class Player {
 			this.game.clock.addTime(visibilityFraction * this.info.timeToVisibilityEnd);
 		}
 
-		this.game.soundEngine.playEffect(fxMoveStart);
-		this.moveEffectID = this.game.soundEngine.playEffect(fxMoveMid, true);
+		if(this.isLocalPlayer){
+			this.game.soundEngine.playEffect(fxMoveStart);
+			this.moveEffectID = this.game.soundEngine.playEffect(fxMoveMid, true);
+		}
 
 		return this.moveAlongRoute(this.activeRoute);
 	}

@@ -198,12 +198,12 @@ export default class MapObject {
 			this.game.playersByID[origin].events.emit("PlayerActionDone");
 		}
 		else {
+			this.game.soundEngine.playEffect(fxCorrect);
 			this.game.localPlayer.incrementScore();
 			this.game.localPlayer.events.emit("PlayerActionDone");
 		}
 
 		this.setState(MapObjectState.Default);
-		this.game.soundEngine.playEffect(fxCorrect);
 	}
 
 	onIncorrectAnswer(origin?: string) {
@@ -221,10 +221,9 @@ export default class MapObject {
 			this.game.playersByID[origin].events.emit("PlayerActionDone");
 		}
 		else{
+			this.game.soundEngine.playEffect(fxIncorrect);
 			this.game.localPlayer.events.emit("PlayerActionDone");
 		}
-
-		this.game.soundEngine.playEffect(fxIncorrect);
 	}
 
 	remove() {
