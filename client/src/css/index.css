@@ -647,7 +647,15 @@ cursor: pointer; /* Cursor on hover */
 }
 .objectInfoContainer span{
 	font-family: 'Questrial', sans-serif;
-	font-size: 1.5em;
+}
+
+.objectInfoContainer span[data-title]{
+	font-size: 1.8em;
+}
+
+.objectInfoContainer span[data-desc]{
+	line-height: 1.2;
+	font-size: 1.35em;
 }
 
 #questionImageContainer{

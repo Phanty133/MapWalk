@@ -56,7 +56,7 @@ export interface ServerLobbySettingsChangedData{
 }
 
 export default class Socket{
-	url: string = "http://localhost:8080";
+	url: string = "https://mapwalk.tk";
 	socket: socketio.Socket;
 	p2p: P2PLobby;
 	id: string;

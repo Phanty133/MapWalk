@@ -1,0 +1,97 @@
+body{
+	font-family: sans-serif !important;
+}
+
+#editorTitle{
+	text-align: center;
+	font-size: 32pt;
+	margin-bottom: 2em;
+}
+
+#loginForm{
+	display: grid;
+	width: 15vw;
+	margin-left: 42.5vw;
+	row-gap: 0.5em;
+}
+
+#objectEditorContainer{
+	display: grid;
+	grid-auto-flow: row;
+	row-gap: 0.3em;
+	margin-left: 35vw;
+	border: 1px solid black;
+	width: 30vw;
+	padding: 1em;
+}
+
+.objectEditorEntry{
+	width: 30vw;
+	padding: 5px;
+}
+
+.objectEditorSelector{
+	width: calc(100% - 5px);
+	border: 1px solid black;
+	font-size: 18pt;
+	padding: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+.objectEditorSelector:hover{
+	background-color: #DDD;
+}
+
+.objectEditorContent{
+	display: grid;
+	width: 80%;
+	row-gap: 0.5em;
+	margin-top: 1vh;
+
+	display: none;
+}
+
+.objectEditorLocation{
+	display: grid;
+	width: 75%;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 10px;
+}
+
+.objectEditorLocation input{
+	width: calc(100% - 10px);
+}
+
+.objectEditorContent [data-applyBtn]{
+	margin-top: 1em;
+	width: 5em;
+	font-size: 12pt;
+	padding: 0.2em 1em 0.2em 1em;
+}
+
+.objectEditorQuestionContainer{
+	margin-top: 0.5em;
+
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+	padding: 1em;
+	
+	display: grid;
+	grid-auto-flow: row;
+	row-gap: 1em;
+
+	margin-bottom: 0.5em;
+}
+
+.objectEditorQuestion{
+	display: grid;
+	row-gap: 0.25em;
+	grid-template-rows: 1fr 1fr;
+	border-bottom: 1px solid black;
+	padding-bottom: 1em;
+}
+
+.objectEditorQuestion:last-child{
+	border: none;
+}

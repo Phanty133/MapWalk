@@ -18,6 +18,7 @@ import ChatBoot from "./ChatBoot";
 import { EventEmitter } from "events";
 import { RestObjectData } from "ts/map/RestObject";
 import VoiceChat from "../voice/VoiceChat";
+import SoundEngine from "./SoundEngine";
 
 type ManifestCheckCompleteCallback = () => void;
 
@@ -65,6 +66,7 @@ export default class Game {
 	chatBot: ChatBoot;
 	events: EventEmitter = new EventEmitter();
 	restObjectData: RestObjectData[];
+	soundEngine: SoundEngine;
 
 	public get state(): GameState{
 		return this._state;
@@ -76,6 +78,7 @@ export default class Game {
 
 	constructor(settings: GameSettings, socket: Socket, lobby?: Lobby){
 		this.manifest = new GameManifest(this);
+		this.soundEngine = new SoundEngine();
 
 		if(lobby) {
 			this.lobby = lobby;

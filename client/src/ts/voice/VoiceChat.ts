@@ -73,7 +73,7 @@ export default class VoiceChat{
 			this.foreignStreams[peer].el.volume = vol;
 		}
 
-		Log.log("DISTANCE: " + distance);
-		Log.log("VOLUME: " + vol);
+		// Log.log("DISTANCE: " + distance);
+		// Log.log("VOLUME: " + vol);
 	}
 }

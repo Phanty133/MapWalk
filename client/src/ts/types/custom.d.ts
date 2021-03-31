@@ -43,4 +43,10 @@ declare module "*.svg" {
 declare module "*.worklet.js" {
 	const exportString: string;
 	export default exportString;
-  }
+}
+
+declare module "*.wav" {
+	const content: any;
+
+	export default content;
+}
