@@ -201,7 +201,7 @@ export default class Player {
 	}
 
 	isPosVisible(pos: L.LatLng) { // Whether the given position is within visibility range
-		return GameMap.nonMetricDistanceTo(pos, this.pos) <= this.stats.visibility / 1.5;
+		return GameMap.nonMetricDistanceTo(pos, this.pos) <= this.stats.visibility;
 	}
 
 	createFogOfWar() {

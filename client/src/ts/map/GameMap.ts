@@ -212,9 +212,9 @@ export default class GameMap {
 		if (ev.originalEvent.button !== 0) return;
 		if (!this.game.localPlayer.hasTurn()) return;
 		if (this.game.state !== GameState.PlayerAction && !(this.game.state === GameState.PlayerInteracting && !this.game.isMultiplayer)) return;
+		if (!this.game.turnMan.activePlayer.isPosVisible(ev.latlng)) return;
 
 		this.cancelCurrentOrder();
-
 		this.popClosedQuestion();
 
 		this.posMarker = L.marker(ev.latlng, {
