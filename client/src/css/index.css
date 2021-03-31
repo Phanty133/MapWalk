@@ -1,24 +1,30 @@
 :root{
-	--titleColor: #1976d2;
-	--secondaryColor: #0097a7;
+	--titleColor: #00A13A;
+	--secondaryColor: #34cf6d;
 	--tertiaryColor: #FFF;
+	--quartaryColor: #DA251D;
+	--pentawhateverColor: #fff1ea;
 	--backgroundColor: #FFF;
 }
-
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Questrial&family=Work+Sans:wght@200&display=swap');
 body{
 	margin: 0;
 	padding: 0;
-	font-family: sans-serif;
 	height: 100vh;
 	width: 100vw;
 	overflow: hidden;
 
-	background-color: #888;
+	background-color: white;
 }
 
 #map{
 	width: 100vw;
 	height: 100vh;
+}
+
+#mapBG #map{
+	opacity: 0.2;
+	filter: hue-rotate(130deg);
 }
 
 .leaflet-routing-container{
@@ -27,9 +33,12 @@ body{
 
 #gameTitle{
 	text-align: center;
-	font-size: 5vw;
+	font-size: 8vw;
+
+	font-family: 'Montserrat', sans-serif;
 	color: var(--titleColor);
 	margin-bottom: 0.25em;
+
 }
 
 #mainSuperContainer{
@@ -42,10 +51,13 @@ body{
 	max-width: 75vw;
 	width: fit-content;
 	padding: 1vw;
-	-webkit-box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.5);
-	-moz-box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.5);
-	box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.5);
-	background-color: var(--backgroundColor);
+	-webkit-box-shadow: 5px 5px 10px 0px rgba(50,0,0,0.5);
+	-moz-box-shadow: 5px 5px 10px 0px rgba(50,0,0,0.5);
+	box-shadow: 5px 5px 10px 0px rgba(50,0,0,0.5);
+	background-color: var(--pentawhateverColor);
+}
+#modeSelectContainer button:hover{
+	filter: brightness(85%);
 }
 
 #gamentContainer #mainContainer{
@@ -63,10 +75,13 @@ body{
 
 .preSelectionContainer button{
 	border: none;
-	border-radius: 3px;
-	font-size: 16pt;
+	border-radius: 0px;
 	padding: 0.5em;
 	width: 100%;
+
+	font-family: 'Questrial', sans-serif;
+	font-size: 2vw;
+
 	cursor: pointer;
 	background-color: var(--secondaryColor);
 	color: white;
@@ -78,10 +93,6 @@ body{
 	transition: filter 0.3s;
 }
 
-#modeSelectContainer button:hover{
-	filter: brightness(85%);
-}
-
 .inputMenuContainer{
 	grid-template-areas: "input input" "back ok";
 	column-gap: 5px;
@@ -89,9 +100,10 @@ body{
 
 .inputMenuContainer > input{
 	grid-area: input;
-	border: 1px solid grey;
-	font-size: 2em;
+	font-size: 3em;
+	font-family: 'Questrial', sans-serif;
 	margin-bottom: 2vh;
+	padding: 0.3em;
 }
 
 #mapBG{
@@ -108,13 +120,19 @@ body{
 	display: grid;
 	grid-auto-flow: row;
 	text-align: center;
-	font-size: 14pt;
+
+	font-family: 'Questrial', sans-serif;
+	font-size: 1.5em;
+	color: var(--secondaryColor);
 }
 
 .settingsSelection > h2{
 	font-weight: normal;
-	font-size: 2em;
-	margin-bottom: 0.5em;
+	font-size: 3em;
+	margin-bottom: 0.4em;
+	font-family: 'Montserrat', sans-serif;
+	color: var(--titleColor);
+	margin-top: 0.3em;
 }
 
 #settingsSelection > [data-startgame]{
@@ -135,16 +153,47 @@ body{
 }
 
 .selectionContainer > button{
-	border-radius: 3px;
+	border-radius: 0px;
 	text-align: center;
 	padding: 5px;
 	background-color: var(--secondaryColor);
+	font-family: 'Questrial', sans-serif;
 	color: white;
 	font-size: 1em;
 }
 
+.objectSelection input {
+	-webkit-appearance: none;  /* Override default CSS styles */
+	appearance: none;
+	background: var(--titleColor);
+	margin-bottom: 0.5em;
+}
+.objectSelection input::-webkit-slider-thumb {
+	-webkit-appearance: none; /* Override default look */
+	appearance: none;
+	width: 25px; /* Set a specific slider handle width */
+	height: 25px; /* Slider handle height */
+	background: var(--secondaryColor); /* Green background */
+cursor: pointer; /* Cursor on hover */
+}
+
+.objectSelection input::-moz-range-thumb {
+	width: 25px; /* Set a specific slider handle width */
+	height: 25px; /* Slider handle height */
+	background: var(--secondaryColor); /* Green background */
+	cursor: pointer; /* Cursor on hover */
+}
+
+.objectSelection input:focus{
+	outline: none;
+}
+
+.selectionContainer > button:focus{
+	outline: none;
+}
+
 .selectionContainer > button[data-selected]{
-	background-color: #388e3c;
+	background-color: var(--titleColor);
 	cursor: initial;
 }
 
@@ -158,9 +207,11 @@ body{
 }
 
 .button{
-	border-radius: 3px;
+	border-radius: 0px;
 	cursor: pointer;
 	border: none;
+	font-family: 'Questrial', sans-serif;
+	padding: 0.2em;
 	transition: filter 0.3s;
 }
 
@@ -202,12 +253,15 @@ body{
 	font-size: 18pt;
 	margin-bottom: 0.5em;
 	border-bottom: 1px solid lightgrey;
+	font-size: 2em;
 }
 
 #p2pHeader{
 	grid-area: header;
 	text-align: center;
-	font-size: 24pt;
+	font-size: 4em;
+	font-family: 'Montserrat', sans-serif;
+	color: var(--titleColor);
 }
 
 #p2pSettings{
@@ -217,6 +271,12 @@ body{
 	grid-auto-rows: auto 1fr;
 	row-gap: 0.75em;
 	overflow: hidden;
+}
+
+#p2pSettings > span, #p2pChat > span{
+	font-size: 2em;
+	font-family: 'Montserrat', sans-serif;
+	color: var(--titleColor);
 }
 
 #lobbySettingsSelection{
@@ -238,8 +298,20 @@ body{
 	display: grid;
     grid-auto-rows: max-content;
     row-gap: 0.25em;
+	font-family: 'Questrial', sans-serif;
 	overflow-y: auto;
 	height: 100%;
+	font-size: 1.5em;
+}
+
+#p2pChat > input {
+	font-size: 1.5em;
+	font-family: 'Questrial', sans-serif;
+	padding: 0.4em;
+}
+
+#p2pChat > input:focus{
+	outline: none;
 }
 
 #p2pUsers{
@@ -259,8 +331,11 @@ body{
 	grid-template-columns: 4fr 1fr 6fr 2fr 2fr 2fr 1fr;
 
 	border: 1px solid lightgrey;
-	border-radius: 2px;
+	border-radius: 0px;
 	padding: 0.5em;
+
+	font-size: 2em;
+	font-family: 'Questrial', sans-serif;
 }
 
 .p2pUserEntry:last-child{
@@ -269,6 +344,7 @@ body{
 
 .p2pUserEntry button{
 	width: fit-content;
+	padding: 0.4em;
 }
 
 .p2pUserEntry [data-username]{
@@ -368,10 +444,10 @@ body{
 }
 
 #mapButtonsContainer button{
-	border-style: solid;
-	border-radius: 10px;
+	border-style: 0px;
 	color: white;
-	border-radius: 25px;
+	font-size: 1.5em;
+	border-radius: 0px;
 }
 
 #mapButtons{
@@ -380,6 +456,7 @@ body{
 	column-gap: 10px;
 
 	grid-area: otherBtns;
+	font-family: 'Questrial', sans-serif;
 }
 
 #playerSkip{
@@ -430,19 +507,28 @@ body{
 	align-items: flex-start;
 	flex-direction: column-reverse;
 	overflow: hidden;
+	font-family: 'Questrial', sans-serif;
+	font-size: 1em;
+
 }
 
 #speech {
-	width: calc(100% - 10px - 0.75em);
+	width: calc(100% - 1em - 0.75em);
 	height: 1em;
 	font-size: 1em;
 	bottom: 0.25em;
 	position: absolute;
+	font-family: 'Questrial', sans-serif;
+	font-size: 1em;
+	padding: 0.4em;
+}
+
+#speech:focus{
+	outline: none;
 }
 
 #playerMove {
-	border-color: limegreen;
-	background-color: green;
+	background-color: var(--titleColor);
 	height: 100%;
 	width: 100%;
 }
@@ -465,6 +551,7 @@ body{
   bottom: 150%;
   left: 50%;
   margin-left: -60px;
+  font-size: 0.8em;
 }
 
 #movePar #moveTip::after {
@@ -476,6 +563,7 @@ body{
   	border-width: 5px;
   	border-style: solid;
   	border-color: black transparent transparent transparent;
+	font-size: 0.8em;
 }
 
 #playerMove:hover #moveTip {
@@ -483,8 +571,7 @@ body{
 }
 
 #playerRest{
-	background-color: orange;
-	border-color: #ffbf4a;
+	background-color: var(--quartaryColor);
 	width: 100%;
 	height: 100%;
 }
@@ -558,6 +645,10 @@ body{
 #playerSkip:hover #skipTip {
 	visibility: visible;
 }
+.objectInfoContainer span{
+	font-family: 'Questrial', sans-serif;
+	font-size: 1.5em;
+}
 
 #questionImageContainer{
 	max-width: 100%;
@@ -572,6 +663,9 @@ body{
 #gameTurnInfo{
 	display: none;
 	text-align: center;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 4em;
+	margin-top: 2vh;
 }
 
 #chatOverlay{
@@ -600,7 +694,7 @@ body{
 #chatInput{
 	width: 100%;
 	height: 2em;
-	padding-left: 1em;
+	padding: 1em;
 	font-size: 14pt;
 	background-color: rgba(50, 50, 50, 0.25);
 	color: white;
@@ -623,11 +717,11 @@ body{
 }
 
 .playerMsg {
-	color: greenyellow;
+	color: white;
 }
 
 .botMsg {
-	color: paleturquoise; /* mmmmmm posh colour :) */
+	color: var(--secondaryColor); /* mmmmmm posh colour :) */
 }
 
 #gameEndOverlay{
@@ -642,21 +736,21 @@ body{
 
 #gameEndContainer{
 	position: absolute;
-	width: 15vw;
-	left: 42.5vw;
+	width: 20vw;
+	left: 40vw;
 	/* height: -moz-fit-content; */
 	/* height: fit-content; */
 	top: 20vh;
-	background-color: white;
-	border: 3px solid grey;
-	color: black;
-	padding: 0.5em;
+	background-color: var(--pentawhateverColor);
+	color: var(--titleColor);
+	padding: 1em;
 	pointer-events: auto;
 	text-align: center;
+	font-family: 'Questrial', sans-serif;
 }
 
 #gameEndContainer [gameEnd-score]{
-	font-size: 16pt;
+	font-size: 2em;
 	display: block;
 	margin-bottom: 0.5em;
 }
@@ -664,13 +758,13 @@ body{
 #gameEndLeaderboard{
 	display: grid;
 	grid-auto-flow: row;
-	border: 1px solid grey;
+	border: 0px;
 }
 
 #gameEndLeaderboard > div{
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	border-bottom: 1px solid lightgrey;
+	border-bottom: 0px;
 	padding: 0.25em;
 }
 
@@ -679,8 +773,9 @@ body{
 }
 
 #gameEndMessage{
-	font-size: 18pt;
-	margin-bottom: 0.5em;
+	font-size: 3em;
+	font-family: 'Montserrat', sans-serif;
+	margin-bottom: 0.2em;
 	display: block;
 }
 
@@ -697,23 +792,28 @@ body{
 #gameEndControls button{
 	color: white;
 	padding: 0.25em;
-	font-size: 1em;
+	font-size: 2em;
 }
 
 #gameEndExit{
-	background-color: #d32f2f;
+	background-color: var(--quartaryColor);
+}
+
+#gameEndTimeSpanThing{
+	font-size: 1.5em;
+	color: var(--secondaryColor);
 }
 
 #gamePlayAgain{
-	background-color: #00b8cc;
+	background-color: var(--titleColor);
 }
 
 #gameStatsUI{
 	position: absolute;
 	display: grid;
 	grid-auto-flow: column;
-	top: 0;
-	right: 5%;
+	top: 1%;
+	right: 2%;
 	row-gap: 10px;
 	column-gap: 1.5em;
 	/* background-color: grey; */
@@ -727,12 +827,14 @@ body{
 	column-gap: 0.5em;
 	padding: 0.1em 0.2em 0.1em 0.2em;
 	/* background-color: rgba(50, 50, 50, 0.5); */
-	border-radius: 5px;
+	border-radius: 0px;
 }
 
 .gameStatIconContainer{
 	width: 0.9em;
 	height: 0.9em;
+
+	font-family: ;
 
 	display: flex;
 	align-self: center;
@@ -744,10 +846,15 @@ body{
 	max-height: 100%;
 	/* -webkit-text-stroke: 1px black; */
 }
+#iconEnergy{
+	
+	filter: hue-rotate(-30deg);
+}
 
 .gameStatContainer span{
-	-webkit-text-stroke: 1px black;
+	-webkit-text-stroke: 0px black;
 	color: white;
+	font-family: 'Questrial', sans-serif;
 }
 
 #gameScoreContainer{
@@ -760,13 +867,12 @@ body{
 
 #gameTimeContainer{
 	position: absolute;
-	right: 1em;
-	bottom: 0.75em;
-	-webkit-text-stroke: 1px black;
-	background-color: #33333388;
+	right: 0.5em;
+	bottom: 0.5em;
+	background-color: none;
 	font-size: 6vh;
+	font-family: 'Questrial', sans-serif;
 	padding: 0.1em 0.2em 0.1em 0.2em;
-	border-radius: 5px;
 }
 
 #gameTimeColon{
