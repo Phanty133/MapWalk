@@ -259,7 +259,7 @@ cursor: pointer; /* Cursor on hover */
 #p2pHeader{
 	grid-area: header;
 	text-align: center;
-	font-size: 4em;
+	font-size: 3em;
 	font-family: 'Montserrat', sans-serif;
 	color: var(--titleColor);
 }
@@ -301,11 +301,11 @@ cursor: pointer; /* Cursor on hover */
 	font-family: 'Questrial', sans-serif;
 	overflow-y: auto;
 	height: 100%;
-	font-size: 1.5em;
+	font-size: 1.25em;
 }
 
 #p2pChat > input {
-	font-size: 1.5em;
+	font-size: 1.15em;
 	font-family: 'Questrial', sans-serif;
 	padding: 0.4em;
 }
@@ -334,7 +334,7 @@ cursor: pointer; /* Cursor on hover */
 	border-radius: 0px;
 	padding: 0.5em;
 
-	font-size: 2em;
+	font-size: 1.3em;
 	font-family: 'Questrial', sans-serif;
 }
 
