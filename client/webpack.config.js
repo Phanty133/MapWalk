@@ -63,6 +63,10 @@ module.exports = {
 				use: [ MiniCssExtractPlugin.loader, "css-loader"]
 			},
 			{
+				test: /.(wav)$/i,
+				type: "asset/resource"
+			},
+			{
 				test: /.(png|svg|jpg|jpeg|gif)$/i,
 				type: "asset/resource"
 			},
@@ -103,7 +107,8 @@ module.exports = {
 			img: path.resolve(__dirname, "src", "img"),
 			js: path.resolve(__dirname, "src", "js"),
 			cpp: path.resolve(__dirname, "src", "cpp"),
-			c: path.resolve(__dirname, "src", "c")
+			c: path.resolve(__dirname, "src", "c"),
+			audio: path.resolve(__dirname, "src", "audio")
 		}
 	}
 };

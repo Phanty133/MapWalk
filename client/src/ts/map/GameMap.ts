@@ -10,6 +10,7 @@ import Log from "ts/lib/log";
 import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
 import { Color } from "ts/lib/Color";
 import RestObject, { RestObjectData } from "./RestObject";
+import fxClick from "audio/click.wav";
 
 export default class GameMap {
 	EPSILON = 0.001;
@@ -164,6 +165,7 @@ export default class GameMap {
 		});
 
 		this.map.addEventListener("dblclick", (e) => {
+			this.game.soundEngine.playEffect(fxClick);
 			this.onDoubleClick(e as L.LeafletMouseEvent);
 		})
 

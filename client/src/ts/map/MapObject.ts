@@ -8,6 +8,8 @@ import Log from "ts/lib/log";
 import Time from "ts/game/Time";
 import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
 import { Color } from "ts/lib/Color";
+import fxCorrect from "audio/correct.wav";
+import fxIncorrect from "audio/incorrect.wav";
 
 export interface MapObjectData {
 	name: string;
@@ -201,6 +203,7 @@ export default class MapObject {
 		}
 
 		this.setState(MapObjectState.Default);
+		this.game.soundEngine.playEffect(fxCorrect);
 	}
 
 	onIncorrectAnswer(origin?: string) {
@@ -220,6 +223,8 @@ export default class MapObject {
 		else{
 			this.game.localPlayer.events.emit("PlayerActionDone");
 		}
+
+		this.game.soundEngine.playEffect(fxIncorrect);
 	}
 
 	remove() {

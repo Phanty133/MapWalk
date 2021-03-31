@@ -18,6 +18,9 @@ import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
 import { Color } from "ts/lib/Color";
 import MapObject from "ts/map/MapObject";
 import RestObject from "ts/map/RestObject";
+import fxMoveStart from "audio/move_start.wav";
+import fxMoveMid from "audio/move_mid.wav";
+import fxMoveEnd from "audio/move_end.wav";
 
 type TracingCallback = (route: L.Routing.IRoute) => void;
 
@@ -66,6 +69,7 @@ export default class Player {
 	private targetPos: L.LatLng;
 	private activeRoute: L.Routing.IRoute;
 	private nearbyObjects: (MapObject | RestObject)[] = null;
+	private moveEffectID: number = null;
 
 	isLocalPlayer: boolean = true;
 	marker: L.Marker;
@@ -349,6 +353,9 @@ export default class Player {
 			this.game.clock.addTime(visibilityFraction * this.info.timeToVisibilityEnd);
 		}
 
+		this.game.soundEngine.playEffect(fxMoveStart);
+		this.moveEffectID = this.game.soundEngine.playEffect(fxMoveMid, true);
+
 		return this.moveAlongRoute(this.activeRoute);
 	}
 
@@ -517,6 +524,11 @@ export default class Player {
 		if (this.isLocalPlayer) {
 			this.router.clearRoute();
 			this.map.map.dragging.enable();
+
+			this.game.soundEngine.stopEffect(this.moveEffectID);
+			// this.game.soundEngine.playEffect(fxMoveEnd);
+
+			this.moveEffectID = null;
 
 			if (this.nearbyObjects.length > 0) {
 				this.routeEndPromiseResolve();
