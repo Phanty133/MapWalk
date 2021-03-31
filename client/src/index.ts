@@ -19,6 +19,8 @@ import * as L from "leaflet";
 import Log from "ts/lib/log"
 import bindEventVerifiers from "ts/game/EventVerifiers"
 import { RestObjectData } from "ts/map/RestObject"
+import VoiceChat from "ts/voice/VoiceChat"
+import GameMap from "ts/map/GameMap"
 
 document.body.onload = () => {
 	loadPreGame();
@@ -28,7 +30,7 @@ document.body.onload = () => {
 		setTimeout(cb, randInt(5000, 10000));
 	};
 
-	cb();
+	// cb();
 
 	loadIcons();
 };
@@ -54,7 +56,7 @@ function loadPreGame() {
 		});
 	}
 	else {
-		const settingsSelection = new SettingsSelection();
+		const settingsSelection = new SettingsSelection("#settingsSelection", { voice: false });
 		settingsSelection.open();
 
 		settingsSelection.onStart = (settings: GameSettings) => {
@@ -127,6 +129,12 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 	Log.log("multiplayer");
 
 	const lobby = new Lobby(lobbyID, socket);
+
+	if(gameData.settings.voiceChat){
+		lobby.p2p.voiceChat = new VoiceChat(lobby.p2p);
+		await lobby.p2p.voiceChat.requestMedia();
+	}
+
 	const game = new Game(gameData.settings, socket, lobby);
 	// const restObjects = await loadRestObjects(8);
 
@@ -171,7 +179,23 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 		if (Object.values(lobby.p2p.channels).length === gameData.playerOrder.length - 1) {
 			Log.log("All players connected!");
 
-			if (game.turnMan.activePlayer === game.localPlayer) {
+			if(game.settings.voiceChat){
+				const audioConnectCB = () => {
+					for(const plyr of game.otherPlayers){
+						game.p2p.voiceChat.updateVolume(plyr.info.socketID, GameMap.nonMetricDistanceTo(plyr.pos, game.localPlayer.pos));
+					}
+
+					game.setGameState(GameState.PlayerAction);
+				};
+
+				if(game.p2p.voiceChat.audioConnected){
+					audioConnectCB();
+				}
+				else{
+					game.p2p.voiceChat.events.on("AudioConnected", () => { audioConnectCB(); });
+				}
+			}
+			else if (game.turnMan.activePlayer === game.localPlayer){
 				game.setGameState(GameState.PlayerAction);
 			}
 		}

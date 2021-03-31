@@ -13,12 +13,24 @@ export interface PlayerData{
 	color: string;
 }
 
+interface Location{
+	value: string;
+	pos: { lat: number, lng: number};
+}
+
 export default class Lobby{
 	id: string;
 	sockets: string[] = [];
+	socketsInP2P: string[] = [];
 	socketServer: SocketServer;
 	players: PlayerData[] = [];
 	playersBySocket: Record<string, PlayerData> = {};
+	private static startingLocations: Location[] = [
+		{ value: "eastBorder", pos: { lat: 56.536816, lng: 21.063771 } },
+		{ value: "southBorder", pos: { lat: 56.4702499, lng: 21.0097293 } },
+		{ value: "station", pos: { lat: 56.5232138, lng: 21.0178781 } },
+		{ value: "university", pos: { lat: 56.5088329, lng: 21.008155 } }
+	];
 
 	constructor(socketServer: SocketServer, id?: string, idLen: number = 6){
 		if(id){
@@ -45,6 +57,13 @@ export default class Lobby{
 		}, ignore);
 	}
 
+	private broadcastSelective(event: string, data: any, selector: (socket: string) => boolean){
+		for(const socket of this.sockets){
+			if(!selector(socket)) continue;
+			this.socketServer.sockets[socket].emit(event, data);
+		}
+	}
+
 	removePeer(socketID: string){
 		if(this.players.length > 1){
 			this.broadcast("ServerLobbyUserDisconnected", { socketID });
@@ -67,7 +86,11 @@ export default class Lobby{
 	}
 
 	P2PAddPeer(peer: string){
+		this.socketsInP2P.push(peer);
+
 		this.forAll((socket: Socket) => {
+			if(!this.socketsInP2P.includes(socket.id)) return;
+
 			socket.emit("P2PAddPeer", { peer, createOffer: false });
 			this.socketServer.sockets[peer].emit("P2PAddPeer", { peer: socket.id, createOffer: true });
 		}, peer);
@@ -129,8 +152,9 @@ export default class Lobby{
 		// Generate objects and starting locations
 
 		const objects = mapObjectLoader.getRandomObjects(data.settings.objectCount);
-		const randomStartingObjects = randomArrayElements(objects, this.players.length);
-		const randomStartingCoordinates = randomStartingObjects.map(obj => obj.location);
+
+		const randomStartingObjects = randomArrayElements(Lobby.startingLocations, this.players.length);
+		const randomStartingCoordinates = randomStartingObjects.map(obj => obj.pos);
 		const playerStartingCoordinates: Record<string, any> = {}; // SocketID: LatLng Location
 
 		const restObjects = mapObjectLoader.getRandomRestObjects(8);

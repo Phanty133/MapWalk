@@ -368,7 +368,7 @@ export default class Player {
 		this.marker.setLatLng(newPos);
 
 		if (this.isLocalPlayer) {
-			this.map.map.panTo(newPos);
+			// this.map.map.panTo(newPos); TODO: make it work
 			this.fow.setVisibilityPos(newPos);
 		}
 
@@ -556,12 +556,28 @@ export default class Player {
 			// Check whether a player is visible
 			// Absolute cancer
 
-			for (const plyr of this.game.otherPlayers) {
-				if (this.game.localPlayer.isPosVisible(plyr.pos)) {
-					plyr.marker.setOpacity(1);
+			if(this.isLocalPlayer){
+				for (const plyr of this.game.otherPlayers) {
+					const dist = GameMap.nonMetricDistanceTo(plyr.pos, this.pos) / 1.5;
+					Log.log(dist);
+
+					if (dist <= this.stats.visibility) {
+						plyr.marker.setOpacity(1);
+					}
+					else {
+						plyr.marker.setOpacity(0);
+					}
+
+					if(this.game.settings.voiceChat){
+						this.game.p2p.voiceChat.updateVolume(plyr.info.socketID, dist);
+					}
 				}
-				else {
-					plyr.marker.setOpacity(0);
+			}
+			else{
+				const distToLocal = GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos);
+
+				if(this.game.settings.voiceChat){
+					this.game.p2p.voiceChat.updateVolume(this.info.socketID, distToLocal);
 				}
 			}
 		}
