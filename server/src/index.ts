@@ -75,6 +75,14 @@ if(process.env.NODE_ENV === "production"){
 		// tslint:disable-next-line: no-console
 		console.log("Running server on port ", port);
 	});
+
+	const httpServer = express();
+
+	httpServer.get("*", (req, res) => {
+		res.redirect('https://' + req.headers.host + req.url);
+	});
+
+	httpServer.listen(80);
 }
 else{
 	server = http.createServer(app);
