@@ -4,9 +4,11 @@ the map do be walkin' doe
 
 ## How to run
 
-To run server, run `npm run dev` in the `server/` directory.
+To run the server, run `npm run dev` in the `server/` directory.
 
 To build the client, run `npm run build` in the `client/` directory.
+
+The game is also playable on https://mapwalk.tk
 
 ## Just some notes, so I can keep track of things
 
