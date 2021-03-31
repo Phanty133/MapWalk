@@ -37,14 +37,19 @@ export default class TurnManager {
 			this.activeIndex = 0;
 		}
 
+		if(this.activeIndex === 0){
+			this.game.clock.addTime(10);
+		}
+
 		if (this.game.isMultiplayer) {
 			this.turnDisplay.update();
-			this.game.clock.addTime(10);
 		}
 
 		if (this.activePlayer === this.game.localPlayer) {
 			this.game.setGameState(GameState.PlayerAction);
 		}
+
+		this.game.checkGameEndCondition();
 
 		this.game.events.emit("NextTurn");
 	}

@@ -8,6 +8,8 @@ import Log from "ts/lib/log";
 import Time from "ts/game/Time";
 import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
 import { Color } from "ts/lib/Color";
+import fxCorrect from "audio/correct.wav";
+import fxIncorrect from "audio/incorrect.wav";
 
 export interface MapObjectData {
 	name: string;
@@ -189,22 +191,19 @@ export default class MapObject {
 
 		this.answered = true;
 		this.marker.setIcon(this.iconAnswered);
+		this.marker.setOpacity(this.visible ? 1 : 0);
 
 		if (origin) {
 			this.game.playersByID[origin].incrementScore();
+			this.game.playersByID[origin].events.emit("PlayerActionDone");
 		}
 		else {
+			this.game.soundEngine.playEffect(fxCorrect);
 			this.game.localPlayer.incrementScore();
+			this.game.localPlayer.events.emit("PlayerActionDone");
 		}
 
 		this.setState(MapObjectState.Default);
-
-		if(origin){
-			this.game.playersByID[origin].events.emit("PlayerActionDone");
-		}
-		else{
-			this.game.localPlayer.events.emit("PlayerActionDone");
-		}
 	}
 
 	onIncorrectAnswer(origin?: string) {
@@ -217,7 +216,14 @@ export default class MapObject {
 		}
 
 		this.setState(MapObjectState.Default);
-		this.game.localPlayer.events.emit("PlayerActionDone");
+
+		if(origin){
+			this.game.playersByID[origin].events.emit("PlayerActionDone");
+		}
+		else{
+			this.game.soundEngine.playEffect(fxIncorrect);
+			this.game.localPlayer.events.emit("PlayerActionDone");
+		}
 	}
 
 	remove() {

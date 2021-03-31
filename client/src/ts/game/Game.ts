@@ -17,6 +17,8 @@ import GameEventHandler, { GameEventData } from "./GameEventHandler";
 import ChatBoot from "./ChatBoot";
 import { EventEmitter } from "events";
 import { RestObjectData } from "ts/map/RestObject";
+import VoiceChat from "../voice/VoiceChat";
+import SoundEngine from "./SoundEngine";
 
 type ManifestCheckCompleteCallback = () => void;
 
@@ -64,6 +66,7 @@ export default class Game {
 	chatBot: ChatBoot;
 	events: EventEmitter = new EventEmitter();
 	restObjectData: RestObjectData[];
+	soundEngine: SoundEngine;
 
 	public get state(): GameState{
 		return this._state;
@@ -75,6 +78,7 @@ export default class Game {
 
 	constructor(settings: GameSettings, socket: Socket, lobby?: Lobby){
 		this.manifest = new GameManifest(this);
+		this.soundEngine = new SoundEngine();
 
 		if(lobby) {
 			this.lobby = lobby;
@@ -83,6 +87,12 @@ export default class Game {
 		}
 
 		this.settings = settings;
+
+		// TODO: Make the time limit user adjustable
+		if(this.settings.gamemode === GameMode.TimeAttack){
+			this.settings.timeLimit = 600;
+		}
+
 		this.socket = socket;
 		this.eventHandler = new GameEventHandler(this);
 		this.clock = new Clock();
@@ -315,14 +325,18 @@ export default class Game {
 				if (this.clock.curTime >= this.settings.timeLimit) {
 					return true;
 				}
+
 				break;
 			case GameMode.HundredPercent:
 				if (this.map.countAnsweredObjects() === this.mapObjectData.length) {
 					return true;
 				}
+
 				break;
 			case GameMode.HundredPercentClock:
-				// this is something
+				if (this.map.countAnsweredObjects() === this.mapObjectData.length) {
+					return true;
+				}
 
 				break;
 		}
@@ -331,6 +345,8 @@ export default class Game {
 	}
 
 	onGameEnd() {
+		if(this.localPlayer !== this.turnMan.activePlayer) return;
+
 		this.eventHandler.dispatchEvent(new GameEvent("GameEnd"));
 	}
 

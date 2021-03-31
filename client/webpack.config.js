@@ -15,6 +15,9 @@ module.exports = {
 			import: path.resolve(__dirname, "src", "index.ts"),
 			dependOn: "shared"
 		},
+		admin: {
+			import: path.resolve(__dirname, "src", "admin.ts"),
+		},
 		shared: ["leaflet", "js-cookie"]
 	},
 	output: {
@@ -35,6 +38,18 @@ module.exports = {
 			filename: path.resolve(outputPath, "index.html"),
 			chunks: ["modeSelect", "shared"]
 		}),
+		new HtmlWebpackPlugin({
+			hash: true,
+			template: path.resolve(__dirname, "src", "html", "adminlogin.ejs"),
+			filename: path.resolve(outputPath, "adminlogin.html"),
+			chunks: ["admin"]
+		}),
+		new HtmlWebpackPlugin({
+			hash: true,
+			template: path.resolve(__dirname, "src", "html", "adminpanel.ejs"),
+			filename: path.resolve(outputPath, "adminpanel.html"),
+			chunks: ["admin"]
+		}),
 		new MiniCssExtractPlugin()
 	],
 	devtool: "inline-source-map",
@@ -48,12 +63,24 @@ module.exports = {
 				use: [ MiniCssExtractPlugin.loader, "css-loader"]
 			},
 			{
+				test: /.(wav)$/i,
+				type: "asset/resource"
+			},
+			{
 				test: /.(png|svg|jpg|jpeg|gif)$/i,
 				type: "asset/resource"
 			},
 			{
 				test: /\.(woff|woff2|eot|ttf|otf)$/i,
-				type: "asset/resource"
+				use: [
+					{
+					  loader: 'file-loader',
+					  options: {
+						name: '[name].[ext]',
+						outputPath: 'fonts/'
+					  }
+					}
+				  ]
 			},
 			{
 				test: /\.tsx?$/i,
@@ -80,7 +107,8 @@ module.exports = {
 			img: path.resolve(__dirname, "src", "img"),
 			js: path.resolve(__dirname, "src", "js"),
 			cpp: path.resolve(__dirname, "src", "cpp"),
-			c: path.resolve(__dirname, "src", "c")
+			c: path.resolve(__dirname, "src", "c"),
+			audio: path.resolve(__dirname, "src", "audio")
 		}
 	}
 };

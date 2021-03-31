@@ -8,7 +8,7 @@ export interface Location{
 
 export default class LocationSelection extends ValueSelection{
 	static locations: Location[] = [
-		{ value: "eastBorder", pos: new L.LatLng(56.5345689, 21.0991783) },
+		{ value: "eastBorder", pos: new L.LatLng(56.536816, 21.063771) },
 		{ value: "southBorder", pos: new L.LatLng(56.4702499, 21.0097293) },
 		{ value: "station", pos: new L.LatLng(56.5232138, 21.0178781) },
 		{ value: "university", pos: new L.LatLng(56.5088329, 21.008155) }

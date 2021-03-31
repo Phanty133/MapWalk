@@ -112,6 +112,7 @@ export default class Socket{
 	}
 
 	private onChatbotVerifyAnswerResponse(msg: { response: string }){
+		Log.log("chatbot resp: " + msg.response);
 		this.events.emit("ChatbotVerifyAnswerResponse", msg.response);
 	}
 

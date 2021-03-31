@@ -14,6 +14,7 @@ export interface QuestionAnswerEventData{
 	answer: string; // What the user typed in
 	response: string; // What the chatbot replied
 	objectID: number;
+	question: string; // The original question
 }
 
 export interface GameStateEventData{

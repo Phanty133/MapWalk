@@ -6,7 +6,7 @@ import iconScore from "img/IconScore.svg"
 import { MapObjectData } from "ts/map/MapObject"
 import Lobby from "ts/networking/Lobby"
 import * as Cookies from "js-cookie"
-import Game, { GameState } from "ts/game/Game"
+import Game, { GameMode, GameState } from "ts/game/Game"
 import Time from "ts/game/Time"
 import SettingsSelection, { GameSettings } from "ts/ui/settingsUI/SettingsSelection"
 import LobbyUI from "ts/ui/lobby/LobbyUI"
@@ -19,6 +19,8 @@ import * as L from "leaflet";
 import Log from "ts/lib/log"
 import bindEventVerifiers from "ts/game/EventVerifiers"
 import { RestObjectData } from "ts/map/RestObject"
+import VoiceChat from "ts/voice/VoiceChat"
+import GameMap from "ts/map/GameMap"
 
 document.body.onload = () => {
 	loadPreGame();
@@ -28,7 +30,7 @@ document.body.onload = () => {
 		setTimeout(cb, randInt(5000, 10000));
 	};
 
-	cb();
+	// cb();
 
 	loadIcons();
 };
@@ -54,7 +56,7 @@ function loadPreGame() {
 		});
 	}
 	else {
-		const settingsSelection = new SettingsSelection();
+		const settingsSelection = new SettingsSelection("#settingsSelection", { voice: false });
 		settingsSelection.open();
 
 		settingsSelection.onStart = (settings: GameSettings) => {
@@ -102,12 +104,16 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	game.createMap(objects, restObjects);
 	game.localPlayer = game.createPlayer(settings.location.pos);
 	game.localPlayer.createFogOfWar();
+	// game.localPlayer.fow.revealAll();
 
 	Log.log(settings);
 	Log.log(objects);
 	Log.log(restObjects);
 	game.map.createObjects(objects);
-	game.map.createRestObjects(restObjects);
+
+	if(settings.gamemode === GameMode.HundredPercentClock){
+		game.map.createRestObjects(restObjects);
+	}
 
 	const time = new Time();
 	game.setGameState(GameState.PlayerAction);
@@ -123,6 +129,12 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 	Log.log("multiplayer");
 
 	const lobby = new Lobby(lobbyID, socket);
+
+	if(gameData.settings.voiceChat){
+		lobby.p2p.voiceChat = new VoiceChat(lobby.p2p);
+		await lobby.p2p.voiceChat.requestMedia();
+	}
+
 	const game = new Game(gameData.settings, socket, lobby);
 	// const restObjects = await loadRestObjects(8);
 
@@ -148,7 +160,10 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 	// game.localPlayer.fow.revealAll();
 
 	game.map.createObjects(gameData.objects);
-	game.map.createRestObjects(gameData.restObjects);
+
+	if(gameData.settings.gamemode === GameMode.HundredPercentClock){
+		game.map.createRestObjects(gameData.restObjects);
+	}
 
 	const time = new Time();
 
@@ -164,7 +179,23 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 		if (Object.values(lobby.p2p.channels).length === gameData.playerOrder.length - 1) {
 			Log.log("All players connected!");
 
-			if (game.turnMan.activePlayer === game.localPlayer) {
+			if(game.settings.voiceChat){
+				const audioConnectCB = () => {
+					for(const plyr of game.otherPlayers){
+						game.p2p.voiceChat.updateVolume(plyr.info.socketID, GameMap.nonMetricDistanceTo(plyr.pos, game.localPlayer.pos));
+					}
+
+					game.setGameState(GameState.PlayerAction);
+				};
+
+				if(game.p2p.voiceChat.audioConnected){
+					audioConnectCB();
+				}
+				else{
+					game.p2p.voiceChat.events.on("AudioConnected", () => { audioConnectCB(); });
+				}
+			}
+			else if (game.turnMan.activePlayer === game.localPlayer){
 				game.setGameState(GameState.PlayerAction);
 			}
 		}

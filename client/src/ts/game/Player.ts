@@ -4,7 +4,7 @@ import PlayerRouter from "ts/map/PlayerRouter";
 import playerSVG from "img/MarkerPlayer_opaque.svg";
 import "leaflet-routing-machine";
 import GameMap from "ts/map/GameMap";
-import Game, { GameState } from "./Game";
+import Game, { GameMode, GameState } from "./Game";
 import Time from "./Time";
 import MathExtras from "ts/lib/MathExtras";
 import FogOfWar from "ts/map/FogOfWar";
@@ -18,6 +18,9 @@ import { SVGIcon } from "ts/lib/svg-icon/SVGIcon";
 import { Color } from "ts/lib/Color";
 import MapObject from "ts/map/MapObject";
 import RestObject from "ts/map/RestObject";
+import fxMoveStart from "audio/move_start.wav";
+import fxMoveMid from "audio/move_mid.wav";
+import fxMoveEnd from "audio/move_end.wav";
 
 type TracingCallback = (route: L.Routing.IRoute) => void;
 
@@ -66,6 +69,7 @@ export default class Player {
 	private targetPos: L.LatLng;
 	private activeRoute: L.Routing.IRoute;
 	private nearbyObjects: (MapObject | RestObject)[] = null;
+	private moveEffectID: number = null;
 
 	isLocalPlayer: boolean = true;
 	marker: L.Marker;
@@ -131,7 +135,7 @@ export default class Player {
 			restaurantTimeMin: 0, // Time (In minutes past 8AM) before which if a player visits a restaurant, it doesnt count
 			restaurantTimeMax: 20, // Time (in minutes past 8AM) after which the player gets a visibility debuff if he hasn't visited a restaurant
 			hungry: false,
-			spRestaurantTime: 30 // How long the player spends in a restaurant (SINGLEPLAYER ONLY)
+			spRestaurantTime: 360 // How long the player spends in a restaurant (SINGLEPLAYER ONLY)
 		};
 
 		this.isLocalPlayer = socket === this.game.socket.id || socket === undefined;
@@ -251,7 +255,13 @@ export default class Player {
 		});
 
 		this.events.on("PlayerActionDone", () => {
-			if(this.isLocalPlayer && !this.info.hasVisitedRestaurant && !this.info.hungry && this.game.clock.dayTime >= this.info.restaurantTimeMax){
+			if(
+				this.isLocalPlayer
+				&& !this.info.hasVisitedRestaurant
+				&& !this.info.hungry
+				&& this.game.clock.dayTime >= this.info.restaurantTimeMax
+				&& this.game.settings.gamemode === GameMode.HundredPercentClock
+			){
 				this.game.eventHandler.dispatchEvent(new GameEvent("PlayerHungry"));
 			}
 
@@ -343,6 +353,11 @@ export default class Player {
 			this.game.clock.addTime(visibilityFraction * this.info.timeToVisibilityEnd);
 		}
 
+		if(this.isLocalPlayer){
+			this.game.soundEngine.playEffect(fxMoveStart);
+			this.moveEffectID = this.game.soundEngine.playEffect(fxMoveMid, true);
+		}
+
 		return this.moveAlongRoute(this.activeRoute);
 	}
 
@@ -362,7 +377,7 @@ export default class Player {
 		this.marker.setLatLng(newPos);
 
 		if (this.isLocalPlayer) {
-			this.map.map.panTo(newPos);
+			// this.map.map.panTo(newPos); TODO: make it work
 			this.fow.setVisibilityPos(newPos);
 		}
 
@@ -474,7 +489,7 @@ export default class Player {
 	private async onHungryEvent(e: GameEventData){
 		if(e.origin !== this.info.socketID && this.game.isMultiplayer) return;
 
-		Log.log("SET HUNGRY: " + this.info.plyrData.username);
+		// Log.log("SET HUNGRY: " + this.info.plyrData.username);
 		this.setLocalHungryState(true);
 	}
 
@@ -511,6 +526,11 @@ export default class Player {
 		if (this.isLocalPlayer) {
 			this.router.clearRoute();
 			this.map.map.dragging.enable();
+
+			this.game.soundEngine.stopEffect(this.moveEffectID);
+			// this.game.soundEngine.playEffect(fxMoveEnd);
+
+			this.moveEffectID = null;
 
 			if (this.nearbyObjects.length > 0) {
 				this.routeEndPromiseResolve();
@@ -550,12 +570,28 @@ export default class Player {
 			// Check whether a player is visible
 			// Absolute cancer
 
-			for (const plyr of this.game.otherPlayers) {
-				if (this.game.localPlayer.isPosVisible(plyr.pos)) {
-					plyr.marker.setOpacity(1);
+			if(this.isLocalPlayer){
+				for (const plyr of this.game.otherPlayers) {
+					const dist = GameMap.nonMetricDistanceTo(plyr.pos, this.pos) / 1.5;
+					Log.log(dist);
+
+					if (dist <= this.stats.visibility) {
+						plyr.marker.setOpacity(1);
+					}
+					else {
+						plyr.marker.setOpacity(0);
+					}
+
+					if(this.game.settings.voiceChat){
+						this.game.p2p.voiceChat.updateVolume(plyr.info.socketID, dist);
+					}
 				}
-				else {
-					plyr.marker.setOpacity(0);
+			}
+			else{
+				const distToLocal = GameMap.nonMetricDistanceTo(this.pos, this.game.localPlayer.pos);
+
+				if(this.game.settings.voiceChat){
+					this.game.p2p.voiceChat.updateVolume(this.info.socketID, distToLocal);
 				}
 			}
 		}
