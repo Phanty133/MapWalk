@@ -5,6 +5,7 @@ import { logger, mapObjectLoader } from "../index";
 import Lobby from "../Lobby";
 import { randomArrayElements } from "../lib/util";
 import ChatBoot from "../ChatBoot";
+import { loginHandler, validateSession, checkLogin } from "../userauth";
 
 export default class Routes {
 	router: express.Router;
@@ -23,8 +24,14 @@ export default class Routes {
 		this.router.get("/join", (req, res) => { this.join(req, res); });
 		this.router.get("/createLobby", (req, res) => { this.createLobby(req, res); });
 		this.router.get("/playagain", (req, res) => { this.playAgain(req, res); });
+		this.router.get("/login", (req, res) => { this.onLoginPage(req, res); });
 		this.router.post("/objects", (req, res) => { this.objects(req, res); });
 		this.router.post("/restobjects", (req, res) => { this.restobjects(req, res); });
+		this.router.post("/login", (req, res) => { loginHandler(req, res); });
+
+		// admin stuff
+
+		this.router.get("/admin", validateSession, checkLogin, (req, res) => { this.onAdminPage(req, res); })
 
 		// Add the static file middleware, so custom routes have priority over the middleware
 		this.router.use(express.static(this.baseDir));
@@ -98,5 +105,13 @@ export default class Routes {
 		else{
 			res.redirect("/game?mode=sp");
 		}
+	}
+
+	private onLoginPage(req: Request, res: Response){
+		res.sendFile(path.join(this.baseDir, "adminlogin.html"));
+	}
+
+	private onAdminPage(req: Request, res: Response){
+		res.sendFile(path.join(this.baseDir, "adminpanel.html"));
 	}
 }

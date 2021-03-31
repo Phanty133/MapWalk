@@ -189,6 +189,7 @@ export default class MapObject {
 
 		this.answered = true;
 		this.marker.setIcon(this.iconAnswered);
+		this.marker.setOpacity(this.visible ? 1 : 0);
 
 		if (origin) {
 			this.game.playersByID[origin].incrementScore();

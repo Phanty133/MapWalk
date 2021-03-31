@@ -44,6 +44,11 @@ export default class LobbyUI{
 			this.chat.addSystemMessage(`${plyrData.username} has joined!`, "#388e3c");
 			this.users.addUserFromData(plyrData);
 			this.updateStartBtnState();
+
+			// Reload settings, so the new player gets em. Jank, but works
+			if(this.users.selfIsHost){
+				this.onSettingsChange(this.settings.getSettings());
+			}
 		});
 
 		this.socket.events.addListener("ServerLobbyJoined", (data: ServerLobbyJoinedData) => {

@@ -3,7 +3,7 @@ import path from "path";
 import crypto from "crypto";
 
 export function parseBool(str:string){
-	return JSON.parse(str.toLowerCase());
+	return JSON.parse(str?.toLowerCase());
 }
 
 export function randInt(min: number, max: number): number{
