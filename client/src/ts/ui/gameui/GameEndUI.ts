@@ -1,8 +1,14 @@
-import Game from "ts/game/Game";
+import Game, { GameMode } from "ts/game/Game";
 import createElement from "ts/lib/createElement";
 import Log from "ts/lib/log";
 
 export default class GameEndUI{
+	static endMessage: Record<number, string> = {
+		0: "You ran out of time!",
+		1: "All objects visited!",
+		2: "All objects visited!"
+	};
+
 	private gameEndContainer: HTMLDivElement;
 	private timeTaken: HTMLSpanElement;
 	private leaderboard: HTMLDivElement;
@@ -31,7 +37,6 @@ export default class GameEndUI{
 		this.timeTaken.textContent = this.game.clock.timeStringSinceStart;
 
 		if(this.game.isMultiplayer){
-			Log.log(this.game.players);
 			for(const plyr of this.game.players){
 				this.addLeaderboardEntry(plyr.info.plyrData.username, plyr.stats.score, plyr.info.plyrData.color);
 			}
@@ -39,6 +44,8 @@ export default class GameEndUI{
 		else{
 			this.addLeaderboardEntry("Local player", this.game.localPlayer.stats.score, "#FFAA00");
 		}
+
+		document.getElementById("gameEndMessage").textContent = GameEndUI.endMessage[this.game.settings.gamemode];
 
 		this.gameEndContainer.style.display = "block";
 	}

@@ -43,9 +43,11 @@ export default class ChatBoot {
 
 	processMessage(text: string): string {
 		const interpretation = this.interpret(text);
+
 		if (interpretation.guess && this.testData[interpretation.guess]) {
 			return this.testData[interpretation.guess].answer;
 		}
+
 		return "no-no";
 	}
 }

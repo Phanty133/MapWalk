@@ -4,7 +4,7 @@ import PlayerRouter from "ts/map/PlayerRouter";
 import playerSVG from "img/MarkerPlayer_opaque.svg";
 import "leaflet-routing-machine";
 import GameMap from "ts/map/GameMap";
-import Game, { GameState } from "./Game";
+import Game, { GameMode, GameState } from "./Game";
 import Time from "./Time";
 import MathExtras from "ts/lib/MathExtras";
 import FogOfWar from "ts/map/FogOfWar";
@@ -131,7 +131,7 @@ export default class Player {
 			restaurantTimeMin: 0, // Time (In minutes past 8AM) before which if a player visits a restaurant, it doesnt count
 			restaurantTimeMax: 20, // Time (in minutes past 8AM) after which the player gets a visibility debuff if he hasn't visited a restaurant
 			hungry: false,
-			spRestaurantTime: 30 // How long the player spends in a restaurant (SINGLEPLAYER ONLY)
+			spRestaurantTime: 360 // How long the player spends in a restaurant (SINGLEPLAYER ONLY)
 		};
 
 		this.isLocalPlayer = socket === this.game.socket.id || socket === undefined;
@@ -251,7 +251,13 @@ export default class Player {
 		});
 
 		this.events.on("PlayerActionDone", () => {
-			if(this.isLocalPlayer && !this.info.hasVisitedRestaurant && !this.info.hungry && this.game.clock.dayTime >= this.info.restaurantTimeMax){
+			if(
+				this.isLocalPlayer
+				&& !this.info.hasVisitedRestaurant
+				&& !this.info.hungry
+				&& this.game.clock.dayTime >= this.info.restaurantTimeMax
+				&& this.game.settings.gamemode === GameMode.HundredPercentClock
+			){
 				this.game.eventHandler.dispatchEvent(new GameEvent("PlayerHungry"));
 			}
 
@@ -474,7 +480,7 @@ export default class Player {
 	private async onHungryEvent(e: GameEventData){
 		if(e.origin !== this.info.socketID && this.game.isMultiplayer) return;
 
-		Log.log("SET HUNGRY: " + this.info.plyrData.username);
+		// Log.log("SET HUNGRY: " + this.info.plyrData.username);
 		this.setLocalHungryState(true);
 	}
 

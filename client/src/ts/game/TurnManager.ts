@@ -46,6 +46,8 @@ export default class TurnManager {
 			this.game.setGameState(GameState.PlayerAction);
 		}
 
+		this.game.checkGameEndCondition();
+
 		this.game.events.emit("NextTurn");
 	}
 
