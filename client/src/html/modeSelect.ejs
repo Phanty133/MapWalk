@@ -14,6 +14,7 @@
 			<div id="modeSelectContainer" data-menu="modeSelect" class="preSelectionContainer">
 				<button id="btnSP" class="button">Singleplayer</button>
 				<button id="btnMP" class="button" data-goto="mpUsername">Multiplayer</button>
+				<button id="btnMP" class="button" data-goto="help">Help</button>
 			</div>
 
 			<div id="mpUsernameContainer" data-menu="mpUsername" class="inputMenuContainer preSelectionContainer">
@@ -32,6 +33,20 @@
 				<input type="text" placeholder="Lobby ID" id="mpLobbyInput">
 				<button class="button" data-goto="mpActionSelect">Back</button>
 				<button class="button" id="mpJoinLobbyOK">Ok</button>
+			</div>
+
+			<div id="helpContainer" data-menu="help" class="preSelectionContainer">
+				<div>
+					Spēles mērķis ir apmeklēt objektus Liepājā. Lai veiksmīgi apmeklētu objektu, ir par to jāatbild jautājums. Katru gājienu ir tikai viena iespēja atbildēt uz jautājumu, un ja atbild nepareizi, ir jāgaida līdz nākamajam gājienam.<br/>
+					<br/><br/>
+					Lai kustētos, vienreiz klikšķini uz objektu vai divreiz klikšķini jebkur savā redzes laukā. Kustēšanās patērē enerģiju, kuru var atgūt pavadot gājienu atpūšoties.<br/>
+					<br/><br/>
+					Spēļu režīmiem arī ir speciāli nosacījumi:<br/>
+					- 100% -- Lai spēle beigtos, jābūt atrastiem visiem objektiem.<br/>
+					- Time Attack -- Jāatrod pēc iespējas vairāk objekti līdz sešiem vakarā<br/>
+					- 100%'o Clock -- Līdzīgi 100%, bet katru dienu, starp 12:00 un 14:00, ir jādodas uz restorānu atpūsties, citādāk redzamība tiek divreiz samazināta līdz restorāna apmeklējumam.<br/>
+				</div>
+				<button class="button" data-goto="modeSelect">Back</button>
 			</div>
 		</div>
 	</div>
