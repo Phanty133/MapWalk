@@ -3,6 +3,7 @@ import Log from "ts/lib/log";
 import GameModeSelection from "./GameModeSelection";
 import LocationSelection, { Location } from "./LocationSelection";
 import ObjectSelection from "./ObjectSelection";
+import VoiceSelection from "./VoiceSelection";
 
 export interface GameSettings{
 	mode: string;
@@ -10,6 +11,7 @@ export interface GameSettings{
 	location: Location;
 	objectCount: number;
 	timeLimit?: number;
+	voiceChat?: boolean;
 }
 
 export interface SettingsConfig{
@@ -17,6 +19,7 @@ export interface SettingsConfig{
 	gamemode?:boolean;
 	location?:boolean;
 	objectCount?:boolean;
+	voice?:boolean;
 }
 
 type StartGameCallback = (settings: GameSettings) => void;
@@ -27,6 +30,7 @@ export default class SettingsSelection{
 	private objectSelection: ObjectSelection;
 	private locationSelection: LocationSelection;
 	private containerSelector: string;
+	private voiceSelection: VoiceSelection;
 	private container: HTMLElement;
 	private mode: string;
 	onStart: StartGameCallback = () => {};
@@ -67,6 +71,11 @@ export default class SettingsSelection{
 			this.objectSelection.onChange = () => { this.onChange(this.getSettings()) };
 		}
 
+		if(config.voice || config.voice === undefined) {
+			this.voiceSelection = new VoiceSelection(this.containerSelector);
+			this.voiceSelection.onChange = () => { this.onChange(this.getSettings()) };
+		}
+
 		if(config.misc || config.misc === undefined) this.createStartGameButton();
 	}
 
@@ -89,12 +98,14 @@ export default class SettingsSelection{
 		this.gameModeSelection?.setDisabled(disabled);
 		this.locationSelection?.setDisabled(disabled);
 		this.objectSelection?.setDisabled(disabled);
+		this.voiceSelection?.setDisabled(disabled);
 	}
 
 	updateSettings(newSettings: GameSettings){
 		this.gameModeSelection?.setValue(newSettings.gamemode?.toString());
 		this.locationSelection?.setValue(newSettings.location?.toString());
 		this.objectSelection?.setValue(newSettings.objectCount);
+		this.voiceSelection?.setValue(newSettings.voiceChat);
 	}
 
 	getSettings(): GameSettings{
@@ -102,7 +113,8 @@ export default class SettingsSelection{
 			mode: this.mode,
 			gamemode: this.gameModeSelection?.value,
 			location: this.locationSelection?.value,
-			objectCount: this.objectSelection?.value
+			objectCount: this.objectSelection?.value,
+			voiceChat: this.voiceSelection?.value
 		};
 	}
 }

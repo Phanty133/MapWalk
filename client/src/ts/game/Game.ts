@@ -17,6 +17,7 @@ import GameEventHandler, { GameEventData } from "./GameEventHandler";
 import ChatBoot from "./ChatBoot";
 import { EventEmitter } from "events";
 import { RestObjectData } from "ts/map/RestObject";
+import VoiceChat from "../voice/VoiceChat";
 
 type ManifestCheckCompleteCallback = () => void;
 

@@ -39,3 +39,8 @@ declare module "*.svg" {
 	const content: any;
 	export default content;
 }
+
+declare module "*.worklet.js" {
+	const exportString: string;
+	export default exportString;
+  }

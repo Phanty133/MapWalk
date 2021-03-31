@@ -773,3 +773,7 @@ body{
 	position: relative;
 	bottom: 5px;
 }
+
+.voiceSelection{
+	margin-top: 0.5em;
+}

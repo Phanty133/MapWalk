@@ -4,7 +4,8 @@ import { randInt } from "ts/lib/util";
 import Socket from "./Socket";
 import Log from "ts/lib/log";
 import { EventEmitter } from "events";
-import "webrtc-adapter";
+import VoiceChat from "ts/voice/VoiceChat";
+// import "webrtc-adapter";
 
 export interface PeerData{
 	peer: string; // SocketID?
@@ -86,6 +87,7 @@ export default class P2PLobby{
 	joinedLobby: boolean = false;
 	events: EventEmitter = new EventEmitter();
 	static debugHost: boolean = false;
+	voiceChat: VoiceChat;
 
 	constructor(socket: Socket){
 		this.socket = socket;
@@ -126,6 +128,7 @@ export default class P2PLobby{
 		if(data.peer in this.peers){
 			// tslint:disable-next-line: no-console
 			console.warn("Already connected to peer ", data.peer);
+			Log.log(this.peers[data.peer]);
 			return;
 		}
 
@@ -138,16 +141,13 @@ export default class P2PLobby{
 			}
 		};
 
-		peerConnection.ontrack = (e) => {
-			// tslint:disable-next-line: no-console
-			Log.log("Connected track " + e);
-			// TODO: actually make it do something when connected
-		};
-
 		peerConnection.onconnectionstatechange = (e: Event) => {
 			const state = peerConnection.connectionState;
 
 			switch(state){
+				case "connected":
+					Log.log("Peer connected!");
+					break;
 				case "failed":
 					Log.log("Peer lost connection");
 					break;
@@ -167,6 +167,10 @@ export default class P2PLobby{
 					delete this.channels[data.peer];
 			}
 		};
+
+		if(this.voiceChat){
+			this.voiceChat.connectToPeer(data.peer, peerConnection);
+		}
 
 		// peerConnection.addTrack();
 
