@@ -6,7 +6,7 @@ import iconScore from "img/IconScore.svg"
 import { MapObjectData } from "ts/map/MapObject"
 import Lobby from "ts/networking/Lobby"
 import * as Cookies from "js-cookie"
-import Game, { GameState } from "ts/game/Game"
+import Game, { GameMode, GameState } from "ts/game/Game"
 import Time from "ts/game/Time"
 import SettingsSelection, { GameSettings } from "ts/ui/settingsUI/SettingsSelection"
 import LobbyUI from "ts/ui/lobby/LobbyUI"
@@ -108,7 +108,10 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	Log.log(objects);
 	Log.log(restObjects);
 	game.map.createObjects(objects);
-	game.map.createRestObjects(restObjects);
+
+	if(settings.gamemode === GameMode.HundredPercentClock){
+		game.map.createRestObjects(restObjects);
+	}
 
 	const time = new Time();
 	game.setGameState(GameState.PlayerAction);
@@ -149,7 +152,10 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 	// game.localPlayer.fow.revealAll();
 
 	game.map.createObjects(gameData.objects);
-	game.map.createRestObjects(gameData.restObjects);
+
+	if(gameData.settings.gamemode === GameMode.HundredPercentClock){
+		game.map.createRestObjects(gameData.restObjects);
+	}
 
 	const time = new Time();
 

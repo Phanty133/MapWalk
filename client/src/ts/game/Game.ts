@@ -83,6 +83,12 @@ export default class Game {
 		}
 
 		this.settings = settings;
+
+		// TODO: Make the time limit user adjustable
+		if(this.settings.gamemode === GameMode.TimeAttack){
+			this.settings.timeLimit = 600;
+		}
+
 		this.socket = socket;
 		this.eventHandler = new GameEventHandler(this);
 		this.clock = new Clock();
@@ -315,14 +321,18 @@ export default class Game {
 				if (this.clock.curTime >= this.settings.timeLimit) {
 					return true;
 				}
+
 				break;
 			case GameMode.HundredPercent:
 				if (this.map.countAnsweredObjects() === this.mapObjectData.length) {
 					return true;
 				}
+
 				break;
 			case GameMode.HundredPercentClock:
-				// this is something
+				if (this.map.countAnsweredObjects() === this.mapObjectData.length) {
+					return true;
+				}
 
 				break;
 		}
@@ -331,6 +341,8 @@ export default class Game {
 	}
 
 	onGameEnd() {
+		if(this.localPlayer !== this.turnMan.activePlayer) return;
+
 		this.eventHandler.dispatchEvent(new GameEvent("GameEnd"));
 	}
 

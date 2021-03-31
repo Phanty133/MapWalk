@@ -4,7 +4,7 @@ import PlayerRouter from "ts/map/PlayerRouter";
 import playerSVG from "img/MarkerPlayer_opaque.svg";
 import "leaflet-routing-machine";
 import GameMap from "ts/map/GameMap";
-import Game, { GameState } from "./Game";
+import Game, { GameMode, GameState } from "./Game";
 import Time from "./Time";
 import MathExtras from "ts/lib/MathExtras";
 import FogOfWar from "ts/map/FogOfWar";
@@ -251,7 +251,13 @@ export default class Player {
 		});
 
 		this.events.on("PlayerActionDone", () => {
-			if(this.isLocalPlayer && !this.info.hasVisitedRestaurant && !this.info.hungry && this.game.clock.dayTime >= this.info.restaurantTimeMax){
+			if(
+				this.isLocalPlayer
+				&& !this.info.hasVisitedRestaurant
+				&& !this.info.hungry
+				&& this.game.clock.dayTime >= this.info.restaurantTimeMax
+				&& this.game.settings.gamemode === GameMode.HundredPercentClock
+			){
 				this.game.eventHandler.dispatchEvent(new GameEvent("PlayerHungry"));
 			}
 
@@ -474,7 +480,7 @@ export default class Player {
 	private async onHungryEvent(e: GameEventData){
 		if(e.origin !== this.info.socketID && this.game.isMultiplayer) return;
 
-		Log.log("SET HUNGRY: " + this.info.plyrData.username);
+		// Log.log("SET HUNGRY: " + this.info.plyrData.username);
 		this.setLocalHungryState(true);
 	}
 

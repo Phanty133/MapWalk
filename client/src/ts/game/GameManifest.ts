@@ -1,6 +1,6 @@
 import MapObject, { MapObjectData } from "ts/map/MapObject";
 import { GameSettings } from "ts/ui/settingsUI/SettingsSelection";
-import Game, { GameState } from "./Game";
+import Game, { GameMode, GameState } from "./Game";
 import GameEvent from "./GameEvent";
 import { PlayerInfo, PlayerStats } from "./Player";
 import hash from "object-hash";
@@ -63,7 +63,8 @@ export default class GameManifest{ // Mainly of use only in multiplayer for game
 
 		this.game.map.clearObjects();
 		this.game.map.createObjects(this.data.mapObjectData);
-		this.game.map.createRestObjects(this.data.restObjectData);
+
+		if(this.game.settings.gamemode === GameMode.HundredPercentClock) this.game.map.createRestObjects(this.data.restObjectData);
 
 		for(const plyrID of Object.keys(this.data.players)){
 			this.game.playersByID[plyrID].updateInfo(this.data.players[plyrID].info)
