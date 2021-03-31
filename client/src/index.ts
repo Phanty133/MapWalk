@@ -2,6 +2,11 @@ import "css/index.css"
 
 import iconEnergy from "img/IconEnergy.svg"
 import iconScore from "img/IconScore.svg"
+import iconFacebook from "img/social_flat_rounded_rects_svg/Facebook.svg"
+import iconTwitter from "img/social_flat_rounded_rects_svg/Twitter.svg"
+import iconReddit from "img/social_flat_rounded_rects_svg/Reddit.svg"
+import iconLinkedin from "img/social_flat_rounded_rects_svg/LinkedIn.svg"
+import iconEmail from "img/social_flat_rounded_rects_svg/Email.svg"
 
 import { MapObjectData } from "ts/map/MapObject"
 import Lobby from "ts/networking/Lobby"
@@ -111,7 +116,7 @@ async function loadSPGame(settings: GameSettings, socket: Socket) {
 	Log.log(restObjects);
 	game.map.createObjects(objects);
 
-	if(settings.gamemode === GameMode.HundredPercentClock){
+	if (settings.gamemode === GameMode.HundredPercentClock) {
 		game.map.createRestObjects(restObjects);
 	}
 
@@ -130,7 +135,7 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 
 	const lobby = new Lobby(lobbyID, socket);
 
-	if(gameData.settings.voiceChat){
+	if (gameData.settings.voiceChat) {
 		lobby.p2p.voiceChat = new VoiceChat(lobby.p2p);
 		await lobby.p2p.voiceChat.requestMedia();
 	}
@@ -161,7 +166,7 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 
 	game.map.createObjects(gameData.objects);
 
-	if(gameData.settings.gamemode === GameMode.HundredPercentClock){
+	if (gameData.settings.gamemode === GameMode.HundredPercentClock) {
 		game.map.createRestObjects(gameData.restObjects);
 	}
 
@@ -179,32 +184,40 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 		if (Object.values(lobby.p2p.channels).length === gameData.playerOrder.length - 1) {
 			Log.log("All players connected!");
 
-			if(game.settings.voiceChat){
+			if (game.settings.voiceChat) {
 				const audioConnectCB = () => {
-					for(const plyr of game.otherPlayers){
+					for (const plyr of game.otherPlayers) {
 						game.p2p.voiceChat.updateVolume(plyr.info.socketID, GameMap.nonMetricDistanceTo(plyr.pos, game.localPlayer.pos));
 					}
 
 					game.setGameState(GameState.PlayerAction);
 				};
 
-				if(game.p2p.voiceChat.audioConnected){
+				if (game.p2p.voiceChat.audioConnected) {
 					audioConnectCB();
 				}
-				else{
+				else {
 					game.p2p.voiceChat.events.on("AudioConnected", () => { audioConnectCB(); });
 				}
 			}
-			else if (game.turnMan.activePlayer === game.localPlayer){
+			else if (game.turnMan.activePlayer === game.localPlayer) {
 				game.setGameState(GameState.PlayerAction);
 			}
 		}
 	});
 }
 
-function loadIcons(){ // jank
+function loadIcons() { // jank
 	document.getElementById("iconEnergy").setAttribute("src", iconEnergy);
 	document.getElementById("iconScore").setAttribute("src", iconScore);
+
+
+	document.getElementById("facebookIco").setAttribute("src", iconFacebook);
+	document.getElementById("twitterIco").setAttribute("src", iconTwitter);
+	document.getElementById("redditIco").setAttribute("src", iconReddit);
+	document.getElementById("linkedInIco").setAttribute("src", iconLinkedin);
+	document.getElementById("emailIco").setAttribute("src", iconEmail);
+
 
 	/* const colonSpan = document.getElementById("gameTimeColon") as HTMLSpanElement;
 
