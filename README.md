@@ -2,6 +2,11 @@
 
 the map do be walkin' doe
 
+## How to run
+
+To run server, run `npm run dev` in the `server/` directory.
+To build the client, run `npm run build` in the `client/` directory.
+
 ## Just some notes, so I can keep track of things
 
 ### Socket events
@@ -39,3 +44,5 @@ the map do be walkin' doe
 * `QuestionAnswer`
 * `GameState`
 * `GameEnd`
+* `RestaurantVisited`
+* `PlayerHungry`
