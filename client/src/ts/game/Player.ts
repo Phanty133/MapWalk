@@ -368,7 +368,7 @@ export default class Player {
 		this.marker.setLatLng(newPos);
 
 		if (this.isLocalPlayer) {
-			this.map.map.panTo(newPos);
+			// this.map.map.panTo(newPos); TODO: make it work
 			this.fow.setVisibilityPos(newPos);
 		}
 

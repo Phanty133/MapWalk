@@ -179,21 +179,24 @@ async function loadMPGame(lobbyID: string, gameData: ServerLobbyStartGameData, s
 		if (Object.values(lobby.p2p.channels).length === gameData.playerOrder.length - 1) {
 			Log.log("All players connected!");
 
-			if (game.turnMan.activePlayer === game.localPlayer) {
-				game.setGameState(GameState.PlayerAction);
-			}
+			if(game.settings.voiceChat){
+				const audioConnectCB = () => {
+					for(const plyr of game.otherPlayers){
+						game.p2p.voiceChat.updateVolume(plyr.info.socketID, GameMap.nonMetricDistanceTo(plyr.pos, game.localPlayer.pos));
+					}
 
-			const audioConnectCB = () => {
-				for(const plyr of game.otherPlayers){
-					game.p2p.voiceChat.updateVolume(plyr.info.socketID, GameMap.nonMetricDistanceTo(plyr.pos, game.localPlayer.pos));
+					game.setGameState(GameState.PlayerAction);
+				};
+
+				if(game.p2p.voiceChat.audioConnected){
+					audioConnectCB();
 				}
-			};
-
-			if(game.p2p.voiceChat.audioConnected){
-				audioConnectCB();
+				else{
+					game.p2p.voiceChat.events.on("AudioConnected", () => { audioConnectCB(); });
+				}
 			}
-			else{
-				game.p2p.voiceChat.events.on("AudioConnected", () => { audioConnectCB(); });
+			else if (game.turnMan.activePlayer === game.localPlayer){
+				game.setGameState(GameState.PlayerAction);
 			}
 		}
 	});
