@@ -212,7 +212,8 @@ export default class Player {
 
 	private setVisibility(visibility: number){
 		this.stats.visibility = visibility;
-		this.fow.setVisibilityRadius(visibility);
+
+		this.fow?.setVisibilityRadius(visibility);
 	}
 
 	bindEvents() {

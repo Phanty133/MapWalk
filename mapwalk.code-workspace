@@ -7,6 +7,7 @@
 	"settings": {
 		"files.associations": {
 			"emscripten.h": "c"
-		}
+		},
+		"editor.suggest.showReferences": false
 	}
 }

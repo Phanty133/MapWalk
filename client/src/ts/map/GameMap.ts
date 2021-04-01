@@ -48,7 +48,11 @@ export default class GameMap {
 	static nonMetricDistanceTo(thisLatLng: L.LatLngExpression, otherLatLng: L.LatLngExpression) {
 		const a = thisLatLng as L.LatLng;
 		const b = otherLatLng as L.LatLng;
-		return Math.sqrt((b.lat - a.lat) ** 2 + (b.lng - a.lng) ** 2);
+
+		const scaledLatA = a.lat ** 1.1;
+		const scaledLatB = b.lat ** 1.1;
+
+		return Math.sqrt((scaledLatB - scaledLatA) ** 2 + (b.lng - a.lng) ** 2);
 	}
 
 	constructor(id: string, game: Game) {
