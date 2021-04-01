@@ -79,7 +79,7 @@ export namespace MessageData{
 type MessageCallback = (data: MessageDataBase, channel?:RTCDataChannel) => void;
 
 export default class P2PLobby{
-	static ICE_SERVERS: any[] = [{"urls": ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"]}, {"urls": "turn:45.9.188.93:5349", "username": "guest", "credential": "somepassword"}];
+	static ICE_SERVERS: any[] = [{"urls": ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"]}, {"urls": "turn:mapwalk.tk:5349", "username": "guest", "credential": "somepassword"}];
 	peers: Record<string, RTCPeerConnection> = {};
 	channels: Record<string, RTCDataChannel> = {};
 	socket: Socket;
