@@ -4,6 +4,15 @@ the map do be walkin' doe
 
 ## How to run
 
+### Requirements:
+* Node.js
+
+### Initial setup
+
+Install all the necessary NPM packages for both the server and client by running `npm i` in their respective directories.
+
+### Running the project
+
 To run the server, run `npm run dev` in the `server/` directory.
 
 To build the client, run `npm run build` in the `client/` directory.
